@@ -60,33 +60,67 @@ function mergeMainIntoDaHtml(daHtml, mainEl) {
 
 async function writeDaPage(org, repo, fileName, html, token) {
   const url = `https://admin.da.live/source/${org}/${repo}/${fileName}`;
-  const form = new FormData();
-  form.append('data', new Blob([html], { type: 'text/html' }), fileName);
+  const makeForm = () => {
+    const form = new FormData();
+    form.append('data', new Blob([html], { type: 'text/html' }), fileName);
+    return form;
+  };
+
+  const tryBearer = async () => {
+    if (!token) return null;
+    const headers = { Authorization: `Bearer ${token}` };
+    for (const method of ['PUT', 'POST']) {
+      try {
+        const res = await fetch(url, { method, headers, body: makeForm() });
+        if (res.ok || res.status === 201) return { ok: true, status: res.status };
+        if (res.status === 405 || res.status === 404) continue;
+        const body = await res.text().catch(() => '');
+        return { ok: false, status: res.status, body: body.slice(0, 200) };
+      } catch (e) {
+        return { ok: false, status: 0, body: e.message || String(e) };
+      }
+    }
+    return { ok: false, status: 0, body: 'upload failed' };
+  };
+
+  let bearerErr = null;
+  // Prefer pasted IMS bearer — daFetch 401 → loadIms() throws on *.aem.page
+  if (token) {
+    const bearer = await tryBearer();
+    if (bearer?.ok) return bearer;
+    bearerErr = bearer;
+  }
 
   try {
     const mod = await import('https://da.live/nx/utils/daFetch.js');
     const daFetch = mod.daFetch || mod.default;
     if (daFetch) {
+      if (token && typeof mod.setImsDetails === 'function') {
+        mod.setImsDetails(token);
+      }
       for (const method of ['PUT', 'POST']) {
-        const res = await daFetch(url, { method, body: form });
-        if (res.ok || res.status === 201) return { ok: true, status: res.status };
-        if (res.status === 405 || res.status === 404) continue;
+        try {
+          const res = await daFetch(url, { method, body: makeForm() });
+          if (res.ok || res.status === 201) return { ok: true, status: res.status };
+          if (res.status === 405 || res.status === 404 || res.status === 401 || res.status === 403) {
+            continue;
+          }
+        } catch {
+          /* Missing IMS Client ID — fall through */
+        }
       }
     }
   } catch {
     /* bearer fallback */
   }
 
-  if (!token) return { ok: false, status: 401, body: 'no_token' };
-
-  const headers = { Authorization: `Bearer ${token}` };
-  for (const method of ['PUT', 'POST']) {
-    const res = await fetch(url, { method, headers, body: form });
-    if (res.ok || res.status === 201) return { ok: true, status: res.status };
-    if (res.status === 405 || res.status === 404) continue;
-    return { ok: false, status: res.status, body: (await res.text()).slice(0, 200) };
+  if (token) {
+    const retry = await tryBearer();
+    if (retry) return retry;
+    return bearerErr || { ok: false, status: 0, body: 'upload failed' };
   }
-  return { ok: false, status: 0, body: 'upload failed' };
+
+  return { ok: false, status: 401, body: 'no_token' };
 }
 
 /**
