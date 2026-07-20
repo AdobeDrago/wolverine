@@ -51,6 +51,9 @@ function isEditMode() {
   const params = new URLSearchParams(window.location.search);
   const fe = params.get(FORGE_EDIT_PARAM);
   if (fe === '1' || fe === 'true') return true;
+  // Common typo / alternate: ?forge=edit-1
+  const forge = params.get('forge');
+  if (forge === 'edit-1' || forge === 'edit' || forge === '1') return true;
   const vse = params.get('vse') || params.get('cse');
   return vse === 'forge';
 }
