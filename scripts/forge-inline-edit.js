@@ -78,6 +78,12 @@ function resolveForgeApiBase() {
   const params = new URLSearchParams(window.location.search);
   const fromQuery = params.get(FORGE_API_PARAM);
   if (fromQuery) return fromQuery.replace(/\/$/, '');
+  try {
+    const fromConfig = window.FORGE_CONFIG?.FORGE_API_URL;
+    if (fromConfig) return String(fromConfig).replace(/\/$/, '');
+  } catch {
+    /* ignore */
+  }
   return '';
 }
 
