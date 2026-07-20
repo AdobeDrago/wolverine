@@ -72,15 +72,19 @@ export async function fetchDaPageHtml(org, repo, pagePath, token) {
   return { html: null, source: null };
 }
 
-async function resolveDaFetch() {
+async function resolveDaFetchModule() {
   try {
-    const mod = await import(DA_FETCH_MODULE);
-    return mod.daFetch || mod.default || null;
+    return await import(DA_FETCH_MODULE);
   } catch {
     return null;
   }
 }
 
+/**
+ * Write HTML to admin.da.live.
+ * Prefer an explicit IMS bearer (pasted forge_da_token) — daFetch's 401 handler
+ * calls loadIms() which throws "Missing IMS Client ID" on *.aem.page (no da.live config).
+ */
 async function writeDaPage(org, repo, fileName, html, token) {
   const url = `https://admin.da.live/source/${org}/${repo}/${fileName}`;
   const makeForm = () => {
@@ -89,11 +93,12 @@ async function writeDaPage(org, repo, fileName, html, token) {
     return form;
   };
 
-  const daFetch = await resolveDaFetch();
-  if (daFetch) {
+  const tryBearer = async () => {
+    if (!token) return null;
+    const headers = { Authorization: `Bearer ${token}` };
     for (const method of ['PUT', 'POST']) {
       try {
-        const res = await daFetch(url, { method, body: makeForm() });
+        const res = await fetch(url, { method, headers, body: makeForm() });
         if (res.ok || res.status === 201) return { ok: true, method, status: res.status };
         if (res.status === 405 || res.status === 404) continue;
         const body = await res.text().catch(() => '');
@@ -102,25 +107,51 @@ async function writeDaPage(org, repo, fileName, html, token) {
         return { ok: false, status: 0, body: e.message || String(e) };
       }
     }
+    return { ok: false, status: 0, body: 'upload failed' };
+  };
+
+  let bearerErr = null;
+  // 1) Explicit token first (inline-edit dialog / forge_da_token)
+  if (token) {
+    const bearer = await tryBearer();
+    if (bearer?.ok) return bearer;
+    // Keep last bearer error; still try daFetch below in case session cookies work
+    bearerErr = bearer;
   }
 
-  if (!token) {
-    return { ok: false, status: 401, body: 'no_token' };
-  }
-
-  const headers = { Authorization: `Bearer ${token}` };
-  for (const method of ['PUT', 'POST']) {
+  // 2) daFetch only when we can inject the token (avoids loadIms on aem.page)
+  const mod = await resolveDaFetchModule();
+  const daFetch = mod?.daFetch || mod?.default || null;
+  if (daFetch) {
     try {
-      const res = await fetch(url, { method, headers, body: makeForm() });
-      if (res.ok || res.status === 201) return { ok: true, method, status: res.status };
-      if (res.status === 405 || res.status === 404) continue;
-      const body = await res.text().catch(() => '');
-      return { ok: false, status: res.status, body: body.slice(0, 200) };
-    } catch (e) {
-      return { ok: false, status: 0, body: e.message || String(e) };
+      if (token && typeof mod.setImsDetails === 'function') {
+        mod.setImsDetails(token);
+      }
+      for (const method of ['PUT', 'POST']) {
+        try {
+          const res = await daFetch(url, { method, body: makeForm() });
+          if (res.ok || res.status === 201) return { ok: true, method, status: res.status };
+          if (res.status === 405 || res.status === 404) continue;
+          // Do not treat 401 as terminal — fall through to bearer / next method
+          if (res.status === 401 || res.status === 403) continue;
+          const body = await res.text().catch(() => '');
+          if (!token) return { ok: false, status: res.status, body: body.slice(0, 200) };
+        } catch {
+          /* Missing IMS Client ID etc. — fall through */
+        }
+      }
+    } catch {
+      /* ignore */
     }
   }
-  return { ok: false, status: 0, body: 'upload failed' };
+
+  if (token) {
+    const retry = await tryBearer();
+    if (retry) return retry;
+    return bearerErr || { ok: false, status: 0, body: 'upload failed' };
+  }
+
+  return { ok: false, status: 401, body: 'no_token' };
 }
 
 export async function triggerHlxPreviewPath(org, repo, hlxPath) {
