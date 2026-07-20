@@ -20,13 +20,18 @@
       altPill: 'Unlimited talk, text and premium global roaming in 200+ countries',
       deviceName: 'Razr',
       devicePrice: '$499.99. or $50/month for 12 months',
+      devicePriceWas: '$499.99',
+      devicePricePromo: '$494.99',
+      promoBadge: '$5 off your first purchase',
+      promoCode: 'NYC5',
+      acoOffer: 'aco-offer-nyc-welcome-5',
       phone:
         'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?auto=format&fit=crop&w=900&q=80',
       specs: [
         ['6.9" pOLED', '144Hz Display', '5G Ready'],
         ['50MP Camera', '4200mAh Battery', '256GB Storage'],
       ],
-      shop: '/phones',
+      shop: '/checkout?promo=NYC5&acoOffer=aco-offer-nyc-welcome-5',
     },
     'college-student': {
       tagline: 'Affordable data and a phone that keeps up with campus life — without breaking the budget.',
@@ -209,8 +214,7 @@
   }
 
   function personaIdFromPath() {
-    const m = (location.pathname || '').replace(/\/$/, '').match(/\/(family-texas|college-student|single-woman-nyc)$/);
-    return m ? m[1] : '';
+    return personaIdFromPathname(location.pathname);
   }
 
   function readCachedEmailHero(personaId) {
@@ -233,14 +237,14 @@
     if (!api) return null;
     const seg = segmentFromContext();
     const personaId = personaIdFromPath();
-    const query = seg
-      ? 'segment=' + encodeURIComponent(seg)
-      : personaId
-        ? 'persona=' + encodeURIComponent(personaId)
-        : '';
-    if (!query) return null;
+    const mobileMode = new URLSearchParams(location.search || '').get('forge-mobile-campaign') === '1';
+    const queryParts = [];
+    if (seg) queryParts.push('segment=' + encodeURIComponent(seg));
+    else if (personaId) queryParts.push('persona=' + encodeURIComponent(personaId));
+    if (mobileMode) queryParts.push('viewport=mobile');
+    if (!queryParts.length) return null;
     try {
-      const res = await fetch(api + '/social/landing-hero?' + query, { credentials: 'omit' });
+      const res = await fetch(api + '/social/landing-hero?' + queryParts.join('&'), { credentials: 'omit' });
       if (!res.ok) return null;
       const data = await res.json();
       if (!data || !data.heroImage) return null;
@@ -350,10 +354,15 @@
         '.xwalk-mockup-specs li{color:' + PRIMARY + '!important;font-weight:700!important;list-style:none!important}',
         '.xwalk-mockup-specs li::before{content:"✓ "!important}',
         '.xwalk-mockup-cta{background:' + PRIMARY + '!important;color:#fff!important;font-weight:900!important;border-radius:14px!important;display:flex!important;align-items:center!important;justify-content:center!important;min-height:280px!important;text-decoration:none!important}',
+        '.xwalk-aco-promo{background:linear-gradient(135deg,#0E7A3A 0%,' + PRIMARY + ' 100%)!important;color:#fff!important;padding:16px 20px!important;border-radius:12px!important;margin:0 0 20px!important}',
+        '.xwalk-aco-promo-badge,.xwalk-aco-promo-code{margin:0!important;font-size:14px!important;line-height:1.4!important}',
+        '.xwalk-mockup-device-price s{color:#666!important;font-weight:400!important;margin-right:6px!important}',
+        '.xwalk-mockup-device-price .xwalk-aco-savings{display:block!important;font-size:12px!important;font-weight:700!important;color:' + SECONDARY + '!important;margin-top:4px!important}',
         '.xwalk-family-row{display:grid!important;grid-template-columns:92px 168px minmax(0,1fr)!important;gap:12px 32px!important;align-items:center!important;padding:22px 28px!important;background:' + MINT_ROW + '!important;width:100%!important}',
         '.xwalk-family-line-label{font-weight:800!important;color:#111!important}',
         '.xwalk-family-line-price{font-weight:900!important;font-size:1.4rem!important;color:' + PRIMARY + '!important}',
-        '.xwalk-family-pill--dark{background:' + DARK_PILL + '!important;color:#fff!important;border-radius:999px!important;padding:14px 24px!important;text-align:center!important;width:100%!important}',
+        '.xwalk-family-pill--dark,.xwalk-family-pill--dark *,main:has(#you-run-this-city) .xwalk-family-pill--dark,main:has(#you-run-this-city) .xwalk-family-pill--dark *,main:has(#keep-your-family-connected) .xwalk-family-pill--dark,main:has(#keep-your-family-connected) .xwalk-family-pill--dark *,main:has(#wireless-that-fits-your-semester) .xwalk-family-pill--dark,main:has(#wireless-that-fits-your-semester) .xwalk-family-pill--dark *{background:' + DARK_PILL + '!important;color:#fff!important;border-radius:999px!important;padding:14px 24px!important;text-align:center!important;width:100%!important}',
+        '.xwalk-family-pill--dark *{background:transparent!important;padding:0!important;border-radius:0!important;width:auto!important}',
         '.xwalk-family-pill--accent{background:' + MINT_PILL + '!important;color:' + SECONDARY + '!important;border:1px solid ' + PRIMARY + '!important;border-radius:999px!important;padding:14px 24px!important;text-align:center!important;width:100%!important;font-weight:700!important}',
         '.xwalk-family-title{color:' + PRIMARY + '!important;font-family:Arial Black,Arial,sans-serif!important;font-size:1.65rem!important;font-weight:900!important}',
         '.xwalk-family-cta{display:inline-block!important;background:' + PRIMARY + '!important;color:#fff!important;font-size:1.625rem!important;font-weight:900!important;padding:20px 56px!important;border-radius:14px!important;text-decoration:none!important}',
@@ -363,7 +372,8 @@
         '@media(max-width:900px){body.xwalk-persona-segment-landing,body.xwalk-persona-offer-page--family-texas,body.xwalk-persona-offer-page--college-student,body.xwalk-persona-offer-page--single-woman-nyc{background:#0A1A0F!important}}',
         'main:has(#you-run-this-city),main:has(#keep-your-family-connected),main:has(#wireless-that-fits-your-semester){background:' + MINT_PAGE + '!important;color:#111!important;display:block!important}',
         'main:has(#you-run-this-city)>div,main:has(#keep-your-family-connected)>div,main:has(#wireless-that-fits-your-semester)>div{background:transparent!important;color:#111!important;min-height:0!important;overflow:visible!important}',
-        'main:has(#you-run-this-city) h1,main:has(#you-run-this-city) h2,main:has(#you-run-this-city) p,main:has(#keep-your-family-connected) h1,main:has(#keep-your-family-connected) h2,main:has(#keep-your-family-connected) p,main:has(#wireless-that-fits-your-semester) h1,main:has(#wireless-that-fits-your-semester) h2,main:has(#wireless-that-fits-your-semester) p{color:#111!important;text-shadow:none!important}',
+        'main:has(#you-run-this-city) h1,main:has(#you-run-this-city) h2,main:has(#you-run-this-city) p:not(.xwalk-family-pill--dark):not(.xwalk-plan-line-pill--dark):not(.xwalk-plan-tier-switch),main:has(#keep-your-family-connected) h1,main:has(#keep-your-family-connected) h2,main:has(#keep-your-family-connected) p:not(.xwalk-family-pill--dark):not(.xwalk-plan-line-pill--dark):not(.xwalk-plan-tier-switch),main:has(#wireless-that-fits-your-semester) h1,main:has(#wireless-that-fits-your-semester) h2,main:has(#wireless-that-fits-your-semester) p:not(.xwalk-family-pill--dark):not(.xwalk-plan-line-pill--dark):not(.xwalk-plan-tier-switch){color:#111!important;text-shadow:none!important}',
+        'main:has(#you-run-this-city) .xwalk-family-pill--dark,main:has(#you-run-this-city) .xwalk-family-pill--dark *,main:has(#keep-your-family-connected) .xwalk-family-pill--dark,main:has(#keep-your-family-connected) .xwalk-family-pill--dark *,main:has(#wireless-that-fits-your-semester) .xwalk-family-pill--dark,main:has(#wireless-that-fits-your-semester) .xwalk-family-pill--dark *,main:has(#you-run-this-city) .xwalk-plan-line-pill--dark,main:has(#keep-your-family-connected) .xwalk-plan-line-pill--dark,main:has(#wireless-that-fits-your-semester) .xwalk-plan-line-pill--dark{color:#fff!important}',
         '.xwalk-campaign-hero{background:' + HERO_BG + '!important;color:#fff!important;width:100%!important;display:block!important}',
         '.xwalk-campaign-hero-grid{display:grid!important;grid-template-columns:1fr 1fr!important;min-height:min(420px,48vw)!important;max-width:1280px!important;margin:0 auto!important}',
         '.xwalk-campaign-hero-headline{color:#fff!important;text-shadow:none!important}',
@@ -541,6 +551,36 @@
     return html;
   }
 
+  function buildAcoPromoBanner(meta) {
+    if (!meta.promoCode) return '';
+    return (
+      '<div class="xwalk-aco-promo xwalk-aco-promo--compact" data-aco-offer="' +
+      (meta.acoOffer || '') +
+      '" data-promo-code="' +
+      meta.promoCode +
+      '"><p class="xwalk-aco-promo-badge">' +
+      (meta.promoBadge || '$5 off your first purchase') +
+      '</p><p class="xwalk-aco-promo-code">Code <strong>' +
+      meta.promoCode +
+      '</strong> · Commerce</p></div>'
+    );
+  }
+
+  function devicePriceHtml(meta) {
+    if (meta.devicePriceWas && meta.devicePricePromo) {
+      return (
+        '<s>' +
+        meta.devicePriceWas +
+        '</s> <strong>' +
+        meta.devicePricePromo +
+        '</strong><span class="xwalk-aco-savings">' +
+        (meta.promoBadge || '') +
+        '</span>'
+      );
+    }
+    return '<strong>' + meta.devicePrice + '</strong>';
+  }
+
   function buildSingleOfferPage(personaId, headline, forgeOverrides) {
     const meta = SINGLE_OFFER[personaId];
     if (!meta) return null;
@@ -556,7 +596,9 @@
       white.innerHTML += '<p class="xwalk-mockup-quote"><em>' + meta.tagline + '</em></p>';
     }
     white.innerHTML +=
-      '<div class="xwalk-mockup-offers"><div class="xwalk-mockup-offer-row"><div class="xwalk-mockup-offer-main">' +
+      '<div class="xwalk-mockup-offers">' +
+      buildAcoPromoBanner(meta) +
+      '<div class="xwalk-mockup-offer-row"><div class="xwalk-mockup-offer-main">' +
       '<div class="xwalk-mockup-plan-head"><h2 class="xwalk-mockup-plan-title" id="xwalk-single-offer-plan">' +
       meta.planTitle +
       ' <span class="xwalk-mockup-plan-price">' +
@@ -569,9 +611,9 @@
       meta.deviceName +
       '"></div><div class="xwalk-mockup-device-footer"><p class="xwalk-mockup-device-name">' +
       meta.deviceName +
-      '</p><p class="xwalk-mockup-device-price"><strong>' +
-      meta.devicePrice +
-      '</strong></p></div></div>' +
+      '</p><p class="xwalk-mockup-device-price">' +
+      devicePriceHtml(meta) +
+      '</p></div></div>' +
       specsHtml(meta.specs[0], meta.specs[1]) +
       '</div></div><a class="xwalk-mockup-cta" href="' +
       meta.shop +
@@ -591,8 +633,8 @@
   }
 
   function personaIdFromPathname(pathname) {
-    const path = (pathname || '').replace(/\/$/, '');
-    const m = path.match(/\/(family-texas|college-student|single-woman-nyc)$/);
+    const path = String(pathname || '');
+    const m = path.match(/(?:^|\/)(family-texas|college-student|single-woman-nyc)(?:\/|$|\?|#)/);
     return m ? m[1] : null;
   }
 
@@ -603,9 +645,10 @@
 
     if (page?.querySelector('.xwalk-mockup-offer-row')) {
       ensureCampaignHero(personaId, headline, forgeHero);
-      page.querySelectorAll('.xwalk-plan-line-pill--dark').forEach((p) =>
-        p.style.setProperty('color', '#fff', 'important'),
-      );
+      page.querySelectorAll('.xwalk-plan-line-pill--dark, .xwalk-family-pill--dark').forEach((p) => {
+        p.style.setProperty('color', '#fff', 'important');
+        p.querySelectorAll('*').forEach((child) => child.style.setProperty('color', '#fff', 'important'));
+      });
     } else if (page?.querySelector('.xwalk-family-grid')) {
       const built = buildSingleOfferPage(personaId, headline, forgeHero);
       if (built) page.replaceWith(built);
