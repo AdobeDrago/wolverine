@@ -1,31 +1,38 @@
+/* Commerce UI — cart toast + PLP intro */
+
+.commerce-page-intro {
+  padding-top: calc(var(--nav-height) + 1.5rem);
+  padding-bottom: 0.5rem;
+}
+
 .cart-toast {
   position: fixed;
-  top: 20px;
+  top: calc(var(--nav-height) + 12px);
   right: 20px;
   z-index: 10000;
-  background: var(--brand-primary, #1DB954);
-  color: white;
+  background: var(--brand-primary);
+  color: var(--button-primary-text);
   padding: 12px 24px;
-  border-radius: 8px;
-  font-size: var(--body-font-size-xs);
+  border-radius: var(--radius-lg);
+  font-size: var(--body-font-size-s);
   font-family: var(--body-font-family);
+  font-weight: 600;
   transform: translateX(120%);
   transition: transform 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 35%);
 }
 
 .cart-toast.show {
   transform: translateX(0);
 }
 
-/* Header cart icon */
 .nav-cart-btn {
   background: none;
   border: none;
   cursor: pointer;
   position: relative;
   padding: 8px;
-  color: var(--text-color, #FFFFFF);
+  color: var(--text-color);
   display: flex;
   align-items: center;
 }
@@ -39,8 +46,8 @@
   position: absolute;
   top: 2px;
   right: 0;
-  background: var(--brand-secondary, #0E7A3A);
-  color: white;
+  background: var(--brand-primary);
+  color: var(--button-primary-text);
   font-size: 10px;
   font-weight: 700;
   min-width: 18px;
@@ -50,4 +57,15 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
+}
+
+/* Legacy class from product-list.js versions */
+.product-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
 }
