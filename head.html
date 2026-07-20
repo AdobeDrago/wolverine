@@ -1,9 +1,1214 @@
-<meta
-  http-equiv="Content-Security-Policy"
-  content="script-src 'nonce-aem' 'strict-dynamic' 'unsafe-inline' http: https:; base-uri 'self'; object-src 'none';"
-  move-to-http-header="true"
->
+<script id="forge-persona-flat-fix">(function(){var p=(location.pathname||'').replace(/\/$/,'');if(!/^\/(family-texas|single-woman-nyc|college-student)$/.test(p))return;var pid=p.slice(1);document.documentElement.classList.add('xwalk-persona-path--'+pid);var seg=/(?:^|[?&])(?:forge-preview-segment|forge-segment)=/.test(location.search||'');var ids={"family-texas":"keep-your-family-connected","single-woman-nyc":"you-run-this-city","college-student":"wireless-that-fits-your-semester"};function tagH1(){var h=document.querySelector('main h1');if(h&&!h.id&&ids[pid])h.id=ids[pid];return!!h;}tagH1();document.addEventListener('DOMContentLoaded',tagH1);if(!tagH1()&&document.documentElement){var mo=new MutationObserver(function(){if(tagH1())mo.disconnect();});mo.observe(document.documentElement,{childList:true,subtree:true});setTimeout(function(){mo.disconnect();tagH1();},3000);}var m=seg?'#fff':'#eef8f1';var pr='#1DB954';var css='html.xwalk-persona-path--'+pid+' main,main:has(#keep-your-family-connected),main:has(#you-run-this-city),main:has(#wireless-that-fits-your-semester){background:'+m+'!important;color:#111!important;display:block!important;max-width:none!important;padding:0!important}html.xwalk-persona-path--'+pid+' main>div,main:has(#keep-your-family-connected)>div,main:has(#you-run-this-city)>div,main:has(#wireless-that-fits-your-semester)>div{background:'+m+'!important;color:#111!important;min-height:auto!important;padding:24px 32px 48px!important;position:static!important;overflow:visible!important;text-align:left!important;box-shadow:none!important}html.xwalk-persona-path--'+pid+' main h1,html.xwalk-persona-path--'+pid+' main h2,main:has(#keep-your-family-connected) h1,main:has(#you-run-this-city) h1,main:has(#wireless-that-fits-your-semester) h1,main:has(#keep-your-family-connected) h2,main:has(#you-run-this-city) h2,main:has(#wireless-that-fits-your-semester) h2{color:'+pr+'!important;text-shadow:none!important;position:static!important}html.xwalk-persona-path--'+pid+' main p,html.xwalk-persona-path--'+pid+' main span,html.xwalk-persona-path--'+pid+' main strong,html.xwalk-persona-path--'+pid+' main em,html.xwalk-persona-path--'+pid+' main del,main:has(#keep-your-family-connected) p,main:has(#you-run-this-city) p,main:has(#wireless-that-fits-your-semester) p{color:#111!important;text-shadow:none!important}main>div:has(>h1){background:transparent!important;min-height:0!important;padding:0!important}main>div:has(>h1)>h1,main>div:has(>h1)>h2{color:'+pr+'!important;text-shadow:none!important}main>div:has(>h1)>p{color:#111!important;text-shadow:none!important}';var s=document.createElement('style');s.id='forge-persona-flat-fix-live';s.textContent=css;document.head.appendChild(s);if(document.body){if(seg)document.body.classList.add('xwalk-persona-segment-landing');document.body.classList.add('xwalk-persona-offer-page','xwalk-persona-offer-page--'+pid);}})();</script>
+<script id="forge-persona-path-class">(function(){var p=(location.pathname||'').replace(/\/$/,'');if(!/^\/(family-texas|single-woman-nyc|college-student)$/.test(p))return;var id=p.slice(1);document.documentElement.classList.add('xwalk-persona-path--'+id);var v=document.querySelector('meta[name="viewport"]');if(v&&!/viewport-fit/i.test(v.content||'')){v.setAttribute('content',(v.getAttribute('content')||'width=device-width, initial-scale=1')+', viewport-fit=cover');}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<script nonce="aem" src="/scripts/aem.js" type="module"></script>
-<script nonce="aem" src="/scripts/scripts.js" type="module"></script>
+<script src="/scripts/aem.js" type="module"></script>
+<script src="/scripts/scripts.js" type="module"></script>
+<script src="/scripts/xwalk-boost-layout.js" type="module"></script>
+<script id="forge-email-hero-cache">window.FORGE_EMAIL_HEROES={"family-texas":{"headline":"Keep your family connected","tagline":"Texas families stay connected with the right smartphone for adults and teenagers alike","heroImage":"https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=2000&q=80","heroAlt":"Texas family outdoors — parents and teens","updatedAt":"2026-06-10T20:58:29.878Z"},"single-woman-nyc":{"headline":"You run this city","tagline":"Active New Yorkers love the Razr compact foldable design — perfect for your on-the-go lifestyle in the city.","heroImage":"https://4191536-247cyandingo.adobeio-static.net/api/v1/web/dx-excshell-1/forge-api/social/messages/single-woman-nyc/heroes/street.jpg","heroAlt":"Young woman in New York City street scene","updatedAt":"2026-06-11T17:16:15.164Z"},"college-student":{"headline":"Wireless that fits your semester","tagline":"Affordable data and a phone that keeps up with campus life — without breaking the budget.","heroImage":"https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=2000&q=80","heroAlt":"College students on campus","updatedAt":"2026-06-10T18:27:56.503Z"}};</script>
+<script id="forge-landing-config">window.FORGE_CONFIG=Object.assign(window.FORGE_CONFIG||{}, { FORGE_API_URL: "https://4191536-247cyandingo.adobeio-static.net/api/v1/web/dx-excshell-1/forge-api" });</script>
+<script src="/scripts/xwalk-family-plans-boot.js?v=grid-24" defer></script>
+<script src="/scripts/xwalk-footer-boost-boot.js?v=boost-6"></script>
+<script src="/scripts/xwalk-persona-mockup-layout.js?v=grid-3" defer></script>
+<style id="forge-boost-critical">
+.xwalk-ai-strip,.xwalk-ai-separator-bar,.xwalk-hero-image-note,.fragment.xwalk-ai-separator{display:none!important}
+body:has(#save-when-you-shop-online),body:has([id*="shop-phones"]),body:has(#xwalk-plans-retail-head),body:has(#shop-deals-offers),body.xwalk-boost-page{background:#0A1A0F;color:#FFFFFF}
+body.xwalk-boost-page main.xwalk-boost-main,main:has(#save-when-you-shop-online),main:has([id*="shop-phones"]),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers),main.xwalk-boost-main{background:#0A1A0F;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:1280px;margin:0 auto;padding:0 32px 40px;box-sizing:border-box;width:100%}
+body.xwalk-boost-page main.xwalk-boost-main>div:first-child,main:has(#save-when-you-shop-online)>div:first-child,main:has([id*="shop-phones"])>div:first-child,main:has(#xwalk-plans-retail-head)>div:first-child,main:has(#plans-from-25mo)>div:first-child,main:has(#shop-deals-offers)>div:first-child,main.xwalk-boost-main>div:first-child,body.xwalk-boost-page main.xwalk-boost-main>div:nth-child(2),main:has(#save-when-you-shop-online)>div:nth-child(2),main:has([id*="shop-phones"])>div:nth-child(2),main:has(#xwalk-plans-retail-head)>div:nth-child(2),main:has(#plans-from-25mo)>div:nth-child(2),main:has(#shop-deals-offers)>div:nth-child(2),main.xwalk-boost-main>div:nth-child(2),body.xwalk-boost-page main.xwalk-boost-main>div:last-child,main:has(#save-when-you-shop-online)>div:last-child,main:has([id*="shop-phones"])>div:last-child,main:has(#xwalk-plans-retail-head)>div:last-child,main:has(#plans-from-25mo)>div:last-child,main:has(#shop-deals-offers)>div:last-child,main.xwalk-boost-main>div:last-child{grid-column:1/-1}
+.xwalk-retail-hero,body.xwalk-boost-page main.xwalk-boost-main>div:nth-child(2),main:has(#save-when-you-shop-online)>div:nth-child(2),main:has([id*="shop-phones"])>div:nth-child(2),main:has(#xwalk-plans-retail-head)>div:nth-child(2),main:has(#plans-from-25mo)>div:nth-child(2),main:has(#shop-deals-offers)>div:nth-child(2),main.xwalk-boost-main>div:nth-child(2){text-align:center;padding:36px 16px 20px}
+#save-when-you-shop-online,[id*="shop-phones"],#xwalk-plans-retail-head,#plans-from-25mo,#shop-deals-offers{color:#FFFFFF;font-size:clamp(1.75rem,4vw,2.5rem);font-weight:900;margin:0 0 10px;font-style:normal}
+.xwalk-retail-hero-sub,.xwalk-retail-hero-kicker,.xwalk-phones-sub{color:color-mix(in srgb,#FFFFFF 88%,transparent)}
+a.xwalk-retail-cta-primary{background:#1DB954;color:#000!important;padding:12px 24px;font-weight:700;text-decoration:none;border-radius:2px;display:inline-block;margin:4px}
+body.xwalk-boost-page main.xwalk-boost-main>div:nth-child(3),main:has(#save-when-you-shop-online)>div:nth-child(3),main:has([id*="shop-phones"])>div:nth-child(3),main:has(#xwalk-plans-retail-head)>div:nth-child(3),main:has(#plans-from-25mo)>div:nth-child(3),main:has(#shop-deals-offers)>div:nth-child(3),main.xwalk-boost-main>div:nth-child(3),body.xwalk-boost-page main.xwalk-boost-main>div:nth-child(4),main:has(#save-when-you-shop-online)>div:nth-child(4),main:has([id*="shop-phones"])>div:nth-child(4),main:has(#xwalk-plans-retail-head)>div:nth-child(4),main:has(#plans-from-25mo)>div:nth-child(4),main:has(#shop-deals-offers)>div:nth-child(4),main.xwalk-boost-main>div:nth-child(4),body.xwalk-boost-page main.xwalk-boost-main>div:nth-child(5),main:has(#save-when-you-shop-online)>div:nth-child(5),main:has([id*="shop-phones"])>div:nth-child(5),main:has(#xwalk-plans-retail-head)>div:nth-child(5),main:has(#plans-from-25mo)>div:nth-child(5),main:has(#shop-deals-offers)>div:nth-child(5),main.xwalk-boost-main>div:nth-child(5),body.xwalk-boost-page main.xwalk-boost-main>div:nth-child(6),main:has(#save-when-you-shop-online)>div:nth-child(6),main:has([id*="shop-phones"])>div:nth-child(6),main:has(#xwalk-plans-retail-head)>div:nth-child(6),main:has(#plans-from-25mo)>div:nth-child(6),main:has(#shop-deals-offers)>div:nth-child(6),main.xwalk-boost-main>div:nth-child(6),body.xwalk-boost-page main.xwalk-boost-main>div.xwalk-deal-section,main:has(#save-when-you-shop-online)>div.xwalk-deal-section,main:has([id*="shop-phones"])>div.xwalk-deal-section,main:has(#xwalk-plans-retail-head)>div.xwalk-deal-section,main:has(#plans-from-25mo)>div.xwalk-deal-section,main:has(#shop-deals-offers)>div.xwalk-deal-section,main.xwalk-boost-main>div.xwalk-deal-section,body.xwalk-boost-page main.xwalk-boost-main>div.xwalk-phone-section,main:has(#save-when-you-shop-online)>div.xwalk-phone-section,main:has([id*="shop-phones"])>div.xwalk-phone-section,main:has(#xwalk-plans-retail-head)>div.xwalk-phone-section,main:has(#plans-from-25mo)>div.xwalk-phone-section,main:has(#shop-deals-offers)>div.xwalk-phone-section,main.xwalk-boost-main>div.xwalk-phone-section{background:#fff;border:1px solid #d9d9d9;box-shadow:0 2px 10px rgb(0 0 0/35%);color:#000;text-align:center;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+body.xwalk-boost-page main.xwalk-boost-main>div:nth-child(3)>p:first-child,main:has(#save-when-you-shop-online)>div:nth-child(3)>p:first-child,main:has([id*="shop-phones"])>div:nth-child(3)>p:first-child,main:has(#xwalk-plans-retail-head)>div:nth-child(3)>p:first-child,main:has(#plans-from-25mo)>div:nth-child(3)>p:first-child,main:has(#shop-deals-offers)>div:nth-child(3)>p:first-child,main.xwalk-boost-main>div:nth-child(3)>p:first-child,body.xwalk-boost-page main.xwalk-boost-main>div:nth-child(4)>p:first-child,main:has(#save-when-you-shop-online)>div:nth-child(4)>p:first-child,main:has([id*="shop-phones"])>div:nth-child(4)>p:first-child,main:has(#xwalk-plans-retail-head)>div:nth-child(4)>p:first-child,main:has(#plans-from-25mo)>div:nth-child(4)>p:first-child,main:has(#shop-deals-offers)>div:nth-child(4)>p:first-child,main.xwalk-boost-main>div:nth-child(4)>p:first-child,body.xwalk-boost-page main.xwalk-boost-main>div:nth-child(5)>p:first-child,main:has(#save-when-you-shop-online)>div:nth-child(5)>p:first-child,main:has([id*="shop-phones"])>div:nth-child(5)>p:first-child,main:has(#xwalk-plans-retail-head)>div:nth-child(5)>p:first-child,main:has(#plans-from-25mo)>div:nth-child(5)>p:first-child,main:has(#shop-deals-offers)>div:nth-child(5)>p:first-child,main.xwalk-boost-main>div:nth-child(5)>p:first-child,body.xwalk-boost-page main.xwalk-boost-main>div:nth-child(6)>p:first-child,main:has(#save-when-you-shop-online)>div:nth-child(6)>p:first-child,main:has([id*="shop-phones"])>div:nth-child(6)>p:first-child,main:has(#xwalk-plans-retail-head)>div:nth-child(6)>p:first-child,main:has(#plans-from-25mo)>div:nth-child(6)>p:first-child,main:has(#shop-deals-offers)>div:nth-child(6)>p:first-child,main.xwalk-boost-main>div:nth-child(6)>p:first-child{background:#1DB954;color:#fff;font-weight:700;padding:12px 10px;margin:0}
+main.xwalk-boost-main>div:has(h3)>p:has(picture),main>div:has(h3)>p:has(picture),body.xwalk-boost-page main.xwalk-boost-main>div:has(h3)>p:has(picture),main:has(#save-when-you-shop-online)>div:has(h3)>p:has(picture),main:has([id*="shop-phones"])>div:has(h3)>p:has(picture),main:has(#xwalk-plans-retail-head)>div:has(h3)>p:has(picture),main:has(#plans-from-25mo)>div:has(h3)>p:has(picture),main:has(#shop-deals-offers)>div:has(h3)>p:has(picture),main.xwalk-boost-main>div:has(h3)>p:has(picture){display:flex!important;align-items:center;justify-content:center;background:#f5f5f5;padding:20px 16px;min-height:220px;margin:0;position:static!important;overflow:visible!important}
+main.xwalk-boost-main>div:has(h3):has(picture){display:flex!important;flex-direction:column!important;overflow:hidden!important;min-width:0!important}
+main.xwalk-boost-main>div:has(h3) .default-content-wrapper{display:flex!important;flex-direction:column!important;width:100%!important;grid-template-columns:none!important;align-items:stretch!important}
+main.xwalk-boost-main .xwalk-deal-media{display:flex!important;align-items:center!important;justify-content:center!important;background:#f5f5f5!important;padding:20px 16px!important;min-height:220px!important;margin:0!important;width:100%!important;box-sizing:border-box!important}
+body.xwalk-boost-page main.xwalk-boost-main .xwalk-deal-section .default-content-wrapper>.xwalk-deal-badge,main:has(#save-when-you-shop-online) .xwalk-deal-section .default-content-wrapper>.xwalk-deal-badge,main:has([id*="shop-phones"]) .xwalk-deal-section .default-content-wrapper>.xwalk-deal-badge,main:has(#xwalk-plans-retail-head) .xwalk-deal-section .default-content-wrapper>.xwalk-deal-badge,main:has(#plans-from-25mo) .xwalk-deal-section .default-content-wrapper>.xwalk-deal-badge,main:has(#shop-deals-offers) .xwalk-deal-section .default-content-wrapper>.xwalk-deal-badge,main.xwalk-boost-main .xwalk-deal-section .default-content-wrapper>.xwalk-deal-badge,body.xwalk-boost-page main.xwalk-boost-main .xwalk-deal-section .default-content-wrapper>p:first-child,main:has(#save-when-you-shop-online) .xwalk-deal-section .default-content-wrapper>p:first-child,main:has([id*="shop-phones"]) .xwalk-deal-section .default-content-wrapper>p:first-child,main:has(#xwalk-plans-retail-head) .xwalk-deal-section .default-content-wrapper>p:first-child,main:has(#plans-from-25mo) .xwalk-deal-section .default-content-wrapper>p:first-child,main:has(#shop-deals-offers) .xwalk-deal-section .default-content-wrapper>p:first-child,main.xwalk-boost-main .xwalk-deal-section .default-content-wrapper>p:first-child,body.xwalk-boost-page main.xwalk-boost-main .xwalk-deal-badge,main:has(#save-when-you-shop-online) .xwalk-deal-badge,main:has([id*="shop-phones"]) .xwalk-deal-badge,main:has(#xwalk-plans-retail-head) .xwalk-deal-badge,main:has(#plans-from-25mo) .xwalk-deal-badge,main:has(#shop-deals-offers) .xwalk-deal-badge,main.xwalk-boost-main .xwalk-deal-badge{background:#1DB954!important;color:#fff!important;font-weight:700!important;padding:12px 10px!important;margin:0!important}
+main.xwalk-boost-main>div:has(h3)>p:has(picture) img,main>div:has(h3)>p:has(picture) img,body.xwalk-boost-page main.xwalk-boost-main>div:has(h3)>p:has(picture) img,main:has(#save-when-you-shop-online)>div:has(h3)>p:has(picture) img,main:has([id*="shop-phones"])>div:has(h3)>p:has(picture) img,main:has(#xwalk-plans-retail-head)>div:has(h3)>p:has(picture) img,main:has(#plans-from-25mo)>div:has(h3)>p:has(picture) img,main:has(#shop-deals-offers)>div:has(h3)>p:has(picture) img,main.xwalk-boost-main>div:has(h3)>p:has(picture) img,body.xwalk-boost-page main.xwalk-boost-main>div:has(h3) .xwalk-deal-media img,main:has(#save-when-you-shop-online)>div:has(h3) .xwalk-deal-media img,main:has([id*="shop-phones"])>div:has(h3) .xwalk-deal-media img,main:has(#xwalk-plans-retail-head)>div:has(h3) .xwalk-deal-media img,main:has(#plans-from-25mo)>div:has(h3) .xwalk-deal-media img,main:has(#shop-deals-offers)>div:has(h3) .xwalk-deal-media img,main.xwalk-boost-main>div:has(h3) .xwalk-deal-media img,main.xwalk-boost-main .xwalk-deal-media img{max-height:220px;width:auto!important;max-width:100%;height:auto!important;min-height:120px;object-fit:contain;display:block!important;visibility:visible!important;margin:0 auto}
+body.xwalk-boost-page main.xwalk-boost-main>div:has(h3):has(picture)>p:first-of-type:not(:has(picture)),main:has(#save-when-you-shop-online)>div:has(h3):has(picture)>p:first-of-type:not(:has(picture)),main:has([id*="shop-phones"])>div:has(h3):has(picture)>p:first-of-type:not(:has(picture)),main:has(#xwalk-plans-retail-head)>div:has(h3):has(picture)>p:first-of-type:not(:has(picture)),main:has(#plans-from-25mo)>div:has(h3):has(picture)>p:first-of-type:not(:has(picture)),main:has(#shop-deals-offers)>div:has(h3):has(picture)>p:first-of-type:not(:has(picture)),main.xwalk-boost-main>div:has(h3):has(picture)>p:first-of-type:not(:has(picture)){background:#1DB954;color:#fff!important;font-weight:700;padding:12px 10px;margin:0}
+main.xwalk-boost-main .xwalk-deal-card h3{font-size:1.75rem;font-weight:900;margin:12px 20px 8px 24px;padding-right:6px;color:#000;overflow-wrap:break-word}
+main:has([id*="shop-phones"])>div:has(h3):has(picture)>p:not(:has(picture)):not(:has(a)){margin:0 16px 8px;color:#1a1a1a}
+main:has([id*="shop-phones"])>div:has(h3):has(picture) a[href*="products"],main:has([id*="shop-phones"])>div:has(h3):has(picture) a[href="/plans"]{color:#1DB954;font-weight:700}
+main.xwalk-boost-main>div.xwalk-phone-section h3,main>div:has(h3):has(picture) h3{font-size:1.35rem;font-weight:800;margin:16px 16px 8px;color:#000}
+main:has(#save-up-to-2400-a-year)>div:last-child,main.xwalk-boost-main>div:last-child{background:#1DB954!important;color:#fff;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:20px;padding:32px}
+main>div.xwalk-hero-section,main>div:has(>h1):not(:has(>h2)):not(:has(h3)):not(:has(#save-when-you-shop-online)):not(:has(.xwalk-family-plans-page)):not(:has(.xwalk-family-grid)):not(:has(.xwalk-family-headline)):not(:has(#keep-your-family-connected)):not(:has(#you-run-this-city)):not(:has(#wireless-that-fits-your-semester)){position:relative;min-height:320px;overflow:hidden;background:#0A1A0F;padding:48px 24px;text-align:center;grid-column:1/-1}
+main>div.xwalk-hero-section>p:has(picture),main>div:has(>h1):not(:has(>h2)):not(:has(h3)):not(:has(.xwalk-family-plans-page)):not(:has(.xwalk-family-headline)):not(:has(#keep-your-family-connected)):not(:has(#you-run-this-city)):not(:has(#wireless-that-fits-your-semester))>p:has(picture){position:absolute;inset:0;margin:0;padding:0;z-index:0}
+main>div.xwalk-hero-section>p:has(picture)::after,main>div:has(>h1):not(:has(>h2)):not(:has(h3)):not(:has(.xwalk-family-plans-page)):not(:has(#keep-your-family-connected)):not(:has(#you-run-this-city)):not(:has(#wireless-that-fits-your-semester))>p:has(picture)::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgb(10 26 15/50%) 0%,rgb(10 26 15/90%) 100%);z-index:1}
+main>div.xwalk-hero-section>p:has(picture) img,main>div:has(>h1):not(:has(>h2)):not(:has(h3)):not(:has(.xwalk-family-plans-page)):not(:has(#keep-your-family-connected)):not(:has(#you-run-this-city)):not(:has(#wireless-that-fits-your-semester))>p:has(picture) img{width:100%;height:100%;object-fit:cover;display:block}
+main>div.xwalk-hero-section>h1,main>div.xwalk-hero-section>p:not(:has(picture)),main>div:has(>h1):not(:has(>h2)):not(:has(h3)):not(:has(.xwalk-family-plans-page)):not(:has(.xwalk-family-headline)):not(:has(#keep-your-family-connected)):not(:has(#you-run-this-city)):not(:has(#wireless-that-fits-your-semester))>h1,main>div:has(>h1):not(:has(>h2)):not(:has(h3)):not(:has(.xwalk-family-plans-page)):not(:has(#keep-your-family-connected)):not(:has(#you-run-this-city)):not(:has(#wireless-that-fits-your-semester))>p:not(:has(picture)){position:relative;z-index:2;color:#fff!important;text-shadow:0 2px 18px rgb(0 0 0/55%)}
+main>div.xwalk-hero-section a,main>div:has(>h1):not(:has(>h2)):not(:has(h3)):not(:has(.xwalk-family-plans-page)):not(:has(#keep-your-family-connected)):not(:has(#you-run-this-city)):not(:has(#wireless-that-fits-your-semester)) a{color:#fff!important}
+@media (max-width:1100px){body.xwalk-boost-page main.xwalk-boost-main,main:has(#save-when-you-shop-online),main:has([id*="shop-phones"]),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers),main.xwalk-boost-main{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){body.xwalk-boost-page main.xwalk-boost-main,main:has(#save-when-you-shop-online),main:has([id*="shop-phones"]),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers),main.xwalk-boost-main{grid-template-columns:1fr;padding:0 16px 32px}}
+footer .footer .xwalk-footer-top,html.xwalk-footer-boost-ready footer .footer .xwalk-footer-top{display:grid!important;grid-template-columns:1fr auto!important;align-items:start!important;gap:24px 40px!important;padding:32px 0 28px!important;border-bottom:1px solid color-mix(in srgb,#86EFAC 20%,transparent)!important;width:100%!important;box-sizing:border-box!important}
+footer .footer .xwalk-footer-top-social,html.xwalk-footer-boost-ready footer .footer .xwalk-footer-top-social{text-align:right!important;justify-self:end!important}
+footer .footer .xwalk-footer-social,html.xwalk-footer-boost-ready footer .footer .xwalk-footer-social{display:flex!important;flex-wrap:wrap!important;justify-content:flex-end!important;gap:10px!important;list-style:none!important;padding:0!important;margin:0!important}
+footer .footer .xwalk-footer-social a,html.xwalk-footer-boost-ready footer .footer .xwalk-footer-social a{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:40px!important;height:40px!important;border-radius:50%!important;background:#1a1a1a!important;color:#fff!important;font-weight:800!important;font-size:.8125rem!important;text-decoration:none!important;line-height:1!important}
+footer .footer .xwalk-footer-columns,html.xwalk-footer-boost-ready footer .footer .xwalk-footer-columns{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:28px 32px!important;padding:32px 0 28px!important;width:100%!important}
+
+main:has(#xwalk-single-offer-plan){background:#fff!important;color:#111!important;display:block!important;grid-template-columns:1fr!important;max-width:none!important;padding:0!important;margin:0 auto!important}
+main:has(.xwalk-family-plans-page):not(:has(.xwalk-family-plans-page--single-offer)):not(:has(.xwalk-deal-section)),
+main:has(.xwalk-family-grid):not(:has(.xwalk-deal-section)),
+main:has(#family-plans--bring-your-own-device):not(:has(.xwalk-deal-section)),
+main:has(#you-run-this-city),main:has(#keep-your-family-connected),main:has(#wireless-that-fits-your-semester):not(:has(.xwalk-deal-section)){background:#eef8f1!important;color:#111!important;display:block!important;grid-template-columns:1fr!important;max-width:none!important;padding:0!important;margin:0 auto!important}
+main:has(.xwalk-family-plans-page)>div,
+main:has(.xwalk-family-grid)>div,
+main:has(#family-plans--bring-your-own-device)>div,
+main:has(#you-run-this-city)>div,main:has(#keep-your-family-connected)>div,main:has(#wireless-that-fits-your-semester)>div{background:transparent!important;color:#111!important;min-height:0!important;padding:0!important;position:static!important;overflow:visible!important;text-align:left!important;box-shadow:none!important;border:none!important}
+main:has(.xwalk-family-plans-page) > div:has(> h1),
+main:has(.xwalk-family-headline){background:transparent!important;min-height:0!important;padding:0!important;text-align:left!important}
+main:has(.xwalk-family-plans-page) > div > h1,
+main:has(.xwalk-family-headline),
+main:has(#you-run-this-city) h1,main:has(#keep-your-family-connected) h1,main:has(#wireless-that-fits-your-semester) h1{color:#1DB954!important;font-weight:900!important;text-shadow:none!important;position:static!important}
+main:has(#you-run-this-city) h1,main:has(#you-run-this-city) h2,main:has(#you-run-this-city) p:not(:has(picture)),main:has(#keep-your-family-connected) h1,main:has(#keep-your-family-connected) h2,main:has(#keep-your-family-connected) p:not(:has(picture)),main:has(#wireless-that-fits-your-semester) h1,main:has(#wireless-that-fits-your-semester) h2,main:has(#wireless-that-fits-your-semester) p:not(:has(picture)){color:#111!important;text-shadow:none!important;position:static!important}
+main:has(#family-plans--bring-your-own-device) h2,
+main:has(#you-run-this-city) h2,main:has(#keep-your-family-connected) h2,main:has(#wireless-that-fits-your-semester) h2{color:#1DB954!important}
+main:has(#family-plans--bring-your-own-device) p:has(strong),
+main:has(#family-plans--bring-your-own-device) p:has(strong) strong,
+main:has(#family-plans--bring-your-own-device) p:has(strong) del,
+main:has(#you-run-this-city) p,main:has(#keep-your-family-connected) p,main:has(#wireless-that-fits-your-semester) p{color:#111!important}
+main:has(#you-run-this-city) .xwalk-family-cta,
+main:has(#keep-your-family-connected) .xwalk-family-cta,
+main:has(#wireless-that-fits-your-semester) .xwalk-family-cta{background:#1DB954!important;color:#fff!important}
+html:has(main #you-run-this-city) header,html:has(main #keep-your-family-connected) header,html:has(main #wireless-that-fits-your-semester) header{overflow:visible!important;min-height:auto!important}
+html:has(main #you-run-this-city) header .xwalk-logo-mark,
+html:has(main #you-run-this-city) header .xwalk-logo-img,
+html:has(main #keep-your-family-connected) header .xwalk-logo-mark,
+html:has(main #keep-your-family-connected) header .xwalk-logo-img,
+html:has(main #wireless-that-fits-your-semester) header .xwalk-logo-mark,
+html:has(main #wireless-that-fits-your-semester) header .xwalk-logo-img{height:auto!important;max-height:56px!important;object-fit:contain!important;overflow:visible!important}
+html:has(main #you-run-this-city) header nav,
+html:has(main #keep-your-family-connected) header nav,
+html:has(main #wireless-that-fits-your-semester) header nav{overflow:visible!important;align-items:center!important;padding-top:12px!important;padding-bottom:12px!important}
+body.xwalk-persona-offer-page header{height:auto!important;min-height:var(--nav-height,64px)!important;overflow:visible!important}
+body.xwalk-persona-offer-page header .header,body.xwalk-persona-offer-page header .header[data-block-status="loaded"]{visibility:visible!important;overflow:visible!important}
+body.xwalk-persona-offer-page header nav{overflow:visible!important;min-height:56px!important}
+body.xwalk-persona-offer-page header nav .nav-brand,
+body.xwalk-persona-offer-page header nav p:has(img){margin:0!important;line-height:1!important;overflow:visible!important}
+body.xwalk-persona-offer-page header nav .nav-brand img,
+body.xwalk-persona-offer-page header .xwalk-logo-img,
+body.xwalk-persona-offer-page header .xwalk-logo-mark,
+body.xwalk-persona-offer-page header img[alt*="Wolverine"]{width:auto!important;height:48px!important;max-height:48px!important;max-width:56px!important;object-fit:contain!important;display:block!important}
+footer .footer.block[data-block-status="loaded"] > .footer,
+footer .footer.block .footer .footer{visibility:visible!important;opacity:1!important}
+footer .xwalk-footer-top-brand img,footer .xwalk-footer-top-brand picture img,footer .xwalk-footer-brand img{height:auto!important;max-height:72px!important;width:auto!important;object-fit:contain!important;overflow:visible!important}
+main:has(#you-run-this-city) a[href="/phones"],
+main:has(#keep-your-family-connected) a[href="/plans"],
+main:has(#wireless-that-fits-your-semester) a[href="/plans"]{color:#fff!important;background:#1DB954!important}
+
+body:has(.xwalk-family-plans-page):not(:has(.xwalk-family-plans-page--single-offer)),body:has(#family-plans--bring-your-own-device),body:has(#you-run-this-city),body:has(#keep-your-family-connected),body:has(#wireless-that-fits-your-semester),body.xwalk-persona-offer-page--family-texas:not(.xwalk-persona-segment-landing),body.xwalk-persona-offer-page--college-student:not(.xwalk-persona-segment-landing),body.xwalk-persona-offer-page--single-woman-nyc:not(.xwalk-persona-segment-landing){background:#eef8f1!important;color:#111!important}
+body:has(.xwalk-family-plans-page) main,body:has(#family-plans--bring-your-own-device) main,body:has(#you-run-this-city) main,body:has(#keep-your-family-connected) main,body:has(#wireless-that-fits-your-semester) main,body.xwalk-persona-offer-page--family-texas:not(.xwalk-persona-segment-landing) main,body.xwalk-persona-offer-page--college-student:not(.xwalk-persona-segment-landing) main,body.xwalk-persona-offer-page--single-woman-nyc:not(.xwalk-persona-segment-landing) main{background:#eef8f1!important;color:#111!important;display:block!important;grid-template-columns:1fr!important;max-width:none!important;padding:0!important}
+body:has(.xwalk-family-plans-page) main>div,body:has(.xwalk-family-plans-page) main .section>div,body:has(#family-plans--bring-your-own-device) main>div,body:has(#family-plans--bring-your-own-device) main .section>div,body:has(#you-run-this-city) main>div,body:has(#keep-your-family-connected) main>div,body:has(#wireless-that-fits-your-semester) main>div{background:transparent!important;color:#111!important;min-height:0!important;padding:0!important;position:static!important;overflow:visible!important;text-align:left!important}
+body:has(.xwalk-family-plans-page) main>div>h1,body:has(.xwalk-family-headline),body:has(#you-run-this-city) main h1,body:has(#keep-your-family-connected) main h1,body:has(#wireless-that-fits-your-semester) main h1{color:#1DB954!important;text-shadow:none!important;position:static!important}
+body:has(.xwalk-family-plans-page) main>div>p:not(:has(picture)),body:has(.xwalk-family-plans-page) main>div>h2,body:has(#family-plans--bring-your-own-device) main>div>p:not(:has(picture)),body:has(#family-plans--bring-your-own-device) main>div>h2{color:inherit!important;text-shadow:none!important;position:static!important}
+body:has(.xwalk-family-plans-page) main>div>h2,body:has(#family-plans--bring-your-own-device) main>div>h2{color:#1DB954!important}
+body:has(.xwalk-family-plans-page) main>div>p:has(strong),body:has(#family-plans--bring-your-own-device) main>div>p:has(strong),body:has(#family-plans--bring-your-own-device) main>div>p:has(strong) strong,body:has(#family-plans--bring-your-own-device) main>div>p:has(strong) del{color:#1DB954!important}
+
+footer {
+  background: #1A2F1E;
+  border-top: 1px solid color-mix(in srgb, #86EFAC 25%, transparent);
+  margin-top: 48px;
+  color: #FFFFFF;
+  font-family: Calibri;
+}
+footer .footer.block[data-block-status="loaded"] > .footer,
+footer .footer.block[data-block-status="loaded"] .footer .footer {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+main.xwalk-footer,
+main.xwalk-footer-boost {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px 32px;
+  box-sizing: border-box;
+}
+main.xwalk-footer-boost > div {
+  width: 100%;
+}
+main.xwalk-footer-boost .xwalk-footer-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 24px 40px;
+  padding: 32px 0 28px;
+  border-bottom: 1px solid color-mix(in srgb, #86EFAC 20%, transparent);
+}
+main.xwalk-footer-boost .xwalk-footer-top-brand,
+footer .footer .xwalk-footer-top-brand {
+  max-width: 420px;
+  overflow: visible;
+}
+main.xwalk-footer-boost .xwalk-footer-top-brand .xwalk-footer-brand,
+footer .footer .xwalk-footer-brand {
+  margin: 0 0 8px;
+  overflow: visible;
+  line-height: 0;
+}
+main.xwalk-footer-boost .xwalk-footer-top-brand .xwalk-footer-brand img,
+main.xwalk-footer-boost .xwalk-footer-top-brand picture img,
+footer .footer .xwalk-footer-brand img,
+footer .footer .xwalk-footer-top-brand img,
+footer .footer .xwalk-footer-top-brand picture img {
+  display: block;
+  height: auto;
+  width: auto;
+  max-width: 220px;
+  max-height: 72px;
+  object-fit: contain;
+  object-position: left center;
+}
+footer .footer > main,
+footer .footer main.xwalk-footer-boost {
+  display: block;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px 32px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  min-height: 0;
+}
+footer .footer > main > div,
+footer .footer main.xwalk-footer-boost > div {
+  width: 100%;
+  visibility: visible;
+  opacity: 1;
+}
+main.xwalk-footer-boost .xwalk-footer-top-social,
+footer .footer .xwalk-footer-top-social {
+  text-align: right;
+}
+footer .footer .xwalk-footer-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 24px 40px;
+  padding: 32px 0 28px;
+  border-bottom: 1px solid color-mix(in srgb, #86EFAC 20%, transparent);
+  width: 100%;
+  box-sizing: border-box;
+}
+footer .footer .xwalk-footer-social {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+footer .footer .xwalk-footer-social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8125rem;
+  text-decoration: none;
+  line-height: 1;
+}
+main.xwalk-footer-boost .xwalk-footer-social-label {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #FFFFFF 88%, transparent);
+}
+main.xwalk-footer-boost .xwalk-footer-social {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+main.xwalk-footer-boost .xwalk-footer-social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8125rem;
+  text-decoration: none;
+  line-height: 1;
+}
+main.xwalk-footer-boost .xwalk-footer-social a:hover {
+  background: #000;
+  color: #fff;
+}
+main.xwalk-footer-boost .xwalk-footer-columns {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 28px 32px;
+  padding: 32px 0 28px;
+}
+main.xwalk-footer-boost .xwalk-footer-col p {
+  margin: 0 0 12px;
+  font-family: Arial Black;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+main.xwalk-footer-boost .xwalk-footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+main.xwalk-footer-boost .xwalk-footer-col li {
+  margin: 0 0 8px;
+}
+main.xwalk-footer-boost .xwalk-footer-col a {
+  color: color-mix(in srgb, #FFFFFF 92%, transparent);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+main.xwalk-footer-boost .xwalk-footer-col a:hover {
+  color: #86EFAC;
+}
+main.xwalk-footer-boost .xwalk-footer-newsletter {
+  padding: 28px 0 32px;
+  border-top: 1px solid color-mix(in srgb, #86EFAC 18%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, #86EFAC 18%, transparent);
+  text-align: left;
+  max-width: none;
+  margin: 0;
+}
+main.xwalk-footer-boost .xwalk-footer-newsletter h2 {
+  margin: 0 0 8px;
+  font-family: Arial Black;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #FFFFFF;
+  text-transform: none;
+  letter-spacing: 0;
+}
+main.xwalk-footer-boost .xwalk-footer-newsletter > p {
+  margin: 0 0 20px;
+  color: color-mix(in srgb, #FFFFFF 85%, transparent);
+  font-size: 1rem;
+}
+main.xwalk-footer-boost .xwalk-footer-newsletter-form {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 12px;
+  margin: 0;
+  max-width: 100%;
+}
+main.xwalk-footer-boost .xwalk-footer-newsletter-form label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+main.xwalk-footer-boost .xwalk-footer-newsletter-form input[type="email"] {
+  flex: 0 1 25%;
+  width: 25%;
+  min-width: 160px;
+  max-width: 280px;
+  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, #FFFFFF 35%, transparent);
+  border-radius: 4px;
+  background: #0A1A0F;
+  color: #FFFFFF;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+main.xwalk-footer-boost .xwalk-footer-subscribe-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 12px 28px;
+  background: #1DB954;
+  color: #000 !important;
+  font-weight: 800;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+}
+main.xwalk-footer-boost .xwalk-footer-legal {
+  padding: 24px 0 8px;
+  text-align: center;
+}
+main.xwalk-footer-boost .xwalk-footer-legal > p {
+  margin: 0 0 12px;
+  font-size: 0.8125rem;
+  color: color-mix(in srgb, #FFFFFF 75%, transparent);
+}
+main.xwalk-footer-boost .xwalk-footer-legal ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+main.xwalk-footer-boost .xwalk-footer-legal a {
+  color: color-mix(in srgb, #FFFFFF 88%, transparent);
+  font-size: 0.8125rem;
+  text-decoration: underline;
+}
+@media (max-width: 900px) {
+  main.xwalk-footer-boost .xwalk-footer-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  main.xwalk-footer-boost .xwalk-footer-newsletter-form {
+    flex-wrap: wrap;
+  }
+  main.xwalk-footer-boost .xwalk-footer-newsletter-form input[type="email"] {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: none;
+  }
+}
+@media (max-width: 700px) {
+  main.xwalk-footer-boost .xwalk-footer-top {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  main.xwalk-footer-boost .xwalk-footer-top-social {
+    text-align: center;
+  }
+  main.xwalk-footer-boost .xwalk-footer-social {
+    justify-content: center;
+  }
+  main.xwalk-footer-boost .xwalk-footer-columns {
+    grid-template-columns: 1fr;
+  }
+}
+footer .footer .xwalk-footer-top,
+footer .footer .xwalk-footer-columns,
+footer .xwalk-footer-top,
+footer .xwalk-footer-columns {
+  width: 100%;
+  box-sizing: border-box;
+  visibility: visible;
+  opacity: 1;
+}
+footer .footer .xwalk-footer-columns,
+html.xwalk-footer-boost-ready footer .footer .xwalk-footer-columns {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+footer .footer .xwalk-footer-col,
+footer .footer .xwalk-footer-col a,
+footer .footer .xwalk-footer-col p {
+  visibility: visible;
+  opacity: 1;
+  color: color-mix(in srgb, #FFFFFF 92%, transparent);
+}
+footer .footer .xwalk-footer-col p strong {
+  color: #FFFFFF;
+}
+footer .xwalk-footer-newsletter,
+footer .xwalk-footer-newsletter-section,
+footer .section:has(.xwalk-footer-newsletter),
+footer .section:has(#want-the-latest-scoop),
+footer .section:has(input[type="email"]) {
+  display: none !important;
+}
+footer .footer > div {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+  box-sizing: border-box;
+}
+footer .footer > div > .section .default-content-wrapper {
+  width: 100%;
+}
+@media (max-width: 900px) {
+  html.xwalk-footer-boost-ready footer .footer .xwalk-footer-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+@media (max-width: 700px) {
+  html.xwalk-footer-boost-ready footer .footer .xwalk-footer-columns {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* Home / plans / deals — copy + images at 95% of tile (tile column width unchanged) */
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-media,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-card .xwalk-deal-media,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .default-content-wrapper>p:has(picture),main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-card .default-content-wrapper>p:has(picture),main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section h3,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-card h3,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-kicker,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-card .xwalk-deal-kicker,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-price,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-card .xwalk-deal-price,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-fine,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-card .xwalk-deal-fine,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-details,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-card .xwalk-deal-details,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-plan,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-card .xwalk-deal-plan,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-cta-wrap,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-card .xwalk-deal-cta-wrap,main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .default-content-wrapper>p:not(:has(picture)):not(:first-child),main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-card .default-content-wrapper>p:not(:has(picture)):not(:first-child){
+  width:95%!important;
+  max-width:95%!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  box-sizing:border-box!important;
+}
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-media,
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .default-content-wrapper>p:has(picture){
+  align-self:center!important;
+}
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-media img,
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section picture img,
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-card .xwalk-deal-media img{
+  max-width:100%!important;
+  width:auto!important;
+  height:auto!important;
+}
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section h3,
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-card h3{
+  margin-left:auto!important;
+  margin-right:auto!important;
+  padding-left:0!important;
+  padding-right:0!important;
+}
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-kicker,
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-price,
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-fine,
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-details,
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-plan,
+main:has(#save-when-you-shop-online),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers) .xwalk-deal-section .xwalk-deal-cta-wrap{
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+/* Phones — green badge, titles, center copy: 5% right padding (tile width unchanged) */
+main:has([id*="shop-phones"]) .xwalk-deal-badge,
+main:has([id*="shop-phones"]) .xwalk-deal-section .default-content-wrapper>p:first-child,
+main:has([id*="shop-phones"]) .xwalk-deal-section h3,
+main:has([id*="shop-phones"]) .xwalk-deal-section .xwalk-deal-card h3,
+main:has([id*="shop-phones"]) .xwalk-deal-section .xwalk-deal-kicker,
+main:has([id*="shop-phones"]) .xwalk-deal-section .xwalk-deal-price,
+main:has([id*="shop-phones"]) .xwalk-deal-section .xwalk-deal-fine,
+main:has([id*="shop-phones"]) .xwalk-deal-section .xwalk-deal-details,
+main:has([id*="shop-phones"]) .xwalk-deal-section .xwalk-deal-plan,
+main:has([id*="shop-phones"]) .xwalk-deal-section .default-content-wrapper>p:not(:has(picture)):not(:first-child){
+  padding-right:5%!important;
+  box-sizing:border-box!important;
+}
+main:has([id*="shop-phones"]) .xwalk-deal-section h3,
+main:has([id*="shop-phones"]) .xwalk-deal-section .xwalk-deal-card h3{
+  margin-left:0!important;
+  margin-right:0!important;
+}
+
+
+body.xwalk-boost-page main.xwalk-boost-main,main:has(#save-when-you-shop-online),main:has([id*="shop-phones"]),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers),main.xwalk-boost-main{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:12px!important;
+  max-width:1280px!important;
+  margin:0 auto!important;
+  padding:0 32px 40px!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  background:#0A1A0F!important;
+  color:#FFFFFF!important;
+}
+body.xwalk-boost-page main.xwalk-boost-main>div:first-child,main:has(#save-when-you-shop-online)>div:first-child,main:has([id*="shop-phones"])>div:first-child,main:has(#xwalk-plans-retail-head)>div:first-child,main:has(#plans-from-25mo)>div:first-child,main:has(#shop-deals-offers)>div:first-child,main.xwalk-boost-main>div:first-child,body.xwalk-boost-page main.xwalk-boost-main>div:nth-child(2),main:has(#save-when-you-shop-online)>div:nth-child(2),main:has([id*="shop-phones"])>div:nth-child(2),main:has(#xwalk-plans-retail-head)>div:nth-child(2),main:has(#plans-from-25mo)>div:nth-child(2),main:has(#shop-deals-offers)>div:nth-child(2),main.xwalk-boost-main>div:nth-child(2),body.xwalk-boost-page main.xwalk-boost-main>div:last-child,main:has(#save-when-you-shop-online)>div:last-child,main:has([id*="shop-phones"])>div:last-child,main:has(#xwalk-plans-retail-head)>div:last-child,main:has(#plans-from-25mo)>div:last-child,main:has(#shop-deals-offers)>div:last-child,main.xwalk-boost-main>div:last-child{grid-column:1/-1!important}
+body.xwalk-boost-page main.xwalk-boost-main>div,main:has(#save-when-you-shop-online)>div,main:has([id*="shop-phones"])>div,main:has(#xwalk-plans-retail-head)>div,main:has(#plans-from-25mo)>div,main:has(#shop-deals-offers)>div,main.xwalk-boost-main>div{margin:0!important}
+@media(max-width:1100px){body.xwalk-boost-page main.xwalk-boost-main,main:has(#save-when-you-shop-online),main:has([id*="shop-phones"]),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers),main.xwalk-boost-main{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:600px){body.xwalk-boost-page main.xwalk-boost-main,main:has(#save-when-you-shop-online),main:has([id*="shop-phones"]),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers),main.xwalk-boost-main{grid-template-columns:1fr!important;padding:0 16px 32px!important}}
+footer .footer .xwalk-footer-top-social ul,footer .footer ul:has(a[href*="facebook"]){
+  display:flex!important;flex-wrap:wrap!important;justify-content:flex-end!important;gap:10px!important;
+  list-style:none!important;padding:0!important;margin:0!important;
+}
+footer .footer .xwalk-footer-top-social a,
+footer .footer ul:has(a[href*="facebook"]) a,
+footer .footer ul:has(a[href*="twitter"]) a,
+footer .footer ul:has(a[href*="instagram"]) a,
+footer .footer ul:has(a[href*="youtube"]) a{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:40px!important;height:40px!important;border-radius:50%!important;background:#1a1a1a!important;
+  color:#fff!important;font-weight:800!important;font-size:.8125rem!important;text-decoration:none!important;line-height:1!important;
+}
+header nav>.nav-hamburger~.nav-hamburger,header .nav-hamburger~.nav-hamburger{display:none!important}
+
+</style>
+<script id="forge-appear-fallback">(function(){function a(){try{document.body&&document.body.classList.add('appear')}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',a);else a();setTimeout(a,50);setTimeout(a,500)})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-appear-fallback">(function(){function a(){try{document.body&&document.body.classList.add('appear')}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',a);else a();setTimeout(a,50);setTimeout(a,500)})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-appear-fallback">(function(){function a(){try{document.body&&document.body.classList.add('appear')}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',a);else a();setTimeout(a,50);setTimeout(a,500)})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-appear-fallback">(function(){function a(){try{document.body&&document.body.classList.add('appear')}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',a);else a();setTimeout(a,50);setTimeout(a,500)})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-appear-fallback">(function(){function a(){try{document.body&&document.body.classList.add('appear')}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',a);else a();setTimeout(a,50);setTimeout(a,500)})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-appear-fallback">(function(){function a(){try{document.body&&document.body.classList.add('appear')}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',a);else a();setTimeout(a,50);setTimeout(a,500)})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-appear-fallback">(function(){function a(){try{document.body&&document.body.classList.add('appear')}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',a);else a();setTimeout(a,50);setTimeout(a,500)})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-appear-fallback">(function(){function a(){try{document.body&&document.body.classList.add('appear')}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',a);else a();setTimeout(a,50);setTimeout(a,500)})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-appear-fallback">(function(){function a(){try{document.body&&document.body.classList.add('appear')}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',a);else a();setTimeout(a,50);setTimeout(a,500)})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<style id="forge-persona-mockup-critical">
+
+html.xwalk-persona-path--family-texas main,
+html.xwalk-persona-path--single-woman-nyc main,
+html.xwalk-persona-path--college-student main{
+  background:#eef8f1!important;
+  color:#111!important;
+  display:block!important;
+  max-width:none!important;
+  padding:0!important;
+  margin:0 auto!important;
+}
+html.xwalk-persona-path--family-texas main > div,
+html.xwalk-persona-path--single-woman-nyc main > div,
+html.xwalk-persona-path--college-student main > div{
+  background:#eef8f1!important;
+  color:#111!important;
+  min-height:auto!important;
+  padding:24px 32px 48px!important;
+  max-width:1040px!important;
+  margin:0 auto!important;
+  position:static!important;
+  overflow:visible!important;
+  text-align:left!important;
+  box-shadow:none!important;
+}
+html.xwalk-persona-path--family-texas main h1,html.xwalk-persona-path--family-texas main h2,html.xwalk-persona-path--family-texas main p,html.xwalk-persona-path--family-texas main span,html.xwalk-persona-path--family-texas main strong,html.xwalk-persona-path--family-texas main em,html.xwalk-persona-path--family-texas main del,
+html.xwalk-persona-path--single-woman-nyc main h1,html.xwalk-persona-path--single-woman-nyc main h2,html.xwalk-persona-path--single-woman-nyc main p,html.xwalk-persona-path--single-woman-nyc main span,html.xwalk-persona-path--single-woman-nyc main strong,html.xwalk-persona-path--single-woman-nyc main em,html.xwalk-persona-path--single-woman-nyc main del,
+html.xwalk-persona-path--college-student main h1,html.xwalk-persona-path--college-student main h2,html.xwalk-persona-path--college-student main p,html.xwalk-persona-path--college-student main span,html.xwalk-persona-path--college-student main strong,html.xwalk-persona-path--college-student main em,html.xwalk-persona-path--college-student main del{
+  color:#111!important;
+  text-shadow:none!important;
+  position:static!important;
+}
+html.xwalk-persona-path--family-texas main h1,
+html.xwalk-persona-path--single-woman-nyc main h1,
+html.xwalk-persona-path--college-student main h1,
+html.xwalk-persona-path--family-texas main h2,
+html.xwalk-persona-path--single-woman-nyc main h2,
+html.xwalk-persona-path--college-student main h2{
+  color:#1DB954!important;
+  font-weight:900!important;
+}
+main:has(#keep-your-family-connected),
+main:has(#you-run-this-city),
+main:has(#wireless-that-fits-your-semester){
+  background:#eef8f1!important;
+  color:#111!important;
+}
+main:has(#keep-your-family-connected) > div,
+main:has(#you-run-this-city) > div,
+main:has(#wireless-that-fits-your-semester) > div{
+  background:#eef8f1!important;
+  color:#111!important;
+  min-height:auto!important;
+}
+/* Kill Boost dark-hero treatment on persona landings */
+main:has(#keep-your-family-connected) > div:has(> h1),
+main:has(#you-run-this-city) > div:has(> h1),
+main:has(#wireless-that-fits-your-semester) > div:has(> h1),
+main:has(.xwalk-family-plans-page),
+main:has(.xwalk-family-grid){
+  background:transparent!important;
+  min-height:0!important;
+  padding:0!important;
+  text-align:left!important;
+}
+main:has(#keep-your-family-connected) > div > h1,
+main:has(#you-run-this-city) > div > h1,
+main:has(#wireless-that-fits-your-semester) > div > h1{
+  color:#1DB954!important;
+  text-shadow:none!important;
+}
+html.xwalk-persona-path--family-texas main>div:has(>h1)>h1,html.xwalk-persona-path--family-texas main>div:has(>h1)>h2,
+html.xwalk-persona-path--single-woman-nyc main>div:has(>h1)>h1,html.xwalk-persona-path--single-woman-nyc main>div:has(>h1)>h2,
+html.xwalk-persona-path--college-student main>div:has(>h1)>h1,html.xwalk-persona-path--college-student main>div:has(>h1)>h2{
+  color:#1DB954!important;
+  text-shadow:none!important;
+  position:static!important;
+}
+html.xwalk-persona-path--family-texas main>div:has(>h1)>p,html.xwalk-persona-path--family-texas main>div:has(>h1)>p:not(:has(picture)),
+html.xwalk-persona-path--single-woman-nyc main>div:has(>h1)>p,html.xwalk-persona-path--single-woman-nyc main>div:has(>h1)>p:not(:has(picture)),
+html.xwalk-persona-path--college-student main>div:has(>h1)>p,html.xwalk-persona-path--college-student main>div:has(>h1)>p:not(:has(picture)){
+  color:#111!important;
+  text-shadow:none!important;
+  position:static!important;
+}
+
+#forge-family-plans, .xwalk-family-plans-page { background: #eef8f1 !important; color: #111111 !important; width: 100% !important; }
+.xwalk-family-hero { display: none !important; }
+.xwalk-mockup-hero-right { display: none !important; }
+.xwalk-family-main { background: #eef8f1 !important; padding: 36px 40px 56px !important; max-width: 1040px !important; margin: 0 auto !important; box-sizing: border-box !important; }
+.xwalk-family-title { margin: 0 0 28px !important; font-family: "Arial Black", Arial, sans-serif !important; font-size: 1.65rem !important; font-weight: 900 !important; color: #1DB954 !important; line-height: 1.25 !important; }
+.xwalk-family-grid { display: flex !important; flex-direction: column !important; gap: 0 !important; width: 100% !important; }
+.xwalk-family-row {
+  display: grid !important;
+  grid-template-columns: 92px 168px minmax(0, 1fr) !important;
+  gap: 12px 32px !important;
+  align-items: center !important;
+  padding: 22px 28px !important;
+  background: #f3fbf6 !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+.xwalk-family-line-label { font-weight: 800 !important; font-size: 1.0625rem !important; color: #111111 !important; }
+.xwalk-family-line-price { font-weight: 900 !important; font-size: 1.4rem !important; color: #1DB954 !important; line-height: 1.25 !important; }
+.xwalk-family-was { text-decoration: line-through !important; color: #1DB954 !important; font-weight: 800 !important; }
+.xwalk-family-now { color: #1DB954 !important; font-weight: 900 !important; }
+.xwalk-family-off { font-style: italic !important; color: #0E7A3A !important; font-weight: 600 !important; font-size: 1rem !important; margin-left: 6px !important; }
+.xwalk-family-pill {
+  margin: 0 !important;
+  padding: 14px 24px !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.4 !important;
+  border-radius: 999px !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+.xwalk-family-pill--dark { background: #1a1a1a !important; color: #ffffff !important; }
+.xwalk-family-pill--accent { background: #d8f3e0 !important; color: #0E7A3A !important; font-weight: 700 !important; border: 1px solid #1DB954 !important; }
+.xwalk-family-cta-wrap { margin: 40px 0 0 !important; text-align: center !important; }
+.xwalk-family-cta {
+  display: inline-block !important;
+  width: min(100%, 560px) !important;
+  padding: 20px 56px !important;
+  background: #1DB954 !important;
+  color: #ffffff !important;
+  font-family: "Arial Black", Arial, sans-serif !important;
+  font-size: 1.625rem !important;
+  font-weight: 900 !important;
+  text-decoration: none !important;
+  border-radius: 14px !important;
+  box-sizing: border-box !important;
+}
+body.xwalk-persona-offer-page--family-texas,
+body:has(#family-plans--bring-your-own-device) { background: #fff !important; }
+body.xwalk-persona-offer-page--family-texas main,
+body:has(#family-plans--bring-your-own-device) main {
+  display: block !important;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: #eef8f1 !important;
+  color: #111111 !important;
+  grid-template-columns: 1fr !important;
+}
+@media (max-width: 720px) {
+  .xwalk-family-row { grid-template-columns: 1fr !important; gap: 10px !important; }
+}
+
+main:has(#xwalk-single-offer-plan){background:#fff!important;color:#111!important;display:block!important;grid-template-columns:1fr!important;max-width:none!important;padding:0!important;margin:0 auto!important}
+main:has(.xwalk-family-plans-page):not(:has(.xwalk-family-plans-page--single-offer)):not(:has(.xwalk-deal-section)),
+main:has(.xwalk-family-grid):not(:has(.xwalk-deal-section)),
+main:has(#family-plans--bring-your-own-device):not(:has(.xwalk-deal-section)),
+main:has(#you-run-this-city),main:has(#keep-your-family-connected),main:has(#wireless-that-fits-your-semester):not(:has(.xwalk-deal-section)){background:#eef8f1!important;color:#111!important;display:block!important;grid-template-columns:1fr!important;max-width:none!important;padding:0!important;margin:0 auto!important}
+main:has(.xwalk-family-plans-page)>div,
+main:has(.xwalk-family-grid)>div,
+main:has(#family-plans--bring-your-own-device)>div,
+main:has(#you-run-this-city)>div,main:has(#keep-your-family-connected)>div,main:has(#wireless-that-fits-your-semester)>div{background:transparent!important;color:#111!important;min-height:0!important;padding:0!important;position:static!important;overflow:visible!important;text-align:left!important;box-shadow:none!important;border:none!important}
+main:has(.xwalk-family-plans-page) > div:has(> h1),
+main:has(.xwalk-family-headline){background:transparent!important;min-height:0!important;padding:0!important;text-align:left!important}
+main:has(.xwalk-family-plans-page) > div > h1,
+main:has(.xwalk-family-headline),
+main:has(#you-run-this-city) h1,main:has(#keep-your-family-connected) h1,main:has(#wireless-that-fits-your-semester) h1{color:#1DB954!important;font-weight:900!important;text-shadow:none!important;position:static!important}
+main:has(#you-run-this-city) h1,main:has(#you-run-this-city) h2,main:has(#you-run-this-city) p:not(:has(picture)),main:has(#keep-your-family-connected) h1,main:has(#keep-your-family-connected) h2,main:has(#keep-your-family-connected) p:not(:has(picture)),main:has(#wireless-that-fits-your-semester) h1,main:has(#wireless-that-fits-your-semester) h2,main:has(#wireless-that-fits-your-semester) p:not(:has(picture)){color:#111!important;text-shadow:none!important;position:static!important}
+main:has(#family-plans--bring-your-own-device) h2,
+main:has(#you-run-this-city) h2,main:has(#keep-your-family-connected) h2,main:has(#wireless-that-fits-your-semester) h2{color:#1DB954!important}
+main:has(#family-plans--bring-your-own-device) p:has(strong),
+main:has(#family-plans--bring-your-own-device) p:has(strong) strong,
+main:has(#family-plans--bring-your-own-device) p:has(strong) del,
+main:has(#you-run-this-city) p,main:has(#keep-your-family-connected) p,main:has(#wireless-that-fits-your-semester) p{color:#111!important}
+main:has(#you-run-this-city) .xwalk-family-cta,
+main:has(#keep-your-family-connected) .xwalk-family-cta,
+main:has(#wireless-that-fits-your-semester) .xwalk-family-cta{background:#1DB954!important;color:#fff!important}
+html:has(main #you-run-this-city) header,html:has(main #keep-your-family-connected) header,html:has(main #wireless-that-fits-your-semester) header{overflow:visible!important;min-height:auto!important}
+html:has(main #you-run-this-city) header .xwalk-logo-mark,
+html:has(main #you-run-this-city) header .xwalk-logo-img,
+html:has(main #keep-your-family-connected) header .xwalk-logo-mark,
+html:has(main #keep-your-family-connected) header .xwalk-logo-img,
+html:has(main #wireless-that-fits-your-semester) header .xwalk-logo-mark,
+html:has(main #wireless-that-fits-your-semester) header .xwalk-logo-img{height:auto!important;max-height:56px!important;object-fit:contain!important;overflow:visible!important}
+html:has(main #you-run-this-city) header nav,
+html:has(main #keep-your-family-connected) header nav,
+html:has(main #wireless-that-fits-your-semester) header nav{overflow:visible!important;align-items:center!important;padding-top:12px!important;padding-bottom:12px!important}
+body.xwalk-persona-offer-page header{height:auto!important;min-height:var(--nav-height,64px)!important;overflow:visible!important}
+body.xwalk-persona-offer-page header .header,body.xwalk-persona-offer-page header .header[data-block-status="loaded"]{visibility:visible!important;overflow:visible!important}
+body.xwalk-persona-offer-page header nav{overflow:visible!important;min-height:56px!important}
+body.xwalk-persona-offer-page header nav .nav-brand,
+body.xwalk-persona-offer-page header nav p:has(img){margin:0!important;line-height:1!important;overflow:visible!important}
+body.xwalk-persona-offer-page header nav .nav-brand img,
+body.xwalk-persona-offer-page header .xwalk-logo-img,
+body.xwalk-persona-offer-page header .xwalk-logo-mark,
+body.xwalk-persona-offer-page header img[alt*="Wolverine"]{width:auto!important;height:48px!important;max-height:48px!important;max-width:56px!important;object-fit:contain!important;display:block!important}
+footer .footer.block[data-block-status="loaded"] > .footer,
+footer .footer.block .footer .footer{visibility:visible!important;opacity:1!important}
+footer .xwalk-footer-top-brand img,footer .xwalk-footer-top-brand picture img,footer .xwalk-footer-brand img{height:auto!important;max-height:72px!important;width:auto!important;object-fit:contain!important;overflow:visible!important}
+main:has(#you-run-this-city) a[href="/phones"],
+main:has(#keep-your-family-connected) a[href="/plans"],
+main:has(#wireless-that-fits-your-semester) a[href="/plans"]{color:#fff!important;background:#1DB954!important}
+
+body.xwalk-persona-offer-page:not(.xwalk-persona-segment-landing){background:#eef8f1!important}
+body.xwalk-persona-segment-landing{background:#fff!important}
+body.xwalk-persona-offer-page header{display:block!important;visibility:visible!important;position:relative!important;z-index:200!important;background:#0A1A0F!important;border-bottom:1px solid color-mix(in srgb,#1DB954 22%,transparent)!important}
+body.xwalk-persona-offer-page header nav,body.xwalk-persona-offer-page header a,body.xwalk-persona-offer-page header .nav-wrapper{color:#fff!important}
+.xwalk-family-hero,main>div>p:first-child:has(picture):not(:has(a)):not(.xwalk-campaign-hero *){display:none!important}
+.xwalk-campaign-hero,.xwalk-campaign-hero *{visibility:visible!important}
+
+.xwalk-campaign-hero{background:#0A1A0F!important;color:#fff!important;width:100%!important;display:block!important}
+.xwalk-campaign-hero-grid{display:grid!important;grid-template-columns:1fr 1fr!important;min-height:min(420px,48vw)!important;max-width:1280px!important;margin:0 auto!important;width:100%!important}
+.xwalk-campaign-hero-copy{display:flex!important;flex-direction:column!important;justify-content:center!important;padding:48px 40px 48px 56px!important}
+.xwalk-campaign-hero-logo{margin:0 0 20px!important}
+.xwalk-campaign-hero-logo img{display:block!important;width:40px!important;height:40px!important}
+.xwalk-campaign-hero-headline{margin:0 0 16px!important;font-family:Arial Black!important;font-size:clamp(2rem,4.5vw,3.25rem)!important;font-weight:900!important;line-height:1.05!important;color:#fff!important;text-shadow:none!important}
+.xwalk-campaign-hero-tagline{margin:0!important;font-size:1.0625rem!important;line-height:1.45!important;color:color-mix(in srgb,#fff 92%,transparent)!important;max-width:36rem!important}
+.xwalk-campaign-hero-visual{position:relative!important;min-height:320px!important;overflow:hidden!important;background:#111!important}
+.xwalk-campaign-hero-bg{position:absolute!important;inset:0!important;margin:0!important;padding:0!important}
+.xwalk-campaign-hero-bg picture,.xwalk-campaign-hero-bg img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center top!important;display:block!important}
+body.xwalk-persona-offer-page .xwalk-campaign-hero{display:block!important;visibility:visible!important}
+@media(max-width:900px){
+.xwalk-campaign-hero-grid{grid-template-columns:1fr!important}
+.xwalk-campaign-hero-visual{min-height:280px!important;order:-1!important}
+.xwalk-campaign-hero-copy{padding:32px 24px 40px!important}
+}
+
+@media(max-width:900px){
+html.xwalk-persona-path--family-texas body,
+html.xwalk-persona-path--college-student body,
+html.xwalk-persona-path--single-woman-nyc body,
+body.xwalk-persona-segment-landing,
+body.xwalk-persona-offer-page--family-texas,
+body.xwalk-persona-offer-page--college-student,
+body.xwalk-persona-offer-page--single-woman-nyc{
+background:#0A1A0F!important;padding-top:0!important}
+body.xwalk-persona-segment-landing main,
+body.xwalk-persona-offer-page--family-texas main,
+body.xwalk-persona-offer-page--college-student main,
+body.xwalk-persona-offer-page--single-woman-nyc main{
+display:block!important;visibility:visible!important;overflow:visible!important;height:auto!important;min-height:0!important;background:transparent!important}
+body.xwalk-persona-segment-landing header,
+body.xwalk-persona-offer-page--family-texas header,
+body.xwalk-persona-offer-page--college-student header,
+body.xwalk-persona-offer-page--single-woman-nyc header{
+display:block!important;visibility:visible!important;position:relative!important;top:auto!important;z-index:300!important;background:#0A1A0F!important;padding-top:max(8px,env(safe-area-inset-top,0px))!important}
+html.wolverine-mobile-sim body.xwalk-persona-segment-landing header,
+html.wolverine-mobile-sim body.xwalk-persona-offer-page header{
+padding-top:8px!important}
+body.xwalk-persona-segment-landing header nav,
+body.xwalk-persona-offer-page header nav{
+min-height:56px!important;padding-top:8px!important;padding-bottom:8px!important}
+body.xwalk-persona-segment-landing header .nav-hamburger,
+body.xwalk-persona-offer-page header .nav-hamburger{
+display:flex!important;visibility:visible!important;opacity:1!important}
+.xwalk-campaign-hero,.xwalk-campaign-hero-grid,.xwalk-campaign-hero-copy,.xwalk-campaign-hero-visual{
+display:block!important;visibility:visible!important;background:#0A1A0F!important}
+.xwalk-campaign-hero-grid{display:grid!important;grid-template-columns:1fr!important;width:100%!important}
+.xwalk-campaign-hero-visual{min-height:200px!important;order:-1!important}
+.xwalk-campaign-hero-copy{padding:24px 18px 28px!important}
+.xwalk-campaign-hero-headline{font-size:1.5rem!important;line-height:1.12!important;color:#fff!important}
+.xwalk-family-plans-page,.xwalk-persona-mockup,.xwalk-mockup-white{
+display:block!important;visibility:visible!important;width:100%!important;max-width:100%!important}
+.xwalk-family-plans-page--single-offer,.xwalk-mockup-white{background:#fff!important}
+}
+
+@media(max-width:900px){
+.xwalk-mockup-offers,.xwalk-mockup-offer-row,.xwalk-mockup-offer-main,.xwalk-mockup-white,.xwalk-family-plans-page,.xwalk-family-main,.xwalk-family-grid{
+display:block!important;visibility:visible!important;width:100%!important;max-width:100%!important;overflow:visible!important}
+.xwalk-mockup-offer-row{
+display:grid!important;grid-template-columns:1fr!important;gap:20px!important;align-items:stretch!important;width:100%!important}
+.xwalk-mockup-offer-main{width:100%!important;min-width:0!important}
+.xwalk-mockup-plan-head{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important;margin-bottom:20px!important}
+.xwalk-mockup-plan-pill{display:flex!important;flex-direction:column!important;gap:10px!important;width:100%!important;min-width:0!important;max-width:100%!important;flex:none!important}
+.xwalk-mockup-plan-pill .xwalk-plan-line-pill--dark,.xwalk-mockup-plan-pill .xwalk-plan-line-pill.xwalk-plan-line-pill--dark,.xwalk-mockup-plan-pill .xwalk-plan-tier-switch.xwalk-plan-line-pill--dark{
+display:block!important;visibility:visible!important;width:100%!important;box-sizing:border-box!important;margin:0!important;padding:12px 18px!important;background:#1a1a1a!important;color:#fff!important;border-radius:8px!important;font-size:0.8125rem!important;line-height:1.4!important}
+.xwalk-mockup-plan-pill .xwalk-plan-line-pill--accent,.xwalk-mockup-plan-pill .xwalk-plan-line-pill.xwalk-plan-line-pill--accent{
+display:block!important;visibility:visible!important;width:100%!important;box-sizing:border-box!important;margin:0!important;padding:12px 18px!important;background:#d8f3e0!important;color:#0E7A3A!important;border:1px solid #1DB954!important;border-radius:8px!important;font-weight:700!important;font-size:0.8125rem!important;line-height:1.4!important}
+.xwalk-mockup-plan-body{display:grid!important;grid-template-columns:1fr!important;gap:16px!important;width:100%!important}
+.xwalk-mockup-device-col,.xwalk-mockup-device,.xwalk-mockup-specs{display:block!important;visibility:visible!important;width:100%!important}
+.xwalk-mockup-specs{display:grid!important;grid-template-columns:1fr 1fr!important;gap:16px!important}
+a.xwalk-mockup-cta,.xwalk-mockup-cta{
+display:flex!important;visibility:visible!important;opacity:1!important;width:100%!important;max-width:100%!important;min-height:120px!important;height:auto!important;
+align-items:center!important;justify-content:center!important;background:#1DB954!important;color:#fff!important;
+font-size:1.25rem!important;font-weight:900!important;text-decoration:none!important;border-radius:14px!important;
+padding:20px 16px!important;box-sizing:border-box!important}
+.xwalk-family-row{
+display:grid!important;grid-template-columns:1fr!important;gap:10px!important;padding:18px 16px!important;width:100%!important;box-sizing:border-box!important}
+.xwalk-family-line-label,.xwalk-family-line-price{display:block!important;visibility:visible!important}
+.xwalk-family-pill,.xwalk-family-pill--dark,.xwalk-family-pill--accent{
+display:block!important;visibility:visible!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin:0!important;padding:14px 20px!important;text-align:center!important;font-size:0.8125rem!important;line-height:1.4!important}
+.xwalk-family-pill--dark{background:#1a1a1a!important;color:#fff!important;border-radius:999px!important}
+.xwalk-family-pill--accent{background:#d8f3e0!important;color:#0E7A3A!important;font-weight:700!important;border:1px solid #1DB954!important;border-radius:999px!important}
+.xwalk-family-cta-wrap{display:block!important;visibility:visible!important;text-align:center!important;margin:32px 0 0!important;padding:0 16px!important}
+a.xwalk-family-cta,.xwalk-family-cta{
+display:inline-block!important;visibility:visible!important;width:100%!important;max-width:100%!important;padding:16px 24px!important;
+background:#1DB954!important;color:#fff!important;font-size:1.25rem!important;font-weight:900!important;text-decoration:none!important;border-radius:14px!important;box-sizing:border-box!important}
+[data-forge-variant].xwalk-mockup-offer-main,[data-forge-variant] .xwalk-mockup-offer-row{display:block!important}
+}
+
+
+.xwalk-mockup-intro{background:#fff;padding:28px 32px 12px;max-width:1200px;margin:0 auto;color:#111}
+.xwalk-mockup-intro h1{margin:0;font-family:Arial Black;font-size:clamp(1.75rem,3.5vw,2.5rem);font-weight:900;line-height:1.1;color:#111}
+.xwalk-family-headline{margin:0 0 24px;font-family:Arial Black;font-size:clamp(1.75rem,3.5vw,2.25rem);font-weight:900;color:#1DB954}
+body.xwalk-persona-offer-page header .xwalk-promo-strip,
+body.xwalk-persona-offer-page main>.section:first-child:has(.xwalk-promo-strip),
+body.xwalk-persona-offer-page main>.section:first-child:has(a[href="/phones"]):not(:has(h2)):not(:has(.xwalk-family-grid)):not(:has(.xwalk-family-plans-page)):not(:has(.xwalk-family-headline)){display:none!important}
+body.xwalk-persona-offer-page main>.section{display:block!important}
+body.xwalk-persona-offer-page main>.section:has(.xwalk-family-plans-page),
+body.xwalk-persona-offer-page main>.section:has(.xwalk-mockup-offer-row),
+body.xwalk-persona-offer-page main>.section:has(.xwalk-family-grid),
+body.xwalk-persona-offer-page main>.section:has(#you-run-this-city),
+body.xwalk-persona-offer-page main>.section:has(#keep-your-family-connected),
+body.xwalk-persona-offer-page main>.section:has(#wireless-that-fits-your-semester){display:block!important;visibility:visible!important}
+body.xwalk-persona-offer-page--family-texas main,
+body.xwalk-persona-offer-page--college-student main,
+body.xwalk-persona-offer-page--single-woman-nyc main{background:transparent!important}
+main:has(.xwalk-family-plans-page--single-offer){background:transparent!important}
+main:has(.xwalk-persona-mockup):has(.xwalk-family-grid),
+main:has(.xwalk-persona-mockup):has(.xwalk-family-plans-page):not(:has(.xwalk-family-plans-page--single-offer)){display:block!important;max-width:none!important;padding:0!important;margin:0!important;background:#eef8f1!important}
+body.xwalk-persona-offer-page--family-texas main>div,
+body.xwalk-persona-offer-page--college-student main>div,
+body.xwalk-persona-offer-page--single-woman-nyc main>div,
+main:has(.xwalk-persona-mockup)>div{grid-column:1/-1!important;max-width:none!important;padding:0!important;margin:0!important;background:transparent!important;box-shadow:none!important;width:100%!important}
+.xwalk-persona-mockup{font-family:Calibri;color:#111;width:100%;max-width:none;margin:0}
+.xwalk-mockup-hero{background:#0A1A0F;color:#fff}
+.xwalk-mockup-hero-grid{display:grid;grid-template-columns:1fr 1fr;min-height:400px}
+.xwalk-mockup-hero-left{display:flex;flex-direction:column;justify-content:center;padding:48px 40px 48px 56px}
+.xwalk-mockup-logo{margin:0 0 20px}
+.xwalk-mockup-logo img{display:block;width:40px;height:40px}
+.xwalk-mockup-ai-badge{display:inline-block;margin:0 0 20px;padding:8px 14px;background:#1DB954;color:#000;font-size:.8125rem;font-weight:800;border-radius:4px}
+.xwalk-mockup-hero-left h1{margin:0;font-family:Arial Black;font-size:clamp(2.25rem,4.5vw,3.25rem);font-weight:900;line-height:1.05;color:#fff}
+.xwalk-mockup-hero-right{position:relative;min-height:400px;overflow:hidden;background:#111}
+.xwalk-mockup-hero-right img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.xwalk-mockup-green-bar{background:#1DB954;color:#000;text-align:center;padding:14px 24px;font-size:.9375rem;font-weight:800;letter-spacing:.02em}
+.xwalk-mockup-white{background:#fff;padding:28px 32px 48px;max-width:1200px;margin:0 auto}
+.xwalk-mockup-quote{margin:0 0 28px;text-align:center;font-size:1.125rem;color:#1DB954;font-style:italic}
+.xwalk-mockup-offer-row{display:grid;grid-template-columns:1fr minmax(160px,200px);gap:24px;align-items:stretch}
+.xwalk-mockup-plan-head{display:flex;flex-wrap:wrap;align-items:center;gap:16px 20px;margin-bottom:24px}
+.xwalk-mockup-plan-title{margin:0;font-family:Arial Black;font-size:1.5rem;font-weight:900;color:#111}
+.xwalk-mockup-plan-price{color:#1DB954}
+.xwalk-mockup-plan-pill{flex:1;min-width:220px;max-width:560px}
+.xwalk-mockup-plan-pill .xwalk-plan-tier-switch{margin:0;background:#1a1a1a!important;color:#fff!important;border-radius:8px;padding:12px 18px;font-size:.8rem;line-height:1.35;display:block}
+.xwalk-mockup-plan-pill .xwalk-plan-line-pill{margin:0;background:#1a1a1a!important;color:#fff!important;border-radius:8px;padding:12px 18px;font-size:.8rem;line-height:1.35}
+.xwalk-mockup-plan-body{display:grid;grid-template-columns:minmax(160px,240px) 1fr;gap:32px 40px;align-items:start}
+.xwalk-mockup-device-col{display:flex;flex-direction:column;gap:12px}
+.xwalk-mockup-device{text-align:center}
+.xwalk-mockup-device img{max-height:240px;width:auto;max-width:100%;object-fit:contain;display:block;margin:0 auto}
+.xwalk-mockup-device-footer{display:grid;grid-template-columns:minmax(120px,1fr) minmax(0,1.4fr);gap:8px 16px;align-items:baseline;width:100%;max-width:240px;margin:0 auto}
+.xwalk-mockup-device-name{margin:0;font-family:Arial Black;font-size:1.25rem;font-weight:900;color:#1DB954}
+.xwalk-mockup-specs{display:grid;grid-template-columns:1fr 1fr;gap:24px 40px;padding-top:8px}
+.xwalk-mockup-specs ul{margin:0;padding:0;list-style:none}
+.xwalk-mockup-specs li{margin:0 0 10px;color:#1DB954;font-weight:700;font-size:1rem}
+.xwalk-mockup-specs li::before{content:'✓ '}
+.xwalk-mockup-device-price{margin:0;font-size:1rem;color:#111;text-align:left}
+.xwalk-mockup-device-price strong{font-weight:700;color:#111}
+.xwalk-mockup-plan-body--family .xwalk-mockup-device img{max-height:260px;object-fit:cover;border-radius:8px;width:100%}
+.xwalk-mockup-family-lines{display:flex;flex-direction:column;gap:14px}
+.xwalk-mockup-family-line{display:grid;grid-template-columns:72px 100px 1fr;gap:10px 14px;align-items:center}
+.xwalk-mockup-line-label{font-weight:800;color:#111}
+.xwalk-mockup-line-price{font-weight:900;color:#1DB954}
+.xwalk-mockup-line-price em{font-style:normal;color:#555;font-weight:600}
+.xwalk-mockup-line-pill{margin:0;padding:10px 14px;font-size:.78rem;line-height:1.35;border-radius:6px}
+.xwalk-mockup-line-pill--dark{background:#1a1a1a;color:#fff}
+.xwalk-mockup-line-pill--accent{background:color-mix(in srgb,#1DB954 35%,#fff);color:#0E7A3A;border:1px solid color-mix(in srgb,#1DB954 50%,transparent)}
+.xwalk-mockup-cta{display:flex;align-items:center;justify-content:center;background:#1DB954!important;color:#fff!important;font-family:Arial Black;font-size:1.35rem;font-weight:900;text-decoration:none;border-radius:14px;min-height:280px;padding:24px 16px;text-align:center;box-sizing:border-box}
+.xwalk-mockup-cta:hover{filter:brightness(1.05)}
+/* Family BYOD screenshot layout — override Boost dark-main / white text */
+body:has(#family-plans--bring-your-own-device),
+body.xwalk-persona-offer-page--family-texas:not(.xwalk-persona-segment-landing),
+body.xwalk-persona-offer-page--college-student:not(.xwalk-persona-segment-landing),
+body.xwalk-persona-offer-page--single-woman-nyc:not(.xwalk-persona-segment-landing){background:#eef8f1!important;color:#111!important}
+body.xwalk-persona-segment-landing{background:#0A1A0F!important;color:#111!important}
+body:has(#family-plans--bring-your-own-device) main,
+body.xwalk-persona-offer-page--family-texas main,
+body.xwalk-persona-offer-page--college-student main,
+body.xwalk-persona-offer-page--single-woman-nyc main{background:#eef8f1!important;color:#111!important;display:block!important;max-width:none!important;padding:0!important;margin:0 auto!important;grid-template-columns:1fr!important}
+body:has(#family-plans--bring-your-own-device) main>div,
+body:has(#family-plans--bring-your-own-device) main .section>div,
+body.xwalk-persona-offer-page--family-texas main>div,
+body.xwalk-persona-offer-page--college-student main>div,
+body.xwalk-persona-offer-page--single-woman-nyc main>div,
+body.xwalk-persona-offer-page--family-texas .xwalk-family-section,
+body.xwalk-persona-offer-page--college-student .xwalk-family-section,
+body.xwalk-persona-offer-page--single-woman-nyc .xwalk-family-section{background:transparent!important;color:#111!important;min-height:0!important;padding:0!important;position:static!important;overflow:visible!important;text-align:left!important;box-shadow:none!important;border:none!important}
+body:has(#family-plans--bring-your-own-device) main>div>p:not(:has(picture)),
+body:has(#family-plans--bring-your-own-device) main>div>h2,
+body.xwalk-persona-offer-page--family-texas .xwalk-family-plans-page,
+body.xwalk-persona-offer-page--college-student .xwalk-family-plans-page,
+body.xwalk-persona-offer-page--single-woman-nyc .xwalk-family-plans-page{color:#111!important;text-shadow:none!important;position:static!important}
+.xwalk-family-plans-page--single-offer{background:#fff!important}
+.xwalk-family-plans-page--single-offer .xwalk-family-headline{display:none!important}
+.xwalk-family-plans-page--single-offer .xwalk-mockup-green-bar{display:none!important}
+.xwalk-family-plans-page--single-offer .xwalk-mockup-quote{display:block!important}
+body.xwalk-persona-segment-landing header .xwalk-promo-strip,
+body.xwalk-persona-segment-landing .fragment.xwalk-promo-strip,
+body.xwalk-persona-segment-landing main>.section:first-child:has(.xwalk-promo-strip),
+body.xwalk-persona-segment-landing .xwalk-mockup-green-bar,
+body.xwalk-persona-segment-landing .xwalk-mockup-ai-badge{display:none!important}
+body.xwalk-persona-segment-landing .xwalk-campaign-hero-copy,
+body.xwalk-persona-segment-landing .xwalk-campaign-hero-headline,
+body.xwalk-persona-segment-landing .xwalk-campaign-hero-tagline{color:#fff!important}
+body.xwalk-persona-segment-landing .xwalk-mockup-plan-pill .xwalk-plan-line-pill--dark,
+body.xwalk-persona-segment-landing .xwalk-mockup-plan-pill .xwalk-plan-tier-switch.xwalk-plan-line-pill--dark{color:#fff!important}
+body.xwalk-persona-segment-landing .xwalk-mockup-plan-pill .xwalk-plan-line-pill--accent{color:#0E7A3A!important}
+.xwalk-family-plans-page:not(.xwalk-family-plans-page--single-offer){background:#eef8f1!important;color:#111;width:100%}
+.xwalk-family-plans-page--single-offer{background:#fff!important;color:#111;width:100%}
+.xwalk-family-hero{margin:0;padding:0;background:#eef8f1;line-height:0;width:100%}
+.xwalk-family-hero img{display:block;width:100%;max-height:400px;object-fit:cover;object-position:center 35%}
+.xwalk-family-main{background:#eef8f1!important;padding:36px 40px 56px;max-width:1040px;margin:0 auto;box-sizing:border-box;width:100%}
+.xwalk-family-title{margin:0 0 32px;font-family:Arial Black;font-size:1.65rem;font-weight:900;color:#1DB954!important;line-height:1.25}
+.xwalk-family-grid{display:flex;flex-direction:column;gap:0;width:100%}
+.xwalk-family-row{display:grid;grid-template-columns:5.75rem 10.5rem minmax(0,1fr);gap:12px 36px;align-items:center;padding:20px 24px;box-sizing:border-box;width:100%;background:color-mix(in srgb,#1DB954 8%,#fff)!important}
+.xwalk-family-row--a{background:color-mix(in srgb,#1DB954 8%,#fff)!important}
+.xwalk-family-row--b{background:color-mix(in srgb,#1DB954 14%,#fff)!important}
+.xwalk-family-line-label{font-weight:800;font-size:1.0625rem;color:#111!important}
+.xwalk-family-line-price{font-weight:900;font-size:1.4rem;line-height:1.25;color:#1DB954!important}
+.xwalk-family-line-price .xwalk-family-was,
+.xwalk-family-was{text-decoration:line-through;font-weight:800;color:#1DB954!important;opacity:.9}
+.xwalk-family-line-price .xwalk-family-now,
+.xwalk-family-now{font-weight:900;color:#1DB954!important}
+.xwalk-family-line-price .xwalk-family-off,
+.xwalk-family-off{font-style:italic;font-weight:600;font-size:1rem;color:#0E7A3A!important;margin-left:6px}
+.xwalk-family-pill{margin:0;padding:14px 22px;font-size:.8125rem;line-height:1.4;border-radius:999px;width:100%;max-width:100%;box-sizing:border-box;text-align:center}
+.xwalk-family-pill--dark{background:#1a1a1a!important;color:#fff!important}
+.xwalk-family-pill--accent{background:color-mix(in srgb,#1DB954 32%,#fff)!important;color:#0E7A3A!important;font-weight:700;border:1px solid color-mix(in srgb,#1DB954 45%,#ccc)}
+.xwalk-family-cta-wrap{margin:44px 0 0;text-align:center}
+.xwalk-family-cta{display:inline-block;width:min(100%,560px);padding:20px 56px;background:#1DB954!important;color:#fff!important;font-family:Arial Black;font-size:1.625rem;font-weight:900;text-decoration:none;border-radius:14px;box-sizing:border-box;text-shadow:none!important}
+.xwalk-family-cta:hover{filter:brightness(1.06)}
+body:has(#family-plans--bring-your-own-device) main>div>h2{color:#1DB954!important}
+body:has(#family-plans--bring-your-own-device) main>div>p:has(strong),
+body:has(#family-plans--bring-your-own-device) main>div>p:has(strong) strong,
+body:has(#family-plans--bring-your-own-device) main>div>p:has(strong) del{color:#1DB954!important}
+body:has(#family-plans--bring-your-own-device) main>div>p:has(strong) em{color:#0E7A3A!important;font-style:italic}
+@media(max-width:720px){
+.xwalk-family-row{grid-template-columns:1fr;gap:10px;padding:18px 16px}
+.xwalk-family-pill{max-width:none}
+.xwalk-family-cta{width:100%;font-size:1.25rem;padding:16px 24px}
+}
+@media(max-width:900px){
+.xwalk-mockup-hero-grid{grid-template-columns:1fr}
+.xwalk-mockup-hero-right{min-height:280px}
+.xwalk-mockup-offer-row{grid-template-columns:1fr}
+.xwalk-mockup-plan-body,.xwalk-mockup-plan-body--family{grid-template-columns:1fr}
+.xwalk-mockup-cta{min-height:120px}
+}
+
+@media(max-width:900px){
+html.xwalk-persona-path--family-texas body,
+html.xwalk-persona-path--college-student body,
+html.xwalk-persona-path--single-woman-nyc body,
+body.xwalk-persona-segment-landing,
+body.xwalk-persona-offer-page--family-texas,
+body.xwalk-persona-offer-page--college-student,
+body.xwalk-persona-offer-page--single-woman-nyc{
+background:#0A1A0F!important;padding-top:0!important}
+body.xwalk-persona-segment-landing main,
+body.xwalk-persona-offer-page--family-texas main,
+body.xwalk-persona-offer-page--college-student main,
+body.xwalk-persona-offer-page--single-woman-nyc main{
+display:block!important;visibility:visible!important;overflow:visible!important;height:auto!important;min-height:0!important;background:transparent!important}
+body.xwalk-persona-segment-landing header,
+body.xwalk-persona-offer-page--family-texas header,
+body.xwalk-persona-offer-page--college-student header,
+body.xwalk-persona-offer-page--single-woman-nyc header{
+display:block!important;visibility:visible!important;position:relative!important;top:auto!important;z-index:300!important;background:#0A1A0F!important;padding-top:max(8px,env(safe-area-inset-top,0px))!important}
+html.wolverine-mobile-sim body.xwalk-persona-segment-landing header,
+html.wolverine-mobile-sim body.xwalk-persona-offer-page header{
+padding-top:8px!important}
+body.xwalk-persona-segment-landing header nav,
+body.xwalk-persona-offer-page header nav{
+min-height:56px!important;padding-top:8px!important;padding-bottom:8px!important}
+body.xwalk-persona-segment-landing header .nav-hamburger,
+body.xwalk-persona-offer-page header .nav-hamburger{
+display:flex!important;visibility:visible!important;opacity:1!important}
+.xwalk-campaign-hero,.xwalk-campaign-hero-grid,.xwalk-campaign-hero-copy,.xwalk-campaign-hero-visual{
+display:block!important;visibility:visible!important;background:#0A1A0F!important}
+.xwalk-campaign-hero-grid{display:grid!important;grid-template-columns:1fr!important;width:100%!important}
+.xwalk-campaign-hero-visual{min-height:200px!important;order:-1!important}
+.xwalk-campaign-hero-copy{padding:24px 18px 28px!important}
+.xwalk-campaign-hero-headline{font-size:1.5rem!important;line-height:1.12!important;color:#fff!important}
+.xwalk-family-plans-page,.xwalk-persona-mockup,.xwalk-mockup-white{
+display:block!important;visibility:visible!important;width:100%!important;max-width:100%!important}
+.xwalk-family-plans-page--single-offer,.xwalk-mockup-white{background:#fff!important}
+}
+
+@media(max-width:900px){
+.xwalk-mockup-offers,.xwalk-mockup-offer-row,.xwalk-mockup-offer-main,.xwalk-mockup-white,.xwalk-family-plans-page,.xwalk-family-main,.xwalk-family-grid{
+display:block!important;visibility:visible!important;width:100%!important;max-width:100%!important;overflow:visible!important}
+.xwalk-mockup-offer-row{
+display:grid!important;grid-template-columns:1fr!important;gap:20px!important;align-items:stretch!important;width:100%!important}
+.xwalk-mockup-offer-main{width:100%!important;min-width:0!important}
+.xwalk-mockup-plan-head{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important;margin-bottom:20px!important}
+.xwalk-mockup-plan-pill{display:flex!important;flex-direction:column!important;gap:10px!important;width:100%!important;min-width:0!important;max-width:100%!important;flex:none!important}
+.xwalk-mockup-plan-pill .xwalk-plan-line-pill--dark,.xwalk-mockup-plan-pill .xwalk-plan-line-pill.xwalk-plan-line-pill--dark,.xwalk-mockup-plan-pill .xwalk-plan-tier-switch.xwalk-plan-line-pill--dark{
+display:block!important;visibility:visible!important;width:100%!important;box-sizing:border-box!important;margin:0!important;padding:12px 18px!important;background:#1a1a1a!important;color:#fff!important;border-radius:8px!important;font-size:0.8125rem!important;line-height:1.4!important}
+.xwalk-mockup-plan-pill .xwalk-plan-line-pill--accent,.xwalk-mockup-plan-pill .xwalk-plan-line-pill.xwalk-plan-line-pill--accent{
+display:block!important;visibility:visible!important;width:100%!important;box-sizing:border-box!important;margin:0!important;padding:12px 18px!important;background:#d8f3e0!important;color:#0E7A3A!important;border:1px solid #1DB954!important;border-radius:8px!important;font-weight:700!important;font-size:0.8125rem!important;line-height:1.4!important}
+.xwalk-mockup-plan-body{display:grid!important;grid-template-columns:1fr!important;gap:16px!important;width:100%!important}
+.xwalk-mockup-device-col,.xwalk-mockup-device,.xwalk-mockup-specs{display:block!important;visibility:visible!important;width:100%!important}
+.xwalk-mockup-specs{display:grid!important;grid-template-columns:1fr 1fr!important;gap:16px!important}
+a.xwalk-mockup-cta,.xwalk-mockup-cta{
+display:flex!important;visibility:visible!important;opacity:1!important;width:100%!important;max-width:100%!important;min-height:120px!important;height:auto!important;
+align-items:center!important;justify-content:center!important;background:#1DB954!important;color:#fff!important;
+font-size:1.25rem!important;font-weight:900!important;text-decoration:none!important;border-radius:14px!important;
+padding:20px 16px!important;box-sizing:border-box!important}
+.xwalk-family-row{
+display:grid!important;grid-template-columns:1fr!important;gap:10px!important;padding:18px 16px!important;width:100%!important;box-sizing:border-box!important}
+.xwalk-family-line-label,.xwalk-family-line-price{display:block!important;visibility:visible!important}
+.xwalk-family-pill,.xwalk-family-pill--dark,.xwalk-family-pill--accent{
+display:block!important;visibility:visible!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin:0!important;padding:14px 20px!important;text-align:center!important;font-size:0.8125rem!important;line-height:1.4!important}
+.xwalk-family-pill--dark{background:#1a1a1a!important;color:#fff!important;border-radius:999px!important}
+.xwalk-family-pill--accent{background:#d8f3e0!important;color:#0E7A3A!important;font-weight:700!important;border:1px solid #1DB954!important;border-radius:999px!important}
+.xwalk-family-cta-wrap{display:block!important;visibility:visible!important;text-align:center!important;margin:32px 0 0!important;padding:0 16px!important}
+a.xwalk-family-cta,.xwalk-family-cta{
+display:inline-block!important;visibility:visible!important;width:100%!important;max-width:100%!important;padding:16px 24px!important;
+background:#1DB954!important;color:#fff!important;font-size:1.25rem!important;font-weight:900!important;text-decoration:none!important;border-radius:14px!important;box-sizing:border-box!important}
+[data-forge-variant].xwalk-mockup-offer-main,[data-forge-variant] .xwalk-mockup-offer-row{display:block!important}
+}
+
+
+</style>
+<style id="forge-persona-critical">
+.xwalk-ai-strip,.xwalk-ai-separator-bar,.xwalk-ai-badge,.xwalk-hero-image-note,.fragment.xwalk-ai-separator{display:none!important}
+[data-forge-variant][hidden]{display:none!important}
+main:has(.hero.xwalk-persona-landing-hero){display:block!important;max-width:none!important;padding:0!important;background:#fff!important}
+main:has(.hero.xwalk-persona-landing-hero)>div{grid-column:1/-1!important;background:transparent!important;box-shadow:none!important}
+.hero.xwalk-persona-landing-hero{position:relative;min-height:380px;overflow:hidden;background:#0A1A0F;padding:56px 32px 48px;text-align:center;grid-column:1/-1}
+.hero.xwalk-persona-landing-hero .xwalk-hero-bg{position:absolute;inset:0;z-index:0}
+.hero.xwalk-persona-landing-hero .xwalk-hero-bg picture,.hero.xwalk-persona-landing-hero .xwalk-hero-bg img{width:100%;height:100%;object-fit:cover;display:block}
+.hero.xwalk-persona-landing-hero .xwalk-hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgb(10 26 15/45%) 0%,rgb(10 26 15/92%) 100%)}
+.hero.xwalk-persona-landing-hero h1{position:relative;z-index:2;font-family:Arial Black;font-size:clamp(2rem,5vw,3rem);font-weight:900;color:#fff!important;margin:0;text-shadow:0 2px 20px rgb(0 0 0/55%)}
+.hero.xwalk-persona-landing-hero--deck{min-height:420px;padding:0;text-align:left;background:#0A1A0F}
+.hero.xwalk-persona-landing-hero--deck .xwalk-persona-landing-split{display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:420px;max-width:none;margin:0;align-items:stretch}
+.hero.xwalk-persona-landing-hero--deck .xwalk-persona-hero-copy{display:flex;flex-direction:column;justify-content:center;padding:48px 40px 48px 56px;position:relative;z-index:2}
+.hero.xwalk-persona-landing-hero--deck .xwalk-persona-hero-logo{margin:0 0 28px}
+.hero.xwalk-persona-landing-hero--deck .xwalk-persona-hero-logo img{display:block;width:40px;height:40px}
+.hero.xwalk-persona-landing-hero--deck .xwalk-persona-hero-copy h1{font-size:clamp(2.25rem,4.5vw,3.25rem);margin:0;text-align:left;line-height:1.05}
+.hero.xwalk-persona-landing-hero--deck .xwalk-persona-hero-visual{position:relative;min-height:420px;border-radius:0;overflow:hidden;background:#111}
+.hero.xwalk-persona-landing-hero--deck .xwalk-persona-hero-visual .xwalk-hero-bg{position:absolute;inset:0}
+.hero.xwalk-persona-landing-hero--deck .xwalk-persona-hero-visual .xwalk-hero-bg img{width:100%;height:100%;object-fit:cover;object-position:center top;opacity:1}
+.fragment.xwalk-persona-quote{grid-column:1/-1;background:#fff;padding:20px 32px 8px;text-align:center;max-width:none;margin:0}
+main:has(.xwalk-persona-landing-hero--deck) .fragment.xwalk-persona-quote{padding:24px 32px 16px}
+main:has(.xwalk-persona-landing-hero--deck) .xwalk-persona-quote-text{color:#1DB954;font-size:1.125rem;text-align:center;display:block;max-width:720px;margin:0 auto}
+.columns.xwalk-persona-plan-landing--deck>div>[data-forge-variant]{grid-template-columns:1fr minmax(180px,220px);max-width:1100px;padding:12px 32px 48px;align-items:stretch}
+.xwalk-persona-plan--deck .xwalk-plan-title{font-family:Arial Black;font-size:1.5rem;font-weight:900;color:#111;margin:0}
+.xwalk-persona-plan--deck .xwalk-plan-highlight{color:#1DB954}
+.xwalk-persona-plan--deck .xwalk-plan-header-row{display:flex;flex-wrap:wrap;align-items:center;gap:16px 20px;margin-bottom:20px}
+.xwalk-persona-plan--deck .xwalk-plan-header-pill{flex:1;min-width:200px;max-width:520px}
+.xwalk-persona-plan--deck .xwalk-plan-header-pill .xwalk-plan-tier-switch{margin:0;font-size:.8rem;line-height:1.35;padding:12px 18px;border-radius:8px}
+.xwalk-persona-plan--deck .xwalk-plan-deck-main{display:grid;grid-template-columns:minmax(140px,200px) 1fr;gap:28px 32px;align-items:start}
+.xwalk-persona-plan--deck .xwalk-plan-device-stack{text-align:center}
+.xwalk-persona-plan--deck .xwalk-plan-device-img img{max-height:220px;width:auto;max-width:100%;object-fit:contain;display:block;margin:0 auto}
+.xwalk-persona-plan--deck .xwalk-plan-device-name{font-family:Arial Black;font-size:1.35rem;font-weight:900;color:#1DB954;margin:12px 0 0}
+.xwalk-persona-plan--deck .xwalk-plan-specs-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px 40px;align-content:start;padding-top:8px}
+.xwalk-persona-plan--deck .xwalk-device-specs--col{margin:0;padding:0;list-style:none}
+.xwalk-persona-plan--deck .xwalk-device-specs--col li{color:#1DB954;font-size:1rem;line-height:1.5;margin:0 0 8px;font-weight:600}
+.xwalk-persona-plan--deck .xwalk-device-specs--col li::before{content:'✓ ';font-weight:800}
+.xwalk-persona-plan--deck .xwalk-device-price-deck{margin:16px 0 0;font-size:1rem;color:#111}
+.xwalk-persona-plan--deck .xwalk-plan-deck-main--family{grid-template-columns:minmax(200px,280px) 1fr}
+.xwalk-persona-plan--deck .xwalk-plan-deck-main--family .xwalk-plan-device-img img{max-height:260px;object-fit:cover;border-radius:8px}
+.xwalk-persona-plan--deck .xwalk-plan-lines--deck{display:flex;flex-direction:column;gap:14px;padding-top:4px}
+.xwalk-persona-plan--deck .xwalk-plan-lines--deck .xwalk-plan-line{display:grid;grid-template-columns:72px 100px 1fr;gap:10px 14px;align-items:center}
+.xwalk-persona-plan--deck .xwalk-plan-lines--deck .xwalk-plan-line-label{font-weight:800;color:#111;font-size:.9375rem}
+.xwalk-persona-plan--deck .xwalk-plan-lines--deck .xwalk-plan-line-price{font-weight:900;color:#1DB954;font-size:1rem}
+.xwalk-persona-plan--deck .xwalk-plan-lines--deck .xwalk-plan-discount{font-style:normal;color:#555;font-weight:600}
+.xwalk-persona-plan-landing--deck .xwalk-persona-cta-card{min-height:280px;display:flex;align-items:stretch}
+.xwalk-persona-plan-landing--deck .xwalk-shop-now-btn--vertical{display:flex;align-items:center;justify-content:center;width:100%;min-height:280px;background:#1DB954!important;color:#000!important;font-size:1.35rem;font-weight:900;border-radius:12px;text-decoration:none}
+main:has(.xwalk-persona-landing-hero--deck) .fragment.xwalk-promo-strip,main:has(.xwalk-persona-landing-hero--deck) .xwalk-promo-strip{display:none!important}
+@media(max-width:900px){.hero.xwalk-persona-landing-hero--deck .xwalk-persona-landing-split{grid-template-columns:1fr}.hero.xwalk-persona-landing-hero--deck .xwalk-persona-hero-visual{min-height:280px}.xwalk-persona-plan--deck .xwalk-plan-deck-main,.xwalk-persona-plan--deck .xwalk-plan-deck-main--family{grid-template-columns:1fr}.columns.xwalk-persona-plan-landing--deck>div>[data-forge-variant]{grid-template-columns:1fr}.xwalk-persona-plan-landing--deck .xwalk-shop-now-btn--vertical{min-height:120px}}
+.xwalk-persona-quote-text{font-size:1.15rem;color:#0E7A3A;font-style:italic;margin:0;max-width:900px;display:inline-block}
+.fragment.xwalk-persona-plan-switch{grid-column:1/-1;background:#fff;padding:0 32px 8px;max-width:1100px;margin:0 auto}
+.xwalk-persona-plan-switch-wrap .xwalk-plan-tier-switch{cursor:pointer;margin:0 0 4px}
+.columns.forge-persona-plan.xwalk-persona-plan-landing{grid-column:1/-1;background:#fff}
+.columns.forge-persona-plan.xwalk-persona-plan-landing>div>[data-forge-variant]{display:grid;grid-template-columns:1fr minmax(160px,200px);gap:20px;max-width:1100px;margin:0 auto;padding:8px 32px 40px;align-items:stretch}
+main:has(.xwalk-persona-experience-stack){display:block!important;max-width:none!important;padding:0!important;background:transparent!important}
+main:has(.xwalk-persona-experience-stack)>div{grid-column:unset!important;background:transparent!important;box-shadow:none!important}
+main>div:has(.xwalk-persona-experience-stack){grid-column:1/-1}
+.xwalk-persona-experience-stack{display:block;width:100%}
+.xwalk-persona-hero-band{position:relative;background:#0A1A0F;color:#fff;padding:48px 32px;text-align:center;overflow:hidden;min-height:200px;display:flex;align-items:center;justify-content:center}
+.xwalk-persona-hero-band .xwalk-hero-bg{position:absolute;inset:0;z-index:0}
+.xwalk-persona-hero-band .xwalk-hero-bg img{width:100%;height:100%;object-fit:cover;opacity:.4}
+.xwalk-persona-hero-band .xwalk-persona-hero-copy{position:relative;z-index:1;max-width:900px;margin:0 auto}
+.xwalk-persona-hero-band h1{font-family:Arial Black;font-size:clamp(2rem,4vw,2.75rem);font-weight:900;color:#fff;margin:0;line-height:1.1}
+.xwalk-persona-hero-tagline{margin:12px 0 0;font-size:1rem;line-height:1.5;color:color-mix(in srgb,#fff 92%,transparent);max-width:36rem;margin-left:auto;margin-right:auto}
+.xwalk-persona-white-band{background:#fff;color:#1a1a1a;padding:28px 32px 40px}
+.xwalk-persona-email-offers{max-width:1100px;margin:0 auto}
+.xwalk-persona-email-offers-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:28px}
+.xwalk-email-offer-tile{border:1px solid #e5e5e5;border-radius:8px;overflow:hidden;background:#fff;display:flex;flex-direction:column;height:100%}
+.xwalk-email-offer-tile__media{background:#f5f5f5;padding:16px;display:flex;align-items:center;justify-content:center;min-height:160px}
+.xwalk-email-offer-tile__media img{max-width:120px;max-height:120px;width:auto;height:auto;object-fit:contain;display:block}
+.xwalk-email-offer-tile__body{padding:14px 12px 16px;text-align:center;flex:1;display:flex;flex-direction:column}
+.xwalk-email-offer-kicker{margin:0 0 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#666}
+.xwalk-email-offer-name{margin:0 0 8px;font-family:Arial Black;font-size:1rem;font-weight:800;color:#111}
+.xwalk-email-offer-price{margin:0 0 12px;font-size:1.125rem;font-weight:800;color:#1DB954}
+.xwalk-email-offer-cta{margin:0;margin-top:auto}
+.xwalk-email-offer-cta a{display:inline-block;padding:10px 16px;background:#1DB954;color:#0a1a0f!important;font-weight:700;font-size:.8125rem;border-radius:4px;text-decoration:none}
+.xwalk-persona-email-primary-cta{text-align:center;margin:0 0 8px}
+.xwalk-persona-email-primary-cta a{display:inline-block;padding:14px 32px;background:#1DB954;color:#0a1a0f!important;font-weight:800;font-size:1rem;border-radius:4px;text-decoration:none}
+@media(max-width:768px){.xwalk-persona-email-offers-grid{grid-template-columns:1fr}}
+.xwalk-persona-white-band .xwalk-persona-quote-text{font-size:1.1rem;color:#0E7A3A;font-style:italic;margin:0 0 24px;max-width:900px}
+.xwalk-persona-plan-row{display:grid;grid-template-columns:1fr minmax(160px,200px);gap:20px;max-width:1100px;align-items:stretch}
+.xwalk-persona-white-band h2{font-family:Arial Black;color:#0E7A3A;font-size:1.5rem;margin:0 0 16px}
+.xwalk-plan-lines{margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.xwalk-plan-line{display:grid;grid-template-columns:72px 96px 1fr;gap:10px;align-items:center}
+.xwalk-plan-line-label{font-weight:700;color:#333}
+.xwalk-plan-line-price{font-weight:800;color:#0E7A3A}
+.xwalk-plan-discount{display:block;font-size:.72rem;font-style:normal;color:#1DB954}
+.xwalk-plan-line-pill,.forge-plan-offer .xwalk-plan-line-pill{margin:0}
+.xwalk-plan-line-pill--dark,.xwalk-plan-pill.xwalk-plan-line-pill--dark{background:#1a1a1a!important;color:#fff!important;border-radius:6px;padding:10px 14px;font-size:.78rem;line-height:1.35;display:block}
+.xwalk-plan-line-pill--accent{background:color-mix(in srgb,#1DB954 35%,#fff);color:#0E7A3A;border:1px solid color-mix(in srgb,#1DB954 50%,transparent);border-radius:6px;padding:10px 14px;font-size:.78rem;display:block;margin:0}
+.xwalk-persona-plan-col .xwalk-plan-shop{display:none!important}
+.xwalk-persona-cta-card{background:#1DB954;border-radius:12px;min-height:200px;display:flex}
+.xwalk-persona-cta-card a{display:flex;align-items:center;justify-content:center;width:100%;color:#0a1a0f!important;font-weight:800;font-size:1.2rem;text-decoration:none}
+.xwalk-persona-below-copy{margin-top:28px;padding-top:20px;border-top:1px solid #e5e5e5;max-width:900px}
+.xwalk-persona-below-copy p{font-size:.85rem;color:#666;margin:0;line-height:1.5}
+.xwalk-persona-plan--single .xwalk-plan-pill,.xwalk-persona-plan--student .xwalk-plan-pill{background:#1a1a1a;color:#fff;border-radius:6px;padding:10px 14px;display:inline-block;margin-bottom:16px}
+@media(max-width:768px){.xwalk-persona-plan-row{grid-template-columns:1fr}.xwalk-plan-line{grid-template-columns:1fr;gap:4px}}
+</style>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
+<script id="forge-strip-ai-copy">(function(){var RE=/Personalized for You|AI-Generated image|Generated based on target audience|Auto-generated with AI copy|personalized block, and brand design/i;function strip(){document.querySelectorAll("main p, main .xwalk-persona-below-copy p").forEach(function(p){if(p.closest(".xwalk-persona-mockup"))return;var t=(p.textContent||"").replace(/\s+/g," ").trim();if(RE.test(t)){p.remove();return;}});document.querySelectorAll("main .xwalk-persona-below-copy").forEach(function(el){if(el.closest(".xwalk-persona-mockup"))return;var t=(el.textContent||"").replace(/\s+/g," ").trim();if(!t||RE.test(t))el.remove();});}function watch(){strip();var m=document.querySelector("main");if(!m||m.__forgeAiStrip)return;m.__forgeAiStrip=1;new MutationObserver(strip).observe(m,{childList:!0,subtree:!0});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch();document.addEventListener("aem:loaded",strip);setTimeout(strip,800);setTimeout(strip,2500);})();</script>
 <link rel="stylesheet" href="/styles/styles.css"/>
+<style id="forge-retail-grid-lock">
+body.xwalk-boost-page main.xwalk-boost-main,main:has(#save-when-you-shop-online),main:has([id*="shop-phones"]),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers),main.xwalk-boost-main{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:12px!important;
+  max-width:1280px!important;
+  margin:0 auto!important;
+  padding:0 32px 40px!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  background:#0A1A0F!important;
+  color:#FFFFFF!important;
+}
+body.xwalk-boost-page main.xwalk-boost-main>div:first-child,main:has(#save-when-you-shop-online)>div:first-child,main:has([id*="shop-phones"])>div:first-child,main:has(#xwalk-plans-retail-head)>div:first-child,main:has(#plans-from-25mo)>div:first-child,main:has(#shop-deals-offers)>div:first-child,main.xwalk-boost-main>div:first-child,body.xwalk-boost-page main.xwalk-boost-main>div:nth-child(2),main:has(#save-when-you-shop-online)>div:nth-child(2),main:has([id*="shop-phones"])>div:nth-child(2),main:has(#xwalk-plans-retail-head)>div:nth-child(2),main:has(#plans-from-25mo)>div:nth-child(2),main:has(#shop-deals-offers)>div:nth-child(2),main.xwalk-boost-main>div:nth-child(2),body.xwalk-boost-page main.xwalk-boost-main>div:last-child,main:has(#save-when-you-shop-online)>div:last-child,main:has([id*="shop-phones"])>div:last-child,main:has(#xwalk-plans-retail-head)>div:last-child,main:has(#plans-from-25mo)>div:last-child,main:has(#shop-deals-offers)>div:last-child,main.xwalk-boost-main>div:last-child{grid-column:1/-1!important}
+body.xwalk-boost-page main.xwalk-boost-main>div,main:has(#save-when-you-shop-online)>div,main:has([id*="shop-phones"])>div,main:has(#xwalk-plans-retail-head)>div,main:has(#plans-from-25mo)>div,main:has(#shop-deals-offers)>div,main.xwalk-boost-main>div{margin:0!important}
+@media(max-width:1100px){body.xwalk-boost-page main.xwalk-boost-main,main:has(#save-when-you-shop-online),main:has([id*="shop-phones"]),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers),main.xwalk-boost-main{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:600px){body.xwalk-boost-page main.xwalk-boost-main,main:has(#save-when-you-shop-online),main:has([id*="shop-phones"]),main:has(#xwalk-plans-retail-head),main:has(#plans-from-25mo),main:has(#shop-deals-offers),main.xwalk-boost-main{grid-template-columns:1fr!important;padding:0 16px 32px!important}}
+footer .footer .xwalk-footer-top-social ul,footer .footer ul:has(a[href*="facebook"]){
+  display:flex!important;flex-wrap:wrap!important;justify-content:flex-end!important;gap:10px!important;
+  list-style:none!important;padding:0!important;margin:0!important;
+}
+footer .footer .xwalk-footer-top-social a,
+footer .footer ul:has(a[href*="facebook"]) a,
+footer .footer ul:has(a[href*="twitter"]) a,
+footer .footer ul:has(a[href*="instagram"]) a,
+footer .footer ul:has(a[href*="youtube"]) a{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:40px!important;height:40px!important;border-radius:50%!important;background:#1a1a1a!important;
+  color:#fff!important;font-weight:800!important;font-size:.8125rem!important;text-decoration:none!important;line-height:1!important;
+}
+header nav>.nav-hamburger~.nav-hamburger,header .nav-hamburger~.nav-hamburger{display:none!important}
+</style>
+<link rel="stylesheet" href="https://raw.githubusercontent.com/AdobeDrago/wolverine/main/styles/styles.css?v=forge-grid-center-fix" data-forge-crosswalk-styles/>
+<link rel="stylesheet" href="/styles/forge-inline-edit.css?v=9"/>
