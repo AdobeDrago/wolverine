@@ -1,3 +1,4 @@
+import { decorateFamilyTexasMain } from './decorate-family-texas.js';
 import {
   buildBlock,
   loadHeader,
@@ -124,6 +125,7 @@ export function decorateMain(main) {
   decorateSections(main);
   decorateBlocks(main);
   decorateButtons(main);
+    decorateFamilyTexasMain(main);
 }
 
 /**
@@ -187,3 +189,60 @@ async function loadPage() {
 }
 
 loadPage();
+// FORGE inline edit
+try {
+  const __fe = new URLSearchParams(globalThis.location?.search || '');
+  if (__fe.get('forge-edit') === '1' || __fe.get('vse') === 'forge') {
+    import('/scripts/forge-inline-edit.js?v=9');
+  }
+} catch {
+  /* ignore */
+}
+// FORGE personalization runtime (RT CDP / AJO segment shells on saved blocks)
+try {
+  const __fpr = new URLSearchParams(globalThis.location?.search || '');
+  const __loadPersRuntime = () =>
+    import('/scripts/forge-personalization-runtime.js?v=9');
+  if (
+    __fpr.get('forge-demo') === '1' ||
+    __fpr.get('forge-preview-segment') ||
+    __fpr.get('forge-segment')
+  ) {
+    __loadPersRuntime();
+  } else if (typeof document !== 'undefined') {
+    const boot = () => {
+      if (document.querySelector('[data-forge-personalization]')) __loadPersRuntime();
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+  }
+} catch {
+  /* ignore */
+}
+// FORGE demo chrome (persona switcher, RT CDP / AJO — EchoStar prototype)
+try {
+  const __fdm = new URLSearchParams(globalThis.location?.search || '');
+  if (__fdm.get('forge-demo') === '1') {
+    import('/scripts/forge-demo.js?v=9');
+  }
+} catch {
+  /* ignore */
+}
+// FORGE personalization runtime (RT CDP / AJO segment shells on saved blocks)
+try {
+  const __fpr = new URLSearchParams(globalThis.location?.search || '');
+  if (__fpr.get('forge-demo') === '1' || document.querySelector('[data-forge-personalization]')) {
+    import('/scripts/forge-personalization-runtime.js?v=5');
+  }
+} catch {
+  /* ignore */
+}
+// FORGE demo chrome (persona switcher, RT CDP / AJO — EchoStar prototype)
+try {
+  const __fdm = new URLSearchParams(globalThis.location?.search || '');
+  if (__fdm.get('forge-demo') === '1') {
+    import('/scripts/forge-demo.js?v=5');
+  }
+} catch {
+  /* ignore */
+}
