@@ -53,6 +53,7 @@ function injectFamilyStyles(doc) {
 .xwalk-family-now{color:${PRIMARY}!important;font-weight:900!important}
 .xwalk-family-off{font-style:italic!important;color:${SECONDARY}!important;margin-left:6px!important}
 .xwalk-family-pill--dark{background:${DARK_PILL}!important;color:#fff!important;border-radius:999px!important;padding:14px 24px!important;text-align:center!important;margin:0!important;width:100%!important;box-sizing:border-box!important;font-size:0.8125rem!important;line-height:1.4!important}
+main:has(#you-run-this-city) .xwalk-family-pill--dark,main:has(#you-run-this-city) .xwalk-family-pill--dark *,main:has(#keep-your-family-connected) .xwalk-family-pill--dark,main:has(#keep-your-family-connected) .xwalk-family-pill--dark *,main:has(#wireless-that-fits-your-semester) .xwalk-family-pill--dark,main:has(#wireless-that-fits-your-semester) .xwalk-family-pill--dark *,main:has(#you-run-this-city) .xwalk-plan-line-pill--dark,main:has(#keep-your-family-connected) .xwalk-plan-line-pill--dark,main:has(#wireless-that-fits-your-semester) .xwalk-plan-line-pill--dark{color:#fff!important}
 .xwalk-family-pill--accent{background:${MINT_PILL}!important;color:${SECONDARY}!important;border:1px solid ${PRIMARY}!important;border-radius:999px!important;padding:14px 24px!important;text-align:center!important;margin:0!important;font-weight:700!important;width:100%!important;box-sizing:border-box!important;font-size:0.8125rem!important;line-height:1.4!important}
 .xwalk-family-title{color:${PRIMARY}!important;font-family:"Arial Black",Arial,sans-serif!important;font-size:1.65rem!important;font-weight:900!important;margin:0 0 28px!important}
 .xwalk-family-main{background:${MINT_PAGE}!important;padding:36px 40px 56px!important;max-width:1040px!important;margin:0 auto!important}
@@ -75,10 +76,11 @@ function paintRow(row, idx) {
   row.querySelector('.xwalk-family-line-price')?.style.setProperty('color', PRIMARY, 'important');
   const pill = row.querySelector('.xwalk-family-pill');
   if (pill) {
-    pill.style.cssText =
-      idx < 2
-        ? `margin:0;padding:14px 24px;border-radius:999px;text-align:center;width:100%;background:${DARK_PILL};color:#fff;font-size:0.8125rem;line-height:1.4;box-sizing:border-box;`
-        : `margin:0;padding:14px 24px;border-radius:999px;text-align:center;width:100%;background:${MINT_PILL};color:${SECONDARY};font-weight:700;border:1px solid ${PRIMARY};font-size:0.8125rem;line-height:1.4;box-sizing:border-box;`;
+    const dark = idx < 2;
+    pill.style.cssText = dark
+      ? `margin:0;padding:14px 24px;border-radius:999px;text-align:center;width:100%;background:${DARK_PILL};font-size:0.8125rem;line-height:1.4;box-sizing:border-box;`
+      : `margin:0;padding:14px 24px;border-radius:999px;text-align:center;width:100%;background:${MINT_PILL};font-weight:700;border:1px solid ${PRIMARY};font-size:0.8125rem;line-height:1.4;box-sizing:border-box;`;
+    pill.style.setProperty('color', dark ? '#fff' : SECONDARY, 'important');
   }
 }
 
@@ -266,7 +268,9 @@ export function decorateFamilyTexasMain(main) {
 
   const existing = main.querySelector('.xwalk-family-plans-page');
   if (segment && existing?.querySelector('.xwalk-mockup-offer-row')) {
-    existing.querySelectorAll('.xwalk-plan-line-pill').forEach((p) => p.style.setProperty('color', '#fff', 'important'));
+    existing
+      .querySelectorAll('.xwalk-plan-line-pill--dark, .xwalk-family-pill--dark')
+      .forEach((p) => p.style.setProperty('color', '#fff', 'important'));
     return;
   }
   if (segment && existing?.querySelector('.xwalk-family-grid')) {
