@@ -1,0 +1,142 @@
+/* Loaded with block — family BYOD plan grid (screenshot) */
+#forge-family-plans,
+.xwalk-family-plans-page {
+  background: #eef8f1 !important;
+  color: #111 !important;
+  width: 100% !important;
+}
+
+.xwalk-family-hero {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 0 !important;
+  background: #fff !important;
+}
+
+.xwalk-family-hero img {
+  display: block !important;
+  width: 100% !important;
+  max-height: 400px !important;
+  object-fit: cover !important;
+}
+
+.xwalk-family-main {
+  background: #eef8f1 !important;
+  padding: 36px 40px 56px !important;
+  max-width: 1040px !important;
+  margin: 0 auto !important;
+}
+
+.xwalk-family-title {
+  margin: 0 0 28px !important;
+  font-family: "Arial Black", Arial, sans-serif !important;
+  font-size: 1.65rem !important;
+  font-weight: 900 !important;
+  color: #1db954 !important;
+}
+
+.xwalk-family-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+}
+
+.xwalk-family-row {
+  display: grid !important;
+  grid-template-columns: 92px 168px minmax(0, 1fr) !important;
+  gap: 12px 32px !important;
+  align-items: center !important;
+  padding: 22px 28px !important;
+  background: #f3fbf6 !important;
+  box-sizing: border-box !important;
+}
+
+.xwalk-family-line-label {
+  font-weight: 800 !important;
+  font-size: 1.0625rem !important;
+  color: #111 !important;
+}
+
+.xwalk-family-line-price {
+  font-weight: 900 !important;
+  font-size: 1.4rem !important;
+  color: #1db954 !important;
+}
+
+.xwalk-family-was {
+  text-decoration: line-through !important;
+  color: #1db954 !important;
+}
+
+.xwalk-family-now {
+  color: #1db954 !important;
+  font-weight: 900 !important;
+}
+
+.xwalk-family-off {
+  font-style: italic !important;
+  color: #0e7a3a !important;
+  margin-left: 6px !important;
+}
+
+.xwalk-family-pill--dark,
+.xwalk-family-pill--dark * {
+  background: #1a1a1a !important;
+  color: #fff !important;
+  border-radius: 999px !important;
+  padding: 14px 24px !important;
+  text-align: center !important;
+  margin: 0 !important;
+}
+
+.xwalk-family-pill--dark * {
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+main:has(#you-run-this-city) .xwalk-family-pill--dark,
+main:has(#you-run-this-city) .xwalk-family-pill--dark *,
+main:has(#keep-your-family-connected) .xwalk-family-pill--dark,
+main:has(#keep-your-family-connected) .xwalk-family-pill--dark *,
+main:has(#wireless-that-fits-your-semester) .xwalk-family-pill--dark,
+main:has(#wireless-that-fits-your-semester) .xwalk-family-pill--dark * {
+  color: #fff !important;
+}
+
+.xwalk-family-pill--accent {
+  background: #d8f3e0 !important;
+  color: #0e7a3a !important;
+  border: 1px solid #1db954 !important;
+  border-radius: 999px !important;
+  padding: 14px 24px !important;
+  text-align: center !important;
+  margin: 0 !important;
+  font-weight: 700 !important;
+}
+
+.xwalk-family-cta-wrap {
+  margin: 40px 0 0 !important;
+  text-align: center !important;
+}
+
+.xwalk-family-cta {
+  display: inline-block !important;
+  min-width: 320px !important;
+  max-width: 560px !important;
+  width: 80% !important;
+  padding: 20px 56px !important;
+  background: #1db954 !important;
+  color: #fff !important;
+  font-family: "Arial Black", Arial, sans-serif !important;
+  font-size: 1.625rem !important;
+  font-weight: 900 !important;
+  text-decoration: none !important;
+  border-radius: 14px !important;
+}
+
+@media (max-width: 720px) {
+  .xwalk-family-row {
+    grid-template-columns: 1fr !important;
+  }
+}
