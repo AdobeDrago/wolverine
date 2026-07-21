@@ -191,7 +191,8 @@ async function loadPage() {
 loadPage();
 // FORGE inline edit
 try {
-  const __fe = new URLSearchParams(globalThis.location?.search || '');
+  const __raw = String(globalThis.location?.search || '').replace(/^\?/, '');
+  const __fe = new URLSearchParams(__raw.split('?').join('&'));
   const __forge = __fe.get('forge');
   if (
     __fe.get('forge-edit') === '1' ||
@@ -200,16 +201,17 @@ try {
     __forge === 'edit' ||
     __forge === '1'
   ) {
-    import('/scripts/forge-inline-edit.js?v=10');
+    import('/scripts/forge-inline-edit.js?v=11');
   }
 } catch {
   /* ignore */
 }
 // FORGE personalization runtime (RT CDP / AJO segment shells on saved blocks)
 try {
-  const __fpr = new URLSearchParams(globalThis.location?.search || '');
+  const __praw = String(globalThis.location?.search || '').replace(/^\?/, '');
+  const __fpr = new URLSearchParams(__praw.split('?').join('&'));
   const __loadPersRuntime = () =>
-    import('/scripts/forge-personalization-runtime.js?v=10');
+    import('/scripts/forge-personalization-runtime.js?v=11');
   if (
     __fpr.get('forge-demo') === '1' ||
     __fpr.get('forge-preview-segment') ||
@@ -228,87 +230,10 @@ try {
 }
 // FORGE demo chrome (persona switcher, RT CDP / AJO — EchoStar prototype)
 try {
-  const __fdm = new URLSearchParams(globalThis.location?.search || '');
+  const __draw = String(globalThis.location?.search || '').replace(/^\?/, '');
+  const __fdm = new URLSearchParams(__draw.split('?').join('&'));
   if (__fdm.get('forge-demo') === '1') {
-    import('/scripts/forge-demo.js?v=10');
-  }
-} catch {
-  /* ignore */
-}
-// FORGE personalization runtime (RT CDP / AJO segment shells on saved blocks)
-try {
-  const __fpr = new URLSearchParams(globalThis.location?.search || '');
-  const __loadPersRuntime = () =>
-    import('/scripts/forge-personalization-runtime.js?v=9');
-  if (
-    __fpr.get('forge-demo') === '1' ||
-    __fpr.get('forge-preview-segment') ||
-    __fpr.get('forge-segment')
-  ) {
-    __loadPersRuntime();
-  } else if (typeof document !== 'undefined') {
-    const boot = () => {
-      if (document.querySelector('[data-forge-personalization]')) __loadPersRuntime();
-    };
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-    else boot();
-  }
-} catch {
-  /* ignore */
-}
-// FORGE demo chrome (persona switcher, RT CDP / AJO — EchoStar prototype)
-try {
-  const __fdm = new URLSearchParams(globalThis.location?.search || '');
-  if (__fdm.get('forge-demo') === '1') {
-    import('/scripts/forge-demo.js?v=9');
-  }
-} catch {
-  /* ignore */
-}
-// FORGE personalization runtime (RT CDP / AJO segment shells on saved blocks)
-try {
-  const __fpr = new URLSearchParams(globalThis.location?.search || '');
-  const __loadPersRuntime = () =>
-    import('/scripts/forge-personalization-runtime.js?v=9');
-  if (
-    __fpr.get('forge-demo') === '1' ||
-    __fpr.get('forge-preview-segment') ||
-    __fpr.get('forge-segment')
-  ) {
-    __loadPersRuntime();
-  } else if (typeof document !== 'undefined') {
-    const boot = () => {
-      if (document.querySelector('[data-forge-personalization]')) __loadPersRuntime();
-    };
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-    else boot();
-  }
-} catch {
-  /* ignore */
-}
-// FORGE demo chrome (persona switcher, RT CDP / AJO — EchoStar prototype)
-try {
-  const __fdm = new URLSearchParams(globalThis.location?.search || '');
-  if (__fdm.get('forge-demo') === '1') {
-    import('/scripts/forge-demo.js?v=9');
-  }
-} catch {
-  /* ignore */
-}
-// FORGE personalization runtime (RT CDP / AJO segment shells on saved blocks)
-try {
-  const __fpr = new URLSearchParams(globalThis.location?.search || '');
-  if (__fpr.get('forge-demo') === '1' || document.querySelector('[data-forge-personalization]')) {
-    import('/scripts/forge-personalization-runtime.js?v=5');
-  }
-} catch {
-  /* ignore */
-}
-// FORGE demo chrome (persona switcher, RT CDP / AJO — EchoStar prototype)
-try {
-  const __fdm = new URLSearchParams(globalThis.location?.search || '');
-  if (__fdm.get('forge-demo') === '1') {
-    import('/scripts/forge-demo.js?v=5');
+    import('/scripts/forge-demo.js?v=11');
   }
 } catch {
   /* ignore */
