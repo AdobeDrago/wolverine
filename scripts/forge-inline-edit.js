@@ -18,7 +18,7 @@ import { savePageToDaClient } from './forge-inline-edit-save.js';
 import { productBrandName } from './forge-product-brand.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 10;
+export const FORGE_INLINE_EDIT_BUILD = 11;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -47,8 +47,14 @@ const PICKER_GROUPS = [
   { category: 'commerce', items: ['product-list', 'product-teaser', 'product-carousel'] },
 ];
 
+/** Tolerate malformed `?a=1?b=2` (second `?` instead of `&`). */
+function forgeQueryParams(search = window.location.search) {
+  const raw = String(search || '').replace(/^\?/, '');
+  return new URLSearchParams(raw.split('?').join('&'));
+}
+
 function isEditMode() {
-  const params = new URLSearchParams(window.location.search);
+  const params = forgeQueryParams();
   const fe = params.get(FORGE_EDIT_PARAM);
   if (fe === '1' || fe === 'true') return true;
   // Common typo / alternate: ?forge=edit-1
@@ -59,11 +65,11 @@ function isEditMode() {
 }
 
 function resolveOrgRepo() {
-  const params = new URLSearchParams(window.location.search);
+  const params = forgeQueryParams();
   let org = params.get(FORGE_ORG_PARAM);
   let repo = params.get(FORGE_REPO_PARAM);
   if (!org || !repo) {
-    const m = window.location.hostname.match(/^main--(.+)--([^.]+)\.aem\.page$/);
+    const m = window.location.hostname.match(/^main--(.+)--([^.]+)\.aem\.(?:page|live)$/i);
     if (m) {
       repo = repo || m[1];
       org = org || m[2];
@@ -75,7 +81,7 @@ function resolveOrgRepo() {
 function resolveForgeApiBase() {
   const meta = document.querySelector('meta[name="forge:api"]');
   if (meta?.content) return meta.content.replace(/\/$/, '');
-  const params = new URLSearchParams(window.location.search);
+  const params = forgeQueryParams();
   const fromQuery = params.get(FORGE_API_PARAM);
   if (fromQuery) return fromQuery.replace(/\/$/, '');
   try {
