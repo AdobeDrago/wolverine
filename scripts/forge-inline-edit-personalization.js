@@ -131,7 +131,8 @@ export function setClassifyBlockMeta(fn) {
 
 export function getPreviewSegmentId() {
   try {
-    const params = new URLSearchParams(window.location.search);
+    const raw = String(window.location.search || '').replace(/^\?/, '');
+    const params = new URLSearchParams(raw.split('?').join('&'));
     const q = params.get('forge-preview-segment') || params.get('forge-segment');
     if (q) return q;
     if (typeof window !== 'undefined' && window.ForgeExperience) {
@@ -146,7 +147,8 @@ export function getPreviewSegmentId() {
 
 export function getPreviewJourneyId() {
   try {
-    const params = new URLSearchParams(window.location.search);
+    const raw = String(window.location.search || '').replace(/^\?/, '');
+    const params = new URLSearchParams(raw.split('?').join('&'));
     const q = params.get('forge-preview-journey') || params.get('forge-journey');
     if (q) return q;
     if (typeof window !== 'undefined' && window.ForgeExperience) {
@@ -332,7 +334,8 @@ async function loadCatalog(apiBase) {
 function resolveForgeApiBase() {
   const meta = document.querySelector('meta[name="forge:api"]');
   if (meta?.content) return meta.content.replace(/\/$/, '');
-  const params = new URLSearchParams(window.location.search);
+  const raw = String(window.location.search || '').replace(/^\?/, '');
+  const params = new URLSearchParams(raw.split('?').join('&'));
   const q = params.get('forge-api');
   return q ? q.replace(/\/$/, '') : '';
 }
