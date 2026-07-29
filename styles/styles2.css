@@ -20,7 +20,7 @@ a.button:any-link, button, .button {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.btn-secondary{
+button .btn-secondary{
   background-color: #ffffff;
   border: 2px solid #000000;
   color: #000000;
