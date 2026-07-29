@@ -1,5 +1,5 @@
 /* buttons */
-a.button:any-link, button {
+a.button:any-link, button, .button {
   box-sizing: border-box;
   display: inline-block;
   max-width: 100%;
