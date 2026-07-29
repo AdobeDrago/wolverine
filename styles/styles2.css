@@ -41,5 +41,5 @@ a.button.secondary, button.secondary {
 @font-face {
   font-family: Arial;
   src: local('Arial');
-}
-}
+
+ p {font-family: Arial;}
