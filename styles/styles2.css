@@ -36,3 +36,10 @@ a.button.secondary, button.secondary {
   border: 2px solid #000000;
   color: #000000;
 }
+
+/* fonts */
+@font-face {
+  font-family: Arial;
+  src: local('Arial');
+}
+}
