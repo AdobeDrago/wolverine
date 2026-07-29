@@ -32,9 +32,9 @@ button:disabled, button:disabled:hover {
   cursor: unset;
 }
 
-a.button.button-secondary:any-link,
-button.button-secondary,
-.button-secondary {
+a.button.btn-secondary:any-link,
+button.btn-secondary,
+.btn-secondary {
   background-color: #ffffff;
   border: 2px solid #000000;
   color: #000000;
