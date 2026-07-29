@@ -20,6 +20,11 @@ a.button:any-link, button, .button {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.btn-secondary{
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  color: #000000;
+}
 
 a.button:hover, a.button:focus, button:hover, button:focus {
   background-color: #000000;
