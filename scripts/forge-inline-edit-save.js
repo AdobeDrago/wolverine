@@ -11,6 +11,7 @@ const FORGE_UI_SELECTORS = [
   '.forge-edit-menu',
   '.forge-edit-dialog-backdrop',
   '.forge-edit-media-toolbar',
+  '.forge-edit-product-picker-backdrop',
   '.forge-personalization-backdrop',
 ].join(',');
 
@@ -21,6 +22,23 @@ export function cleanForgeUiFromNode(root) {
     el.removeAttribute('spellcheck');
     el.classList.remove('forge-edit-field', 'forge-edit-field--dirty', 'forge-edit-media');
     el.removeAttribute('title');
+  });
+  // Media chrome lives on <img>, which is not contenteditable — strip separately.
+  root.querySelectorAll('img.forge-edit-media, img.forge-edit-field--dirty, img.forge-edit-media--needs-alt').forEach((el) => {
+    el.classList.remove(
+      'forge-edit-media',
+      'forge-edit-field--dirty',
+      'forge-edit-media--needs-alt',
+      'forge-edit-field',
+    );
+    if (el.getAttribute('title') === 'Click to edit image URL and ADA alt text' ||
+        el.getAttribute('title') === 'Click to change image') {
+      el.removeAttribute('title');
+    }
+    delete el.dataset.forgeDecorative;
+  });
+  root.querySelectorAll('a.forge-edit-field--dirty, a.forge-edit-field').forEach((el) => {
+    el.classList.remove('forge-edit-field', 'forge-edit-field--dirty');
   });
   root.querySelectorAll('.forge-edit-block').forEach((el) => {
     el.classList.remove(
