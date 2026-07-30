@@ -6,13 +6,8 @@
   const VARIANT_ATTR = 'data-forge-variant';
   const PERSONALIZATION_ATTR = 'data-forge-personalization';
 
-  function forgeQueryParams(search) {
-    const raw = String(search || window.location.search || '').replace(/^\?/, '');
-    return new URLSearchParams(raw.split('?').join('&'));
-  }
-
   function segmentFromContext() {
-    const params = forgeQueryParams();
+    const params = new URLSearchParams(window.location.search);
     return (
       params.get('forge-preview-segment') ||
       params.get('forge-segment') ||
@@ -22,7 +17,7 @@
   }
 
   function journeyFromContext() {
-    const params = forgeQueryParams();
+    const params = new URLSearchParams(window.location.search);
     return params.get('forge-preview-journey') || params.get('forge-journey') || '';
   }
 
