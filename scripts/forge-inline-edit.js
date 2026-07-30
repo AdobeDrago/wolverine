@@ -4,7 +4,22 @@
  */
 
 import { insertBlockOnDaPageClient } from './forge-inline-edit-da.js';
-import { instrumentEditableFields } from './forge-inline-edit-fields.js';
+import {
+  closeAdaToolbar,
+  computeAdaComplianceScore,
+  countMissingImageAlts,
+  instrumentEditableFields,
+  openAdaPanelForTarget,
+  refreshAdaMediaFlags,
+} from './forge-inline-edit-fields.js';
+import {
+  applyProductsToCommerceBlock,
+  blockNeedsProductPicker,
+  fetchProductCatalog,
+  openProductPicker,
+  readSelectedProductIds,
+} from './forge-inline-edit-commerce.js';
+import { productBrandName } from './forge-product-brand.js';
 import {
   initPersonalizationOnBlock,
   mountPreviewJourneyControl,
@@ -15,10 +30,9 @@ import {
   updatePersonalizationBadge,
 } from './forge-inline-edit-personalization.js';
 import { savePageToDaClient } from './forge-inline-edit-save.js';
-import { productBrandName } from './forge-product-brand.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 11;
+export const FORGE_INLINE_EDIT_BUILD = 17;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -32,29 +46,47 @@ const BLOCK_REGISTRY = {
   carousel: { label: 'Carousel', category: 'content' },
   columns: { label: 'Columns', category: 'content' },
   fragment: { label: 'Fragment', category: 'content' },
-  'product-list': { label: 'Product grid / carousel', category: 'commerce' },
+  'product-list': { label: 'Product grid', category: 'commerce' },
   'product-carousel': { label: 'Product carousel', category: 'commerce' },
   'product-teaser': { label: 'Product teaser', category: 'commerce' },
   'product-detail': { label: 'Product detail', category: 'commerce' },
-  minicart: { label: 'Mini cart', category: 'commerce' },
-  checkout: { label: 'Checkout', category: 'commerce' },
+  'product-details': { label: 'Product details (Magento)', category: 'commerce' },
+  'forge-device-cards': { label: 'Device cards', category: 'commerce' },
+  'xwalk-phone-list': { label: 'Phone list', category: 'commerce' },
   'forge-persona-plan': { label: 'Persona plan offer', category: 'commerce' },
   'forge-plan-offer': { label: 'Plan line offer (AJO)', category: 'commerce' },
+  minicart: { label: 'Mini cart', category: 'commerce' },
+  checkout: { label: 'Checkout', category: 'commerce' },
+  'commerce-cart': { label: 'Commerce cart', category: 'commerce' },
+  'commerce-checkout': { label: 'Commerce checkout', category: 'commerce' },
 };
 
 const PICKER_GROUPS = [
   { category: 'content', items: ['hero', 'cards', 'carousel', 'columns'] },
-  { category: 'commerce', items: ['product-list', 'product-teaser', 'product-carousel'] },
+  {
+    category: 'commerce',
+    items: ['product-list', 'product-teaser', 'product-carousel', 'product-detail', 'forge-device-cards'],
+  },
 ];
 
-/** Tolerate malformed `?a=1?b=2` (second `?` instead of `&`). */
-function forgeQueryParams(search = window.location.search) {
-  const raw = String(search || '').replace(/^\?/, '');
-  return new URLSearchParams(raw.split('?').join('&'));
-}
+const COMMERCE_CLASS_HINTS = [
+  'product-list',
+  'product-carousel',
+  'product-teaser',
+  'product-detail',
+  'product-details',
+  'forge-device-cards',
+  'xwalk-phone-list',
+  'minicart',
+  'checkout',
+  'commerce-cart',
+  'commerce-checkout',
+  'forge-persona-plan',
+  'forge-plan-offer',
+];
 
 function isEditMode() {
-  const params = forgeQueryParams();
+  const params = new URLSearchParams(window.location.search);
   const fe = params.get(FORGE_EDIT_PARAM);
   if (fe === '1' || fe === 'true') return true;
   // Common typo / alternate: ?forge=edit-1
@@ -65,11 +97,11 @@ function isEditMode() {
 }
 
 function resolveOrgRepo() {
-  const params = forgeQueryParams();
+  const params = new URLSearchParams(window.location.search);
   let org = params.get(FORGE_ORG_PARAM);
   let repo = params.get(FORGE_REPO_PARAM);
   if (!org || !repo) {
-    const m = window.location.hostname.match(/^main--(.+)--([^.]+)\.aem\.(?:page|live)$/i);
+    const m = window.location.hostname.match(/^main--(.+)--([^.]+)\.aem\.page$/);
     if (m) {
       repo = repo || m[1];
       org = org || m[2];
@@ -81,7 +113,7 @@ function resolveOrgRepo() {
 function resolveForgeApiBase() {
   const meta = document.querySelector('meta[name="forge:api"]');
   if (meta?.content) return meta.content.replace(/\/$/, '');
-  const params = forgeQueryParams();
+  const params = new URLSearchParams(window.location.search);
   const fromQuery = params.get(FORGE_API_PARAM);
   if (fromQuery) return fromQuery.replace(/\/$/, '');
   try {
@@ -111,22 +143,25 @@ function storeDaToken(token) {
   }
 }
 
+/** Singleton — never stack two Document Authoring sign-in dialogs. */
+let daTokenPromptPromise = null;
+
 function promptDaToken() {
-  return new Promise((resolve) => {
-    document.querySelector('.forge-edit-token-backdrop')?.remove();
+  if (daTokenPromptPromise) return daTokenPromptPromise;
+  daTokenPromptPromise = new Promise((resolve) => {
+    document.querySelectorAll('.forge-edit-token-backdrop').forEach((n) => n.remove());
     const backdrop = document.createElement('div');
     backdrop.className = 'forge-edit-dialog-backdrop forge-edit-token-backdrop';
     const dialog = document.createElement('div');
-    dialog.className = 'forge-edit-dialog';
+    dialog.className = 'forge-edit-dialog forge-edit-token-dialog';
     dialog.innerHTML = `
       <header>Document Authoring sign-in</header>
       <div class="dialog-body">
-        <p style="margin:0 0 12px;font-size:0.875rem;line-height:1.45">
+        <p>
           Paste your <strong>da.live</strong> IMS token (<code>tokenValue</code> from localStorage, starts with <code>eyJ</code>),
           or open <a href="https://da.live" target="_blank" rel="noopener">da.live</a> in this browser and sign in, then retry.
         </p>
-        <input type="password" id="forgeDaTokenField" placeholder="eyJ…" autocomplete="off"
-          style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-family:monospace;font-size:12px" />
+        <input type="password" id="forgeDaTokenField" placeholder="eyJ…" autocomplete="off" />
       </div>
       <footer>
         <button type="button" data-action="cancel">Cancel</button>
@@ -137,17 +172,31 @@ function promptDaToken() {
     document.body.append(backdrop);
     const field = dialog.querySelector('#forgeDaTokenField');
     field?.focus();
-    dialog.querySelector('[data-action="cancel"]')?.addEventListener('click', () => {
+    const finish = (val) => {
+      daTokenPromptPromise = null;
       backdrop.remove();
-      resolve('');
-    });
+      resolve(val);
+    };
+    dialog.querySelector('[data-action="cancel"]')?.addEventListener('click', () => finish(''));
     dialog.querySelector('[data-action="save"]')?.addEventListener('click', () => {
       const val = field?.value?.trim() || '';
-      backdrop.remove();
       if (val) storeDaToken(val);
-      resolve(val);
+      finish(val);
+    });
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) finish('');
     });
   });
+  return daTokenPromptPromise;
+}
+
+function clearStoredDaToken() {
+  try {
+    sessionStorage.removeItem('forge_da_token');
+    localStorage.removeItem('forge_da_token');
+  } catch {
+    /* ignore */
+  }
 }
 
 function sectionLabel(el) {
@@ -162,8 +211,21 @@ function sectionLabel(el) {
 
 function classifyBlock(el) {
   const classes = [...el.classList];
+  // Prefer commerce-specific markers over generic "cards"
+  for (const name of COMMERCE_CLASS_HINTS) {
+    if (classes.includes(name) && BLOCK_REGISTRY[name]) {
+      return { id: name, ...BLOCK_REGISTRY[name] };
+    }
+  }
+  if (classes.includes('cards') && (classes.includes('forge-device-cards') || classes.includes('xwalk-phone-list'))) {
+    const id = classes.includes('xwalk-phone-list') ? 'xwalk-phone-list' : 'forge-device-cards';
+    return { id, ...BLOCK_REGISTRY[id] };
+  }
   for (const name of Object.keys(BLOCK_REGISTRY)) {
     if (classes.includes(name)) return { id: name, ...BLOCK_REGISTRY[name] };
+  }
+  if (el.hasAttribute('data-forge-commerce') || el.querySelector?.('[data-forge-product-id]')) {
+    return { id: 'product-list', label: 'Commerce products', category: 'commerce' };
   }
   if (el.closest('header')) return { id: 'header', label: 'Header', category: 'content' };
   if (el.closest('footer')) return { id: 'footer', label: 'Footer', category: 'content' };
@@ -208,6 +270,24 @@ function showToast(message, isError = false) {
   setTimeout(() => el.remove(), 5000);
 }
 
+function updateAdaScoreBanner() {
+  const chip = document.querySelector('.forge-edit-banner__ada-score');
+  if (!chip) return;
+  const { score, missingAlts, vagueLinks, totalImages, totalLinks } = computeAdaComplianceScore(document);
+  chip.textContent = `ADA ${score}%`;
+  chip.dataset.score = String(score);
+  chip.classList.toggle('forge-edit-banner__ada-score--ok', score >= 90);
+  chip.classList.toggle('forge-edit-banner__ada-score--warn', score >= 60 && score < 90);
+  chip.classList.toggle('forge-edit-banner__ada-score--bad', score < 60);
+  const parts = [];
+  if (totalImages) parts.push(`${missingAlts} image${missingAlts === 1 ? '' : 's'} missing alt`);
+  if (totalLinks) parts.push(`${vagueLinks} vague link${vagueLinks === 1 ? '' : 's'}`);
+  chip.title =
+    parts.length > 0
+      ? `ADA compliance ${score}% — ${parts.join(' · ')}. Click images for alt; double-click links for accessible name.`
+      : `ADA compliance ${score}% — no image/link issues detected on this page.`;
+}
+
 function showBanner() {
   if (document.querySelector('.forge-edit-banner')) return;
   const bar = document.createElement('div');
@@ -218,11 +298,24 @@ function showBanner() {
   const pageLabel = currentPagePath() === 'index' ? 'Home' : currentPagePath();
   bar.innerHTML = `<strong>${productBrandName()} inline edit</strong>
     <span>${target} · ${pageLabel}</span>
+    <button type="button" class="forge-edit-banner__ada-score" title="ADA compliance">ADA —</button>
     <button type="button" class="forge-edit-banner__save" disabled>Save page</button>
-    <span class="forge-edit-banner__hint">Personalization · RT CDP / AJO · click text to edit</span>`;
+    <span class="forge-edit-banner__hint">Click image → ADA alt · Double-click link → accessible name</span>`;
   document.body.prepend(bar);
   document.documentElement.classList.add('forge-edit-active');
   bar.querySelector('.forge-edit-banner__save')?.addEventListener('click', () => savePage());
+  bar.querySelector('.forge-edit-banner__ada-score')?.addEventListener('click', () => {
+    const first = document.querySelector('main img.forge-edit-media--needs-alt, main img:not([alt])');
+    if (first) {
+      first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      openAdaPanelForTarget(first, { onDirty: setPageDirty });
+      return;
+    }
+    showToast('No missing image alts — double-click vague links (e.g. “Learn more”) for accessible names.');
+  });
+  window.addEventListener('forge-ada-score-refresh', updateAdaScoreBanner);
+  refreshAdaMediaFlags(document);
+  updateAdaScoreBanner();
   setClassifyBlockMeta(classifyBlock);
   mountPreviewSegmentControl(bar);
   mountPreviewJourneyControl(bar);
@@ -245,9 +338,12 @@ function decorateBlock(el, meta) {
 }
 
 function findBlocks(root) {
-  const selectors = Object.keys(BLOCK_REGISTRY)
-    .map((c) => `main .${c}, main div.${c}`)
-    .join(', ');
+  const selectors = [
+    ...Object.keys(BLOCK_REGISTRY).map((c) => `main .${c}, main div.${c}`),
+    'main .cards.forge-device-cards',
+    'main .cards.xwalk-phone-list',
+    'main [data-forge-commerce]',
+  ].join(', ');
   const found = new Set();
   root.querySelectorAll(selectors).forEach((el) => {
     if (!found.has(el)) found.add(el);
@@ -281,7 +377,7 @@ function insertDropZones(main) {
   });
 }
 
-async function insertBlockViaForgeApi(blockId, afterIndex, apiBase) {
+async function insertBlockViaForgeApi(blockId, afterIndex, apiBase, products = null) {
   const { org, repo } = resolveOrgRepo();
   const headers = { 'Content-Type': 'application/json' };
   const daToken = resolveDaToken();
@@ -296,16 +392,55 @@ async function insertBlockViaForgeApi(blockId, afterIndex, apiBase) {
       pagePath: currentPagePath(),
       blockId,
       afterIndex,
+      brandName: productBrandName(),
+      products: Array.isArray(products) ? products : undefined,
     }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(data.error || data.hint || `Insert failed (${res.status})`);
+    const err = new Error(data.error || data.hint || `Insert failed (${res.status})`);
+    err.needsToken = Boolean(data.needsToken) || res.status === 401 || res.status === 403;
+    err.hint = data.hint || '';
+    throw err;
   }
   return data;
 }
 
-async function insertBlock(blockId, afterIndex) {
+async function insertBlockOnDaClientWithPrompt(blockId, afterIndex, products = null, { forcePrompt = false } = {}) {
+  const { org, repo } = resolveOrgRepo();
+  let token = forcePrompt ? '' : resolveDaToken();
+  if (forcePrompt) clearStoredDaToken();
+  if (!token) token = await promptDaToken();
+  if (!token) {
+    throw new Error('DA token required — sign in on da.live or paste tokenValue');
+  }
+
+  const payload = {
+    org,
+    repo,
+    pagePath: currentPagePath(),
+    blockId,
+    afterIndex,
+    brandName: productBrandName(),
+    products: Array.isArray(products) ? products : undefined,
+    token,
+  };
+
+  let result = await insertBlockOnDaPageClient(payload);
+  if (!result.ok && result.needsToken) {
+    clearStoredDaToken();
+    const retry = await promptDaToken();
+    if (retry) {
+      result = await insertBlockOnDaPageClient({ ...payload, token: retry });
+    }
+  }
+  if (!result.ok) {
+    throw new Error(result.error || result.hint || 'Insert failed');
+  }
+  return result;
+}
+
+async function insertBlock(blockId, afterIndex, products = null) {
   const { org, repo } = resolveOrgRepo();
   if (!org || !repo) {
     showToast('Missing org/repo — add forge-org and forge-repo query params', true);
@@ -314,40 +449,37 @@ async function insertBlock(blockId, afterIndex) {
 
   const apiBase = resolveForgeApiBase();
   if (apiBase) {
-    return insertBlockViaForgeApi(blockId, afterIndex, apiBase);
-  }
-
-  let token = resolveDaToken();
-  if (!token) token = await promptDaToken();
-  if (!token) {
-    throw new Error('DA token required — sign in on da.live or paste tokenValue');
-  }
-
-  const result = await insertBlockOnDaPageClient({
-    org,
-    repo,
-    pagePath: currentPagePath(),
-    blockId,
-    afterIndex,
-    token,
-  });
-  if (!result.ok && result.needsToken) {
-    const retry = await promptDaToken();
-    if (retry) {
-      return insertBlockOnDaPageClient({
-        org,
-        repo,
-        pagePath: currentPagePath(),
-        blockId,
-        afterIndex,
-        token: retry,
-      });
+    try {
+      return await insertBlockViaForgeApi(blockId, afterIndex, apiBase, products);
+    } catch (e) {
+      // Stale forge-api DA_ADMIN_TOKEN → one token dialog, then browser write.
+      const authFail =
+        e?.needsToken ||
+        /DA write failed:\s*40[13]|DA token required|401|403/i.test(String(e?.message || ''));
+      if (!authFail) throw e;
+      return insertBlockOnDaClientWithPrompt(blockId, afterIndex, products, { forcePrompt: true });
     }
   }
-  if (!result.ok) {
-    throw new Error(result.error || 'Insert failed');
-  }
-  return result;
+
+  return insertBlockOnDaClientWithPrompt(blockId, afterIndex, products);
+}
+
+async function pickProductsForBlock(blockId, selectedIds = null) {
+  if (!blockNeedsProductPicker(blockId)) return null;
+  const catalog = await fetchProductCatalog(resolveForgeApiBase());
+  const multi = blockId !== 'product-detail';
+  return openProductPicker({
+    products: catalog.products,
+    facets: catalog.facets,
+    catalogs: catalog.catalogs,
+    selectedIds,
+    multi,
+    min: 1,
+    title:
+      blockId === 'product-detail'
+        ? 'Choose product for detail (SKU / type / catalog)'
+        : `Choose products · ${BLOCK_REGISTRY[blockId]?.label || blockId}`,
+  });
 }
 
 function openAddDialog({ afterIndex = -1, anchorEl = null } = {}) {
@@ -378,11 +510,26 @@ function openAddDialog({ afterIndex = -1, anchorEl = null } = {}) {
       btn.textContent = meta?.label || id;
       btn.addEventListener('click', async () => {
         btn.disabled = true;
-        btn.textContent = 'Saving…';
+        const original = meta?.label || id;
+        btn.textContent = blockNeedsProductPicker(id) ? 'Choose products…' : 'Saving…';
         try {
-          const result = await insertBlock(id, afterIndex);
+          let products = null;
+          if (blockNeedsProductPicker(id)) {
+            products = await pickProductsForBlock(id);
+            if (!products) {
+              btn.disabled = false;
+              btn.textContent = original;
+              return;
+            }
+            btn.textContent = 'Saving…';
+          }
+          const result = await insertBlock(id, afterIndex, products);
           backdrop.remove();
-          showToast(`Added ${meta?.label || id} — reloading preview…`);
+          showToast(
+            products?.length
+              ? `Added ${meta?.label || id} with ${products.length} product${products.length === 1 ? '' : 's'} — reloading…`
+              : `Added ${meta?.label || id} — reloading preview…`,
+          );
           if (result?.previewUrl) {
             window.location.href = result.previewUrl;
           } else {
@@ -390,7 +537,7 @@ function openAddDialog({ afterIndex = -1, anchorEl = null } = {}) {
           }
         } catch (e) {
           btn.disabled = false;
-          btn.textContent = meta?.label || id;
+          btn.textContent = original;
           showToast(e.message || 'Insert failed', true);
         }
       });
@@ -421,6 +568,16 @@ async function savePage() {
   if (!org || !repo) {
     showToast('Missing org/repo', true);
     return;
+  }
+
+  closeAdaToolbar();
+
+  const missingAlt = countMissingImageAlts(document);
+  if (missingAlt > 0) {
+    const proceed = window.confirm(
+      `${missingAlt} image${missingAlt === 1 ? '' : 's'} missing ADA alt text. Save anyway?\n\nClick Cancel, then click each outlined image to add alt text.`,
+    );
+    if (!proceed) return;
   }
 
   let token = resolveDaToken();
@@ -470,13 +627,24 @@ async function savePage() {
   }
 }
 
-function showContextMenu(x, y, blockEl, meta) {
+function showContextMenu(x, y, blockEl, meta, targetEl) {
   hideContextMenu();
   const menu = document.createElement('ul');
   menu.className = 'forge-edit-menu';
+  const adaTarget =
+    targetEl?.closest?.('img') ||
+    targetEl?.closest?.('picture') ||
+    targetEl?.closest?.('a[href]');
+  const commerceTarget =
+    meta.category === 'commerce' ||
+    blockNeedsProductPicker(meta.id) ||
+    blockEl?.hasAttribute?.('data-forge-commerce') ||
+    blockEl?.querySelector?.('[data-forge-product-id]');
   menu.innerHTML = `
     <li data-action="info">${meta.label} · ${meta.category}</li>
     <li class="menu-sep"></li>
+    <li data-action="products"${commerceTarget ? '' : ' class="disabled"'}>Choose products…</li>
+    <li data-action="ada"${adaTarget ? '' : ' class="disabled"'}>ADA / accessibility…</li>
     <li data-action="personalize">Personalization (RT CDP / AJO)…</li>
     <li data-action="add-after">Add component after…</li>
     <li data-action="save">Save page to Document Authoring</li>
@@ -486,13 +654,41 @@ function showContextMenu(x, y, blockEl, meta) {
   document.body.append(menu);
   contextMenuEl = menu;
 
-  menu.addEventListener('click', (e) => {
+  menu.addEventListener('click', async (e) => {
+    e.stopPropagation();
     const li = e.target.closest('li[data-action]');
     if (!li || li.classList.contains('disabled')) return;
     const action = li.dataset.action;
     hideContextMenu();
-    if (action === 'personalize') {
-      openPersonalizationPanel(block, { onDirty: setPageDirty });
+    if (action === 'products') {
+      try {
+        const selected = await pickProductsForBlock(meta.id, readSelectedProductIds(blockEl));
+        if (!selected) return;
+        const host =
+          blockEl.classList.contains('cards') ||
+          blockEl.classList.contains('product-detail') ||
+          blockEl.classList.contains('product-list')
+            ? blockEl
+            : blockEl.querySelector(
+                '.cards.forge-device-cards, .cards.xwalk-phone-list, .product-detail, .product-list, .forge-device-cards, .xwalk-phone-list',
+              ) || blockEl;
+        applyProductsToCommerceBlock(host, selected, {
+          brandName: productBrandName(),
+          blockId: meta.id,
+        });
+        // Re-instrument fields after DOM replace
+        delete host.dataset.forgeFieldsReady;
+        instrumentEditableFields(host, { onDirty: setPageDirty });
+        refreshAdaMediaFlags(host);
+        setPageDirty();
+        showToast(`Updated ${selected.length} product${selected.length === 1 ? '' : 's'} — Save page to publish`);
+      } catch (err) {
+        showToast(err.message || 'Product picker failed', true);
+      }
+    } else if (action === 'ada') {
+      openAdaPanelForTarget(targetEl || blockEl, { onDirty: setPageDirty });
+    } else if (action === 'personalize') {
+      openPersonalizationPanel(blockEl, { onDirty: setPageDirty });
     } else if (action === 'add-after') {
       const main = document.querySelector('main');
       const sections = main ? mainSections(main) : [];
@@ -512,7 +708,7 @@ function onContextMenu(e) {
   const block = e.target.closest('.forge-edit-block');
   if (!block) return;
   e.preventDefault();
-  showContextMenu(e.clientX, e.clientY, block, classifyBlock(block));
+  showContextMenu(e.clientX, e.clientY, block, classifyBlock(block), e.target);
 }
 
 let scanDebounceTimer = 0;
@@ -587,8 +783,15 @@ function init() {
   showBanner();
   scanAndDecorate();
   document.addEventListener('contextmenu', onContextMenu);
-  document.addEventListener('click', () => hideContextMenu());
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.forge-edit-menu')) hideContextMenu();
+    if (!e.target.closest('.forge-edit-media-toolbar')) closeAdaToolbar();
+  });
   document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAdaToolbar();
+      hideContextMenu();
+    }
     if ((e.metaKey || e.ctrlKey) && e.key === 's') {
       e.preventDefault();
       if (pageDirty) savePage();
