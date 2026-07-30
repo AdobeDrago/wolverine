@@ -165,10 +165,19 @@ export async function triggerHlxPreviewPath(org, repo, hlxPath) {
 }
 
 /**
- * @param {{ org: string, repo: string, pagePath: string, blockId: string, afterIndex?: number, brandName?: string, token?: string }} input
+ * @param {{ org: string, repo: string, pagePath: string, blockId: string, afterIndex?: number, brandName?: string, products?: object[], token?: string }} input
  */
 export async function insertBlockOnDaPageClient(input) {
-  const { org, repo, pagePath, blockId, afterIndex = -1, brandName = '', token = '' } = input;
+  const {
+    org,
+    repo,
+    pagePath,
+    blockId,
+    afterIndex = -1,
+    brandName = '',
+    products,
+    token = '',
+  } = input;
   if (!org || !repo || !blockId) {
     return { ok: false, error: 'org, repo, and blockId are required' };
   }
@@ -179,7 +188,10 @@ export async function insertBlockOnDaPageClient(input) {
     pageHtml = `<header></header>\n<main>\n</main>\n<footer></footer>\n`;
   }
 
-  const snippet = buildBlockSectionHtml(blockId, { brandName });
+  const snippet = buildBlockSectionHtml(blockId, {
+    brandName,
+    products: Array.isArray(products) ? products : undefined,
+  });
   const updated = insertBlockIntoPageHtml(pageHtml, snippet, afterIndex);
   const daFile = pagePathToDaFile(pagePath);
 
