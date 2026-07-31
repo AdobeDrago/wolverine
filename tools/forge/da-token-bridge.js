@@ -1,9 +1,12 @@
 /**
- * DA App micro-frontend: capture IMS token via DA_SDK and postMessage to the
- * preview opener (*.aem.page?forge-edit=1).
+ * DA App micro-frontend: capture IMS token via DA_SDK and deliver it to the
+ * preview tab (*.aem.page?forge-edit=1).
  *
- * da.live iframes this page from the HLX code bus (aem.page origin), so
- * localStorage on this document is NOT da.live's. Use DA_SDK.token instead.
+ * da.live iframes this page from the HLX code bus (aem.page origin). DA_SDK
+ * supplies the token. Because Cross-Origin-Opener-Policy often clears
+ * window.opener, we also write forge_da_token to localStorage (shared with the
+ * preview tab on the same aem.page origin) and optionally redirect the popup
+ * back to the preview origin with the token in the hash.
  *
  * App URL: https://da.live/app/{org}/{repo}/tools/forge/da-token-bridge
  */
@@ -11,10 +14,20 @@
 const MSG_TYPE = 'forge:set-da-token';
 const POLL_MS = 500;
 const MAX_WAIT_MS = 5 * 60 * 1000;
+const TOKEN_KEY = 'forge_da_token';
+const TOKEN_TS_KEY = 'forge_da_auth_ts';
 
 function isJwt(value) {
   const t = String(value || '').trim();
-  return t.startsWith('eyJ') && t.split('.').length === 3 && t.length > 500;
+  return t.startsWith('eyJ') && t.split('.').length === 3 && t.length > 80;
+}
+
+function params() {
+  try {
+    return new URLSearchParams(window.location.search || '');
+  } catch {
+    return new URLSearchParams();
+  }
 }
 
 /** Fallback when not inside the DA shell (direct aem.page open). */
@@ -76,6 +89,23 @@ async function readDaToken() {
   return readDaImsTokenFromStorage(localStorage) || readDaImsTokenFromStorage(sessionStorage);
 }
 
+function persistTokenForPreview(token) {
+  const t = String(token || '').trim();
+  if (!isJwt(t)) return false;
+  try {
+    localStorage.setItem(TOKEN_KEY, t);
+    localStorage.setItem(TOKEN_TS_KEY, String(Date.now()));
+  } catch {
+    /* ignore */
+  }
+  try {
+    sessionStorage.setItem(TOKEN_KEY, t);
+  } catch {
+    /* ignore */
+  }
+  return true;
+}
+
 function getPreviewOpener() {
   const candidates = [];
   try {
@@ -84,15 +114,7 @@ function getPreviewOpener() {
     /* ignore */
   }
   try {
-    if (window.parent && window.parent !== window) candidates.push(window.parent);
-  } catch {
-    /* ignore */
-  }
-  try {
-    if (window.top && window.top !== window) {
-      candidates.push(window.top);
-      if (window.top.opener) candidates.push(window.top.opener);
-    }
+    if (window.top?.opener) candidates.push(window.top.opener);
   } catch {
     /* ignore */
   }
@@ -111,7 +133,7 @@ function getPreviewOpener() {
   return null;
 }
 
-function sendTokenToOpener(token) {
+function sendTokenMessages(token) {
   const t = String(token || '').trim();
   if (!isJwt(t)) return false;
   const payload = { type: MSG_TYPE, token: t, source: 'da-token-bridge' };
@@ -138,7 +160,74 @@ function sendTokenToOpener(token) {
       /* ignore */
     }
   }
+  try {
+    const bc = new BroadcastChannel('forge-da-token');
+    bc.postMessage(payload);
+    bc.close();
+    sent = true;
+  } catch {
+    /* ignore */
+  }
   return sent;
+}
+
+function redirectPopupToPreview(token) {
+  const t = String(token || '').trim();
+  if (!isJwt(t)) return false;
+  const q = params();
+  let returnOrigin = (q.get('forgeReturn') || '').trim().replace(/\/$/, '');
+  if (!returnOrigin) {
+    // Iframe is already on aem.page — use this origin (query may not be forwarded by da.live).
+    try {
+      if (/\.aem\.(page|live)$/i.test(window.location.hostname)) {
+        returnOrigin = window.location.origin;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  if (!returnOrigin || !/^https:\/\//i.test(returnOrigin)) return false;
+  const dest = `${returnOrigin}/tools/forge/da-token-bridge.html?forgeDaCaptured=1#${encodeURIComponent(t)}`;
+  // Prefer navigating the popup top (da.live) onto aem.page so localStorage is not
+  // partitioned under da.live. Cross-origin iframes may set top.location but not read it.
+  const navigateTop = () => {
+    try {
+      if (window.top && window.top !== window) {
+        window.top.location.replace(dest);
+        return true;
+      }
+    } catch {
+      /* ignore */
+    }
+    try {
+      if (window.top && window.top !== window) {
+        window.top.location.href = dest;
+        return true;
+      }
+    } catch {
+      /* ignore */
+    }
+    try {
+      window.open(dest, '_top');
+      return true;
+    } catch {
+      /* ignore */
+    }
+    return false;
+  };
+  if (navigateTop()) return true;
+  try {
+    window.location.replace(dest);
+    return true;
+  } catch {
+    /* ignore */
+  }
+  try {
+    window.location.href = dest;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function setStatus(el, text, kind = '') {
@@ -147,7 +236,35 @@ function setStatus(el, text, kind = '') {
   el.dataset.kind = kind;
 }
 
+function handleCapturedReturn() {
+  const q = params();
+  if (q.get('forgeDaCaptured') !== '1') return false;
+  let token = '';
+  try {
+    token = decodeURIComponent((window.location.hash || '').replace(/^#/, '')).trim();
+  } catch {
+    token = (window.location.hash || '').replace(/^#/, '').trim();
+  }
+  if (!isJwt(token)) return false;
+  persistTokenForPreview(token);
+  sendTokenMessages(token);
+  document.body.innerHTML = `
+    <div style="font-family:adobe-clean,system-ui,sans-serif;max-width:28rem;margin:3rem auto;padding:1.5rem;text-align:center">
+      <h1 style="font-size:1.25rem">Signed in</h1>
+      <p>Session captured. You can close this window and return to the preview.</p>
+    </div>`;
+  window.setTimeout(() => {
+    try {
+      window.close();
+    } catch {
+      /* ignore */
+    }
+  }, 600);
+  return true;
+}
+
 export function runDaTokenBridge(root = document.getElementById('forge-da-token-bridge')) {
+  if (handleCapturedReturn()) return;
   if (!root) return;
 
   root.innerHTML = `
@@ -215,7 +332,8 @@ export function runDaTokenBridge(root = document.getElementById('forge-da-token-
 
   const finish = (token) => {
     if (done) return true;
-    if (!sendTokenToOpener(token)) return false;
+    if (!persistTokenForPreview(token)) return false;
+    sendTokenMessages(token);
     done = true;
     if (pollTimer) window.clearInterval(pollTimer);
     setStatus(statusEl, 'Signed in — returning to preview…', 'ok');
@@ -224,18 +342,21 @@ export function runDaTokenBridge(root = document.getElementById('forge-da-token-
       closeBtn.hidden = false;
       closeBtn.focus();
     }
+    // COOP-safe: bounce the popup back onto the preview origin with the token.
     window.setTimeout(() => {
-      try {
-        window.top?.close?.();
-      } catch {
-        /* ignore */
+      if (!redirectPopupToPreview(token)) {
+        try {
+          window.top?.close?.();
+        } catch {
+          /* ignore */
+        }
+        try {
+          window.close();
+        } catch {
+          /* ignore */
+        }
       }
-      try {
-        window.close();
-      } catch {
-        /* ignore */
-      }
-    }, 900);
+    }, 400);
     return true;
   };
 

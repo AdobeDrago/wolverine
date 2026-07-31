@@ -34,7 +34,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 27;
+export const FORGE_INLINE_EDIT_BUILD = 28;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -157,10 +157,17 @@ function storeDaToken(token) {
   if (!t || !isDaJwt(t)) return;
   try {
     sessionStorage.setItem('forge_da_token', t);
-    updateDaAuthBanner();
   } catch {
     /* ignore */
   }
+  try {
+    // Shared with the COOP-safe bridge return page on the same aem.page origin.
+    localStorage.setItem('forge_da_token', t);
+    localStorage.setItem('forge_da_auth_ts', String(Date.now()));
+  } catch {
+    /* ignore */
+  }
+  updateDaAuthBanner();
 }
 
 /** Singleton — never stack two Document Authoring sign-in dialogs. */
@@ -169,18 +176,32 @@ let daTokenPromptPromise = null;
 function daTokenBridgeUrls(org, repo) {
   // DA app URL (html-less). Shell iframes tools/forge/da-token-bridge.html from the code bus
   // and injects DA_SDK with the IMS token — no Console paste required.
+  // forgeReturn lets the bridge bounce the popup back onto this aem.page origin when
+  // Cross-Origin-Opener-Policy clears window.opener (storage is partitioned under da.live).
   const o = org || 'AdobeDrago';
   const r = repo || 'wolverine';
   const base = `https://da.live/app/${encodeURIComponent(o)}/${encodeURIComponent(r)}/tools/forge`;
+  let returnOrigin = '';
+  try {
+    returnOrigin = window.location.origin || '';
+  } catch {
+    /* ignore */
+  }
+  const returnQ = returnOrigin
+    ? `forgeReturn=${encodeURIComponent(returnOrigin)}`
+    : '';
   return {
-    primary: `${base}/da-token-bridge`,
-    fallback: `${base}/forge?forgeTokenBridge=1`,
+    primary: returnQ ? `${base}/da-token-bridge?${returnQ}` : `${base}/da-token-bridge`,
+    fallback: returnQ
+      ? `${base}/forge?forgeTokenBridge=1&${returnQ}`
+      : `${base}/forge?forgeTokenBridge=1`,
   };
 }
 
 function isDaJwt(value) {
   const t = String(value || '').trim();
-  return t.startsWith('eyJ') && t.split('.').length === 3 && t.length > 500;
+  // IMS JWTs are usually >1k chars; keep a low floor so capture is not rejected.
+  return t.startsWith('eyJ') && t.split('.').length === 3 && t.length > 80;
 }
 
 /**
@@ -192,7 +213,6 @@ function promptDaToken() {
   daTokenPromptPromise = new Promise((resolve) => {
     document.querySelectorAll('.forge-edit-token-backdrop').forEach((n) => n.remove());
     const { org, repo } = resolveOrgRepo();
-    const urls = daTokenBridgeUrls(org, repo);
 
     const backdrop = document.createElement('div');
     backdrop.className = 'forge-edit-dialog-backdrop forge-edit-token-backdrop';
@@ -216,6 +236,7 @@ function promptDaToken() {
     let popup = null;
     let pollTimer = 0;
     let settled = false;
+    let bc = null;
 
     const setStatus = (text, kind = 'wait') => {
       if (!statusEl) return;
@@ -227,6 +248,12 @@ function promptDaToken() {
       if (pollTimer) window.clearInterval(pollTimer);
       pollTimer = 0;
       window.removeEventListener('message', onMessage);
+      try {
+        bc?.close();
+      } catch {
+        /* ignore */
+      }
+      bc = null;
     };
 
     const finish = (val) => {
@@ -255,9 +282,20 @@ function promptDaToken() {
 
     const onMessage = (e) => {
       if (e.data?.type !== 'forge:set-da-token' || !e.data.token) return;
-      // Token may arrive from the da.live shell or the iframed tool (aem.page origin).
+      // Token may arrive from the da.live shell, iframed tool, or COOP-safe return page.
       acceptToken(e.data.token);
     };
+
+    try {
+      bc = new BroadcastChannel('forge-da-token');
+      bc.onmessage = (ev) => {
+        if (ev?.data?.type === 'forge:set-da-token' && ev.data.token) {
+          acceptToken(ev.data.token);
+        }
+      };
+    } catch {
+      /* BroadcastChannel unavailable */
+    }
 
     const openLogin = () => {
       setStatus('Waiting for Adobe sign-in…', 'wait');
@@ -266,18 +304,25 @@ function promptDaToken() {
       } catch {
         /* ignore */
       }
-      popup = window.open(urls.primary, 'forge-da-token', 'width=560,height=720');
+      // Rebuild URLs each open so forgeReturn matches the current preview origin.
+      const fresh = daTokenBridgeUrls(org, repo);
+      popup = window.open(fresh.primary, 'forge-da-token', 'width=560,height=720');
       if (!popup) {
         setStatus('Popup blocked — allow popups for this site, then click Reopen sign-in.', 'err');
         return;
       }
-      popup.focus();
+      try {
+        popup.focus();
+      } catch {
+        /* ignore */
+      }
 
       window.setTimeout(() => {
-        if (settled || !popup || popup.closed) return;
+        if (settled || !popup) return;
         try {
+          if (popup.closed) return;
           if (/404|not found/i.test(popup.document?.title || '')) {
-            popup.location.href = urls.fallback;
+            popup.location.href = fresh.fallback;
           }
         } catch {
           /* cross-origin while on da.live */
@@ -292,14 +337,29 @@ function promptDaToken() {
           acceptToken(existing);
           return;
         }
-        if (popup?.closed) {
+        let closed = false;
+        try {
+          closed = Boolean(popup?.closed);
+        } catch {
+          /* COOP may block closed read while still on da.live */
+        }
+        if (closed) {
+          // Brief grace — COOP-safe return writes localStorage then closes the popup.
+          window.setTimeout(() => {
+            if (settled) return;
+            const late = resolveDaToken();
+            if (isDaJwt(late)) {
+              acceptToken(late);
+              return;
+            }
+            if (!settled) {
+              setStatus('Sign-in window closed before a session arrived. Click Reopen sign-in.', 'err');
+            }
+          }, 1200);
           window.clearInterval(pollTimer);
           pollTimer = 0;
-          if (!settled) {
-            setStatus('Sign-in window closed before a session arrived. Click Reopen sign-in.', 'err');
-          }
         }
-      }, 700);
+      }, 400);
     };
 
     window.addEventListener('message', onMessage);
@@ -318,6 +378,7 @@ function clearStoredDaToken() {
   try {
     sessionStorage.removeItem('forge_da_token');
     localStorage.removeItem('forge_da_token');
+    localStorage.removeItem('forge_da_auth_ts');
   } catch {
     /* ignore */
   }
