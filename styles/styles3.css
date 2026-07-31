@@ -88,31 +88,153 @@ p em { font-style: normal; }
 }
 
 /* --- HEADER & NAVIGATION --- */
-header, .header-wrapper {
-  background-color: var(--surface-white) !important;
-  border-bottom: 1px solid var(--border-color);
-  position: relative;
-  z-index: 1000;
-  width: 100%;
-}
-
+header, 
+.header-wrapper, 
 header nav {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0.75rem 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  background-color: var(--surface-white) !important;
+  width: 100% !important;
+  position: relative !important;
+  z-index: 1000 !important;
+  box-sizing: border-box !important;
 }
 
+header {
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* 2. Strip ALL Bullet Points & Paragraph Margins inside Header */
+header ul, 
+header ol, 
+header li, 
+nav ul, 
+nav li {
+  list-style: none !important;
+  list-style-type: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-indent: 0 !important;
+}
+
+header p {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-block !important;
+}
+
+/* 3. Main Nav Horizontal Flex Layout */
+header nav {
+  max-width: var(--max-width) !important;
+  margin: 0 auto !important;
+  padding: 0.75rem 1rem !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+}
+
+/* Ensure inner container divs align horizontally */
+header nav > div,
+header nav .nav-brand,
+header nav .nav-sections,
+header nav .nav-tools {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 1.25rem !important;
+}
+
+/* 4. Brand Logo Link */
+header nav .nav-brand a,
+header nav a[href="/"] {
+  font-size: 1.3rem !important;
+  font-weight: 900 !important;
+  color: var(--boost-black) !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+header nav .nav-brand a span,
+header nav a[href="/"] span {
+  color: var(--boost-orange) !important;
+}
+
+/* 5. Navigation Links List */
+header nav ul {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 1.25rem !important;
+}
+
+header nav ul li a {
+  color: var(--boost-black) !important;
+  font-weight: 800 !important;
+  font-size: 0.85rem !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+header nav ul li a:hover {
+  color: var(--boost-orange) !important;
+}
+
+/* 6. Action Buttons in Header */
 header nav a.btn-primary,
-header nav a.btn-secondary {
+header nav a.btn-secondary,
+header nav .btn-primary,
+header nav .btn-secondary {
   display: inline-block !important;
   width: auto !important;
-  padding: 0.4rem 1.1rem !important;
+  padding: 0.45rem 1.1rem !important;
   font-size: 0.8rem !important;
-  white-space: nowrap;
+  font-weight: 800 !important;
+  border-radius: 30px !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+}
+
+header nav a.btn-primary {
+  background-color: var(--boost-orange) !important;
+  color: var(--boost-black) !important;
+  border: 2px solid var(--boost-orange) !important;
+}
+
+header nav a.btn-secondary {
+  background-color: transparent !important;
+  color: var(--boost-black) !important;
+  border: 2px solid var(--boost-black) !important;
+}
+
+/* 7. Mobile Responsive Layout (< 768px) */
+@media (max-width: 767px) {
+  header nav {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 0.85rem 0.5rem !important;
+  }
+
+  header nav > div,
+  header nav .nav-sections,
+  header nav .nav-tools {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  header nav ul {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 0.75rem !important;
+  }
+
+  header nav a.btn-primary,
+  header nav a.btn-secondary {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.75rem !important;
+  }
 }
 
 /* --- HERO BANNER --- */
