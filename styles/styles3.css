@@ -24,33 +24,6 @@ body {
   line-height: 1.5;
 }
 
-/* --- FIX 1: HEADER & NAVIGATION STYLING --- */
-header {
-  background-color: var(--surface-white);
-  border-bottom: 1px solid var(--border-color);
-  position: relative;
-  z-index: 1000;
-  min-height: 60px;
-}
-
-/* Restores layout space for dynamically loaded AEM nav */
-header nav {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0.75rem 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* Mobile Hamburger Menu Compatibility */
-header nav .nav-hamburger, 
-header nav button {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
 main {
   max-width: var(--max-width);
   margin: 0 auto;
@@ -84,11 +57,10 @@ p em { font-style: normal; }
 
 .btn-primary, .btn-secondary {
   display: block;
-  width: 100%;
-  padding: 0.9rem 1.5rem;
+  padding: 0.6rem 1.25rem;
   border-radius: 40px;
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 0.9rem;
   text-transform: uppercase;
   text-align: center;
   transition: all 0.2s ease-in-out;
@@ -102,7 +74,6 @@ p em { font-style: normal; }
 
 .btn-primary:hover {
   background-color: var(--boost-orange-hover);
-  transform: translateY(-2px);
 }
 
 .btn-secondary {
@@ -116,7 +87,59 @@ p em { font-style: normal; }
   color: var(--surface-white);
 }
 
-/* --- Hero Banner --- */
+/* --- AEM EDS HEADER & NAV STYLING --- */
+header, .header-wrapper {
+  background-color: var(--surface-white);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+}
+
+header nav {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header nav .nav-brand strong a {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--boost-black);
+}
+
+header nav .nav-brand strong a span {
+  color: var(--boost-orange);
+}
+
+header nav ul {
+  display: flex;
+  list-style: none;
+  gap: 1.5rem;
+}
+
+header nav ul a {
+  color: var(--boost-black);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+}
+
+header nav ul a:hover {
+  color: var(--boost-orange);
+}
+
+header nav .nav-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* --- HERO BANNER --- */
 .hero {
   position: relative;
   min-height: 480px;
@@ -187,7 +210,7 @@ p em { font-style: normal; }
   padding: 1rem 2.5rem;
 }
 
-/* --- Columns Block (Value Props) --- */
+/* --- COLUMNS BLOCK --- */
 .columns {
   display: grid;
   grid-template-columns: 1fr;
@@ -216,7 +239,7 @@ p em { font-style: normal; }
   color: var(--boost-text-muted);
 }
 
-/* --- Cards Block (Plans) --- */
+/* --- CARDS BLOCK --- */
 .cards {
   display: grid;
   grid-template-columns: 1fr;
@@ -298,7 +321,7 @@ p em { font-style: normal; }
   margin-top: auto;
 }
 
-/* --- Phone Cards Section --- */
+/* --- PHONE CARDS SECTION --- */
 .phone-cards > div > div:first-child picture img {
   height: 260px;
   object-fit: cover;
@@ -342,7 +365,7 @@ p em { font-style: normal; }
   margin-bottom: 1.5rem;
 }
 
-/* --- Disclaimers --- */
+/* --- DISCLAIMERS --- */
 .disclaimers {
   margin-top: 4rem;
   padding: 2rem;
@@ -363,8 +386,8 @@ p em { font-style: normal; }
   margin-bottom: 0.75rem;
 }
 
-/* --- FIX 2: UNIFIED BOOST MOBILE FOOTER --- */
-footer {
+/* --- AEM EDS FOOTER STYLING --- */
+footer, .footer-wrapper {
   background-color: var(--boost-black) !important;
   color: #FFFFFF !important;
   padding: 3.5rem 1.5rem 2rem 1.5rem !important;
@@ -372,61 +395,48 @@ footer {
   width: 100%;
 }
 
-.footer-container {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-}
-
-.footer-brand .footer-logo {
+footer .footer-brand .footer-logo {
   font-size: 2rem;
   color: #FFFFFF !important;
   margin-bottom: 0.5rem;
   font-weight: 900;
 }
 
-.footer-brand .footer-logo span {
+footer .footer-brand .footer-logo span {
   color: var(--boost-orange) !important;
 }
 
-.footer-brand p {
+footer .footer-brand p {
   color: #999999 !important;
   font-size: 0.95rem;
+  margin-bottom: 2rem;
 }
 
-.footer-columns {
+footer .footer-nav {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
   gap: 2rem;
 }
 
-.footer-columns h4 {
+footer h4 {
   color: var(--boost-orange) !important;
   font-size: 1.05rem !important;
   font-weight: 800 !important;
   text-transform: uppercase !important;
   margin-bottom: 0.8rem !important;
-  letter-spacing: 0.5px;
 }
 
-/* Complete reset for all footer lists to remove green bullets */
-.footer-columns ul,
 footer ul {
   list-style: none !important;
   padding: 0 !important;
   margin: 0 !important;
 }
 
-.footer-columns li,
 footer li {
   list-style: none !important;
   margin-bottom: 0.5rem !important;
-  padding: 0 !important;
 }
 
-.footer-columns a,
 footer a {
   color: #CCCCCC !important;
   font-size: 0.95rem !important;
@@ -434,12 +444,11 @@ footer a {
   transition: color 0.2s ease;
 }
 
-.footer-columns a:hover,
 footer a:hover {
   color: #FFFFFF !important;
 }
 
-.footer-bottom {
+footer .footer-copyright {
   max-width: var(--max-width);
   margin: 2.5rem auto 0 auto;
   padding-top: 1.5rem;
@@ -448,19 +457,14 @@ footer a:hover {
   font-size: 0.85rem;
 }
 
-/* --- Responsive Desktop Grid --- */
+/* --- RESPONSIVE DESKTOP GRID --- */
 @media (min-width: 768px) {
   .columns { grid-template-columns: repeat(3, 1fr); }
   .cards { grid-template-columns: repeat(3, 1fr); }
   .phone-cards { grid-template-columns: repeat(2, 1fr); }
 
-  .footer-container {
-    flex-direction: row;
-    justify-content: space-between;
-  }
-
-  .footer-columns {
-    grid-template-columns: repeat(5, auto);
-    gap: 3rem;
+  footer .footer-nav {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2rem;
   }
 }
