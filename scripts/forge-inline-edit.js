@@ -34,7 +34,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 31;
+export const FORGE_INLINE_EDIT_BUILD = 32;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -202,8 +202,8 @@ let daTokenPromptPromise = null;
 
 function adobeOAuthBridgeUrls() {
   // Standard Adobe IMS via forge-auth — NOT da.live DA_SDK.
-  // Prefer forge-api HTML (always deployable with actions) over /forge/*.html static
-  // which 404s until app:deploy:cdn:static lands.
+  // Open /adobe/start directly so the popup hits IMS immediately (no intermediate
+  // "Redirecting…" HTML that can hang after async token checks).
   let returnOrigin = '';
   try {
     returnOrigin = window.location.origin || '';
@@ -218,7 +218,7 @@ function adobeOAuthBridgeUrls() {
   const staticBridge = `${cdn}/forge/da-oauth-bridge.html?${q}`;
   const capturePage = `${returnOrigin}/tools/forge/da-token-bridge.html?forgeDaCaptured=1`;
   const directAuth = `${auth}/adobe/start?returnTo=${encodeURIComponent(capturePage)}`;
-  return { primary: apiBridge, fallback: staticBridge, directAuth };
+  return { primary: directAuth, fallback: apiBridge, staticBridge, directAuth };
 }
 
 function isDaJwt(value) {
@@ -336,34 +336,23 @@ function promptDaToken() {
         /* ignore */
       }
 
-      // If forge-api / static bridge 404s, fall back to forge-auth start → capture page.
+      // If adobe/start 404/503s, fall back to forge-api HTML bridge.
       window.setTimeout(() => {
         if (settled || !popup) return;
         try {
           if (popup.closed) return;
           const title = popup.document?.title || '';
           const bodyText = popup.document?.body?.innerText || '';
-          if (/404|not found/i.test(title) || /404 Not Found/i.test(bodyText)) {
-            popup.location.href = fresh.fallback || fresh.directAuth;
+          if (
+            /404|not found|not configured|503/i.test(title) ||
+            /404 Not Found|not configured|503/i.test(bodyText)
+          ) {
+            popup.location.href = fresh.fallback || fresh.staticBridge;
           }
         } catch {
-          /* cross-origin while on IMS / CDN */
+          /* cross-origin while on IMS / CDN — expected */
         }
       }, 2500);
-
-      window.setTimeout(() => {
-        if (settled || !popup) return;
-        try {
-          if (popup.closed) return;
-          const title = popup.document?.title || '';
-          const bodyText = popup.document?.body?.innerText || '';
-          if (/404|not found/i.test(title) || /404 Not Found/i.test(bodyText)) {
-            popup.location.href = fresh.directAuth;
-          }
-        } catch {
-          /* ignore */
-        }
-      }, 5000);
 
       if (pollTimer) window.clearInterval(pollTimer);
       pollTimer = window.setInterval(() => {
