@@ -63,52 +63,115 @@ export function writeBlockPersonalization(blockEl, config) {
   syncVariantVisibility(blockEl, getPreviewSegmentId());
 }
 
+function isForgeEditChromeNode(el) {
+  return Boolean(
+    el?.classList?.contains('forge-edit-badge') || el?.classList?.contains('forge-edit-delete'),
+  );
+}
+
+/** Variant shells may be direct children or nested in one wrapper div (Wolverine DA). */
+function variantShellContext(blockEl) {
+  if (!blockEl) return { shells: [], container: null, insertBefore: null };
+  const direct = [...blockEl.querySelectorAll(`:scope > [${VARIANT_ATTR}]`)];
+  const chromeAnchor =
+    blockEl.querySelector(':scope > .forge-edit-badge') ||
+    blockEl.querySelector(':scope > .forge-edit-delete');
+  if (direct.length) {
+    return {
+      shells: direct,
+      container: blockEl,
+      insertBefore: chromeAnchor,
+    };
+  }
+  const wrap = [...blockEl.children].find(
+    (el) => el.tagName === 'DIV' && !isForgeEditChromeNode(el),
+  );
+  if (wrap) {
+    const nested = [...wrap.querySelectorAll(`:scope > [${VARIANT_ATTR}]`)];
+    if (nested.length) {
+      return { shells: nested, container: wrap, insertBefore: null };
+    }
+  }
+  return {
+    shells: [],
+    container: blockEl,
+    insertBefore: chromeAnchor,
+  };
+}
+
+function findShellForVariant(shells, variant) {
+  if (!variant) return null;
+  return (
+    shells.find((s) => s.getAttribute(VARIANT_ATTR) === variant.id) ||
+    (variant.audienceId
+      ? shells.find((s) => s.dataset.forgeVariantAudience === variant.audienceId)
+      : null) ||
+    null
+  );
+}
+
+function applyVariantShellMeta(shell, variant) {
+  if (!shell || !variant) return;
+  shell.setAttribute(VARIANT_ATTR, variant.id);
+  shell.dataset.forgeVariantLabel = variant.label || variant.id;
+  if (variant.audienceId) shell.dataset.forgeVariantAudience = variant.audienceId;
+  else delete shell.dataset.forgeVariantAudience;
+  if (variant.journeyId) shell.dataset.forgeVariantJourney = variant.journeyId;
+}
+
 function ensureVariantShells(blockEl, config) {
   const variants = config.variants || [{ id: 'default', label: 'Everyone', isDefault: true }];
-  const existing = [...blockEl.querySelectorAll(`:scope > [${VARIANT_ATTR}]`)];
-  if (existing.length >= variants.length) {
-    variants.forEach((v, i) => {
-      const shell = existing[i];
-      if (!shell) return;
-      shell.setAttribute(VARIANT_ATTR, v.id);
-      shell.dataset.forgeVariantLabel = v.label;
-      if (v.audienceId) shell.dataset.forgeVariantAudience = v.audienceId;
-    });
-    return;
-  }
+  let { shells, container, insertBefore } = variantShellContext(blockEl);
 
-  if (existing.length === 0 && variants.length <= 1) {
+  if (shells.length === 0 && variants.length <= 1) {
     const wrap = document.createElement('div');
     wrap.setAttribute(VARIANT_ATTR, 'default');
     wrap.dataset.forgeVariantLabel = 'Everyone';
-    while (blockEl.firstChild && !blockEl.firstChild.classList?.contains('forge-edit-badge')) {
+    while (blockEl.firstChild && !isForgeEditChromeNode(blockEl.firstChild)) {
       wrap.append(blockEl.firstChild);
     }
-    const badge = blockEl.querySelector('.forge-edit-badge');
-    if (wrap.childNodes.length) blockEl.insertBefore(wrap, badge);
+    const chrome =
+      blockEl.querySelector('.forge-edit-badge') || blockEl.querySelector('.forge-edit-delete');
+    if (wrap.childNodes.length) blockEl.insertBefore(wrap, chrome);
     return;
   }
 
-  const badge = blockEl.querySelector('.forge-edit-badge');
-  const contentNodes = [...blockEl.childNodes].filter(
-    (n) => n.nodeType === 1 && !n.classList?.contains('forge-edit-badge') && !n.hasAttribute?.(VARIANT_ATTR),
-  );
-  if (!contentNodes.length) return;
+  if (shells.length === 0) {
+    const contentNodes = [...blockEl.childNodes].filter(
+      (n) =>
+        n.nodeType === 1 &&
+        !isForgeEditChromeNode(n) &&
+        !n.hasAttribute?.(VARIANT_ATTR),
+    );
+    if (!contentNodes.length) return;
+    const defaultWrap = document.createElement('div');
+    defaultWrap.setAttribute(VARIANT_ATTR, 'default');
+    defaultWrap.dataset.forgeVariantLabel = 'Everyone';
+    contentNodes.forEach((n) => defaultWrap.append(n));
+    blockEl.insertBefore(defaultWrap, insertBefore);
+    shells = [defaultWrap];
+    container = blockEl;
+  }
 
-  const defaultWrap = document.createElement('div');
-  defaultWrap.setAttribute(VARIANT_ATTR, 'default');
-  defaultWrap.dataset.forgeVariantLabel = 'Everyone';
-  contentNodes.forEach((n) => defaultWrap.append(n));
-  blockEl.insertBefore(defaultWrap, badge);
+  const defaultShell =
+    findShellForVariant(shells, { id: 'default' }) ||
+    shells.find((s) => !s.dataset.forgeVariantAudience) ||
+    shells[0];
+  if (!defaultShell || !container) return;
 
-  for (let i = 1; i < variants.length; i++) {
-    const v = variants[i];
-    const clone = defaultWrap.cloneNode(true);
-    clone.setAttribute(VARIANT_ATTR, v.id);
-    clone.dataset.forgeVariantLabel = v.label;
-    if (v.audienceId) clone.dataset.forgeVariantAudience = v.audienceId;
-    clone.setAttribute('hidden', '');
-    blockEl.insertBefore(clone, badge);
+  for (const variant of variants) {
+    let shell = findShellForVariant(shells, variant);
+    if (shell) {
+      applyVariantShellMeta(shell, variant);
+      continue;
+    }
+    const clone = defaultShell.cloneNode(true);
+    applyVariantShellMeta(clone, variant);
+    if (variant.id !== 'default' && !variant.isDefault) clone.setAttribute('hidden', '');
+    else clone.removeAttribute('hidden');
+    if (insertBefore && container === blockEl) container.insertBefore(clone, insertBefore);
+    else container.append(clone);
+    shells.push(clone);
   }
 }
 
@@ -173,7 +236,7 @@ export function setPreviewJourneyId(journeyId) {
   syncAllPersonalizedBlocks();
 }
 
-export function setPreviewSegmentId(segmentId) {
+export function setPreviewSegmentId(segmentId, { syncOnly = false } = {}) {
   try {
     if (typeof window !== 'undefined' && window.ForgeExperience) {
       const prev = ForgeExperience.get('preview') || {};
@@ -184,7 +247,109 @@ export function setPreviewSegmentId(segmentId) {
   } catch {
     /* ignore */
   }
-  syncAllPersonalizedBlocks();
+  if (!syncOnly) {
+    ensureEditingShellsForPreviewSegment(segmentId);
+    syncAllPersonalizedBlocks();
+  }
+}
+
+/**
+ * Persist preview segment and fully reload so persona landings reboot
+ * (grid vs campaign) and variant shells remount for the selected audience.
+ */
+export function navigateToPreviewSegment(segmentId, { catalog, confirmIfDirty } = {}) {
+  const nextId = segmentId || '';
+  if (typeof confirmIfDirty === 'function' && confirmIfDirty()) {
+    const ok = window.confirm(
+      'You have unsaved edits. Switch segment and reload anyway? Unsaved changes will be lost.',
+    );
+    if (!ok) return false;
+  }
+
+  setPreviewSegmentId(nextId, { syncOnly: true });
+
+  const u = new URL(window.location.href);
+  if (nextId) u.searchParams.set('forge-preview-segment', nextId);
+  else u.searchParams.delete('forge-preview-segment');
+  u.searchParams.delete('forge-segment');
+  u.searchParams.set('_t', String(Date.now()));
+
+  const personas = catalog?.personas || [];
+  const persona = personas.find((p) => (p.rtcdp?.segmentId || `seg-${p.id}`) === nextId);
+  const landingPath = persona?.landing?.path || persona?.id;
+  const onPersonaLanding = /\/(family-texas|college-student|single-woman-nyc)\/?$/.test(u.pathname);
+  // Only hop between persona landings when already on one — keep home/other pages in place.
+  if (landingPath && onPersonaLanding) {
+    const want = `/${String(landingPath).replace(/^\//, '')}`;
+    if (u.pathname.replace(/\/$/, '') !== want.replace(/\/$/, '')) {
+      u.pathname = want;
+    }
+  }
+
+  window.location.assign(u.toString());
+  return true;
+}
+
+/** Ensure each personalized block has a content shell for the preview segment before editing/save. */
+export function ensureEditingShellsForPreviewSegment(segmentId) {
+  if (!segmentId || segmentId === 'seg-all-visitors') return;
+
+  document.querySelectorAll(`[${PERSONALIZATION_ATTR}], .forge-edit-block--personalized`).forEach((blockEl) => {
+    const config = readBlockPersonalization(blockEl);
+    if (!config.enabled && !blockEl.hasAttribute(PERSONALIZATION_ATTR)) return;
+    if (!config.enabled) return;
+
+    const variants = Array.isArray(config.variants) ? [...config.variants] : [];
+    if (!variants.some((v) => v.id === 'default' || v.isDefault)) {
+      variants.unshift({ id: 'default', label: 'Everyone', audienceId: '', isDefault: true });
+    }
+    const hasAudience = variants.some(
+      (v) => v.audienceId === segmentId || v.id === `var-${segmentId}` || v.id === segmentId,
+    );
+    if (!hasAudience) {
+      const label =
+        catalogCache?.segments?.find((s) => s.id === segmentId)?.name ||
+        catalogCache?.personas?.find((p) => (p.rtcdp?.segmentId || `seg-${p.id}`) === segmentId)?.label ||
+        segmentId;
+      variants.push({
+        id: `var-${segmentId}`,
+        label,
+        audienceId: segmentId,
+        audienceName: label,
+      });
+    }
+    config.variants = variants;
+    config.enabled = true;
+    writeBlockPersonalization(blockEl, config);
+  });
+}
+
+/**
+ * Before DA save: keep default shells intact and persist edits under the active segment variant.
+ * Returns a short status for the toast/UI.
+ */
+export function preparePersonalizedBlocksForSegmentSave(segmentId) {
+  if (!segmentId || segmentId === 'seg-all-visitors') {
+    document.querySelectorAll(`[${VARIANT_ATTR}]`).forEach((el) => el.removeAttribute('hidden'));
+    return { segmentId: '', variantCount: 0 };
+  }
+
+  ensureEditingShellsForPreviewSegment(segmentId);
+  let variantCount = 0;
+
+  document.querySelectorAll(`[${PERSONALIZATION_ATTR}], .forge-edit-block--personalized`).forEach((blockEl) => {
+    const config = readBlockPersonalization(blockEl);
+    if (!config.enabled) return;
+    const { shells } = variantShellContext(blockEl);
+    const variantMeta = (config.variants || []).find(
+      (v) => v.audienceId === segmentId || v.id === `var-${segmentId}` || v.id === segmentId,
+    );
+    const target = findShellForVariant(shells, variantMeta || { id: `var-${segmentId}`, audienceId: segmentId });
+    if (target) variantCount += 1;
+  });
+
+  document.querySelectorAll(`[${VARIANT_ATTR}]`).forEach((el) => el.removeAttribute('hidden'));
+  return { segmentId, variantCount };
 }
 
 function syncAllPersonalizedBlocks() {
@@ -578,12 +743,13 @@ export function mountPreviewJourneyControl(bannerEl) {
   });
 }
 
-export function mountPreviewSegmentControl(bannerEl, segments = []) {
+export function mountPreviewSegmentControl(bannerEl, segments = [], { confirmIfDirty } = {}) {
   if (!bannerEl || bannerEl.querySelector('.forge-edit-segment-preview')) return;
 
   const wrap = document.createElement('label');
   wrap.className = 'forge-edit-segment-preview';
-  wrap.title = 'Simulate RT CDP segment on preview (authoring only)';
+  wrap.title =
+    'Reload preview as an RT CDP segment (authoring). Edits save to that segment’s variant; default stays intact.';
 
   const opts =
     `<option value="">Preview: default</option>` +
@@ -596,19 +762,29 @@ export function mountPreviewSegmentControl(bannerEl, segments = []) {
   const sel = wrap.querySelector('select');
   const current = getPreviewSegmentId();
   if (current) sel.value = current;
+
+  let catalog = null;
+  const previousValue = () => getPreviewSegmentId() || '';
+
   sel.addEventListener('change', () => {
-    setPreviewSegmentId(sel.value);
-    const u = new URL(window.location.href);
-    if (sel.value) u.searchParams.set('forge-preview-segment', sel.value);
-    else u.searchParams.delete('forge-preview-segment');
-    window.history.replaceState({}, '', u.toString());
+    const next = sel.value || '';
+    const navigated = navigateToPreviewSegment(next, {
+      catalog,
+      confirmIfDirty,
+    });
+    if (!navigated) {
+      sel.value = previousValue();
+    }
   });
 
   const saveBtn = bannerEl.querySelector('.forge-edit-banner__save');
   if (saveBtn) bannerEl.insertBefore(wrap, saveBtn);
   else bannerEl.append(wrap);
 
+  if (current) ensureEditingShellsForPreviewSegment(current);
+
   loadCatalog(resolveForgeApiBase()).then((cat) => {
+    catalog = cat;
     const segs = cat.segments || [];
     sel.innerHTML =
       `<option value="">Preview: default</option>` +
@@ -616,7 +792,10 @@ export function mountPreviewSegmentControl(bannerEl, segments = []) {
         .filter((s) => !s.isDefault && s.id !== 'seg-all-visitors')
         .map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`)
         .join('');
-    if (current) sel.value = current;
+    if (current) {
+      sel.value = current;
+      ensureEditingShellsForPreviewSegment(current);
+    }
   });
 }
 

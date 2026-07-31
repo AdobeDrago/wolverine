@@ -7,6 +7,7 @@ const FORGE_UI_SELECTORS = [
   '.forge-edit-banner',
   '.forge-edit-drop-zone',
   '.forge-edit-badge',
+  '.forge-edit-delete',
   '.forge-edit-toast',
   '.forge-edit-menu',
   '.forge-edit-dialog-backdrop',
@@ -163,7 +164,7 @@ export async function savePageToDaClient({ org, repo, pagePath, token, mainEl = 
       ok: false,
       needsToken,
       error: needsToken
-        ? 'Paste your da.live token to save (or sign in on da.live in this browser)'
+        ? 'Sign in on da.live to save (or paste tokenValue as a fallback)'
         : `Save failed: ${write.status} ${write.body || ''}`,
     };
   }
