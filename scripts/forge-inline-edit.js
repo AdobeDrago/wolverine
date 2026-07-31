@@ -34,7 +34,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 25;
+export const FORGE_INLINE_EDIT_BUILD = 27;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -167,14 +167,14 @@ function storeDaToken(token) {
 let daTokenPromptPromise = null;
 
 function daTokenBridgeUrls(org, repo) {
-  // Always use the FORGE tool with forgeTokenBridge=1 — bare da.live/ has no capture script,
-  // and the dedicated da-token-bridge path often lands users in the project picker instead.
+  // DA app URL (html-less). Shell iframes tools/forge/da-token-bridge.html from the code bus
+  // and injects DA_SDK with the IMS token — no Console paste required.
   const o = org || 'AdobeDrago';
   const r = repo || 'wolverine';
   const base = `https://da.live/app/${encodeURIComponent(o)}/${encodeURIComponent(r)}/tools/forge`;
   return {
-    primary: `${base}/forge?forgeTokenBridge=1`,
-    fallback: `${base}/da-token-bridge`,
+    primary: `${base}/da-token-bridge`,
+    fallback: `${base}/forge?forgeTokenBridge=1`,
   };
 }
 
@@ -184,8 +184,8 @@ function isDaJwt(value) {
 }
 
 /**
- * Open da.live login, capture IMS token via postMessage, store it, dismiss UI.
- * Capture-after-login only — no paste field or manual token submit control.
+ * Open the DA app bridge popup; capture IMS via DA_SDK postMessage; dismiss UI.
+ * No copy/paste — user only completes Adobe sign-in if prompted.
  */
 function promptDaToken() {
   if (daTokenPromptPromise) return daTokenPromptPromise;
@@ -201,13 +201,12 @@ function promptDaToken() {
     dialog.innerHTML = `
       <header>Sign in to Document Authoring</header>
       <div class="dialog-body">
-        <p>A <strong>da.live</strong> window opens for Adobe sign-in.</p>
-        <p><strong>Do not pick a project</strong> — after you finish Adobe login, return here and click <strong>Capture session</strong>.</p>
-        <p class="forge-edit-token-status" id="forgeDaTokenStatus" data-kind="wait">Opening da.live…</p>
+        <p>Complete Adobe sign-in in the <strong>da.live</strong> window if prompted. This closes automatically — nothing to copy.</p>
+        <p class="forge-edit-token-status" id="forgeDaTokenStatus" data-kind="wait">Opening Document Authoring…</p>
       </div>
       <footer>
         <button type="button" data-action="cancel">Cancel</button>
-        <button type="button" class="primary" data-action="reopen">Capture session</button>
+        <button type="button" class="primary" data-action="reopen">Reopen sign-in</button>
       </footer>
     `;
     backdrop.append(dialog);
@@ -255,15 +254,13 @@ function promptDaToken() {
     };
 
     const onMessage = (e) => {
-      // Accept from the popup or any child that posts the bridge payload.
-      // (Nx shell / login redirects can change e.source relative to the original window.open handle.)
       if (e.data?.type !== 'forge:set-da-token' || !e.data.token) return;
-      if (e.origin && e.origin !== 'https://da.live' && e.origin !== window.location.origin) return;
+      // Token may arrive from the da.live shell or the iframed tool (aem.page origin).
       acceptToken(e.data.token);
     };
 
     const openLogin = () => {
-      setStatus('Waiting for Adobe sign-in… After login, click Capture session (skip project picker).', 'wait');
+      setStatus('Waiting for Adobe sign-in…', 'wait');
       try {
         popup?.close();
       } catch {
@@ -271,7 +268,7 @@ function promptDaToken() {
       }
       popup = window.open(urls.primary, 'forge-da-token', 'width=560,height=720');
       if (!popup) {
-        setStatus('Popup blocked — allow popups for this site, then click Capture session.', 'err');
+        setStatus('Popup blocked — allow popups for this site, then click Reopen sign-in.', 'err');
         return;
       }
       popup.focus();
@@ -285,7 +282,7 @@ function promptDaToken() {
         } catch {
           /* cross-origin while on da.live */
         }
-      }, 1800);
+      }, 2000);
 
       if (pollTimer) window.clearInterval(pollTimer);
       pollTimer = window.setInterval(() => {
@@ -299,7 +296,7 @@ function promptDaToken() {
           window.clearInterval(pollTimer);
           pollTimer = 0;
           if (!settled) {
-            setStatus('da.live window closed. Click Capture session after you have signed in.', 'err');
+            setStatus('Sign-in window closed before a session arrived. Click Reopen sign-in.', 'err');
           }
         }
       }, 700);
@@ -312,7 +309,6 @@ function promptDaToken() {
       if (e.target === backdrop) finish('');
     });
 
-    // Immediately open da.live bridge; waiting UI closes when forge:set-da-token arrives.
     openLogin();
   });
   return daTokenPromptPromise;

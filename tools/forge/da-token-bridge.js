@@ -1,10 +1,15 @@
 /**
- * da.live same-origin helper: read IMS token after login and postMessage to opener.
- * Opened from *.aem.page inline-edit as a popup (origin https://da.live).
+ * DA App micro-frontend: capture IMS token via DA_SDK and postMessage to the
+ * preview opener (*.aem.page?forge-edit=1).
+ *
+ * da.live iframes this page from the HLX code bus (aem.page origin), so
+ * localStorage on this document is NOT da.live's. Use DA_SDK.token instead.
+ *
+ * App URL: https://da.live/app/{org}/{repo}/tools/forge/da-token-bridge
  */
 
 const MSG_TYPE = 'forge:set-da-token';
-const POLL_MS = 600;
+const POLL_MS = 500;
 const MAX_WAIT_MS = 5 * 60 * 1000;
 
 function isJwt(value) {
@@ -12,6 +17,7 @@ function isJwt(value) {
   return t.startsWith('eyJ') && t.split('.').length === 3 && t.length > 500;
 }
 
+/** Fallback when not inside the DA shell (direct aem.page open). */
 export function readDaImsTokenFromStorage(storage = localStorage) {
   if (!storage) return '';
   const tryParse = (raw) => {
@@ -27,7 +33,6 @@ export function readDaImsTokenFromStorage(storage = localStorage) {
     }
     return '';
   };
-
   try {
     const fromNx = tryParse(storage.getItem('nx-ims'));
     if (fromNx) return fromNx;
@@ -38,12 +43,7 @@ export function readDaImsTokenFromStorage(storage = localStorage) {
     for (let i = 0; i < storage.length; i++) {
       const key = storage.key(i);
       if (!key) continue;
-      if (
-        !key.startsWith('adobeid_ims_access_token/') &&
-        !/ims.*token|tokenValue|nx-ims/i.test(key)
-      ) {
-        continue;
-      }
+      if (!key.startsWith('adobeid_ims_access_token/') && !/ims.*token|nx-ims/i.test(key)) continue;
       const val = tryParse(storage.getItem(key));
       if (val) return val;
     }
@@ -53,27 +53,92 @@ export function readDaImsTokenFromStorage(storage = localStorage) {
   return '';
 }
 
-function readDaImsToken() {
+async function readTokenFromDaSdk() {
+  try {
+    let sdkPromise = globalThis.DA_SDK;
+    if (!sdkPromise) {
+      await import('https://da.live/nx/utils/sdk.js');
+      sdkPromise = globalThis.DA_SDK;
+    }
+    if (!sdkPromise) return '';
+    const api = await sdkPromise;
+    const token = api?.token || api?.accessToken || '';
+    if (isJwt(token)) return String(token).trim();
+  } catch {
+    /* not in DA shell yet, or SDK unavailable */
+  }
+  return '';
+}
+
+async function readDaToken() {
+  const fromSdk = await readTokenFromDaSdk();
+  if (fromSdk) return fromSdk;
   return readDaImsTokenFromStorage(localStorage) || readDaImsTokenFromStorage(sessionStorage);
+}
+
+function getPreviewOpener() {
+  const candidates = [];
+  try {
+    if (window.opener) candidates.push(window.opener);
+  } catch {
+    /* ignore */
+  }
+  try {
+    if (window.parent && window.parent !== window) candidates.push(window.parent);
+  } catch {
+    /* ignore */
+  }
+  try {
+    if (window.top && window.top !== window) {
+      candidates.push(window.top);
+      if (window.top.opener) candidates.push(window.top.opener);
+    }
+  } catch {
+    /* ignore */
+  }
+  try {
+    if (window.parent?.opener) candidates.push(window.parent.opener);
+  } catch {
+    /* ignore */
+  }
+  for (const w of candidates) {
+    try {
+      if (w && !w.closed) return w;
+    } catch {
+      /* ignore */
+    }
+  }
+  return null;
 }
 
 function sendTokenToOpener(token) {
   const t = String(token || '').trim();
   if (!isJwt(t)) return false;
   const payload = { type: MSG_TYPE, token: t, source: 'da-token-bridge' };
+  const targets = new Set();
+  const opener = getPreviewOpener();
+  if (opener) targets.add(opener);
   try {
-    if (window.opener && !window.opener.closed) {
-      window.opener.postMessage(payload, '*');
+    if (window.top && window.top !== window) targets.add(window.top);
+  } catch {
+    /* ignore */
+  }
+  try {
+    if (window.parent && window.parent !== window) targets.add(window.parent);
+  } catch {
+    /* ignore */
+  }
+  targets.add(window);
+  let sent = false;
+  for (const target of targets) {
+    try {
+      target.postMessage(payload, '*');
+      sent = true;
+    } catch {
+      /* ignore */
     }
-  } catch {
-    /* ignore */
   }
-  try {
-    window.postMessage(payload, '*');
-  } catch {
-    /* ignore */
-  }
-  return true;
+  return sent;
 }
 
 function setStatus(el, text, kind = '') {
@@ -132,18 +197,16 @@ export function runDaTokenBridge(root = document.getElementById('forge-da-token-
     </style>
     <div class="forge-da-bridge">
       <h1>Document Authoring sign-in</h1>
-      <p><strong>Do not pick a project.</strong> Sign in with Adobe, then click <strong>Use signed-in session</strong> below. This window sends the token back to the preview.</p>
-      <div class="status" data-kind="wait" id="forgeDaBridgeStatus">Checking da.live session…</div>
+      <p>Sign in with Adobe if prompted. This window captures your session and returns to the preview automatically — nothing to copy.</p>
+      <div class="status" data-kind="wait" id="forgeDaBridgeStatus">Connecting to Document Authoring…</div>
       <div class="actions">
-        <button type="button" class="primary" id="forgeDaBridgeSignIn">Sign in on da.live</button>
-        <button type="button" id="forgeDaBridgeRetry">Use signed-in session</button>
+        <button type="button" class="primary" id="forgeDaBridgeRetry">Try again</button>
         <button type="button" id="forgeDaBridgeClose" hidden>Close window</button>
       </div>
     </div>
   `;
 
   const statusEl = root.querySelector('#forgeDaBridgeStatus');
-  const signInBtn = root.querySelector('#forgeDaBridgeSignIn');
   const retryBtn = root.querySelector('#forgeDaBridgeRetry');
   const closeBtn = root.querySelector('#forgeDaBridgeClose');
   const started = Date.now();
@@ -155,8 +218,7 @@ export function runDaTokenBridge(root = document.getElementById('forge-da-token-
     if (!sendTokenToOpener(token)) return false;
     done = true;
     if (pollTimer) window.clearInterval(pollTimer);
-    setStatus(statusEl, 'Signed in — token sent to FORGE. You can close this window.', 'ok');
-    if (signInBtn) signInBtn.disabled = true;
+    setStatus(statusEl, 'Signed in — returning to preview…', 'ok');
     if (retryBtn) retryBtn.disabled = true;
     if (closeBtn) {
       closeBtn.hidden = false;
@@ -164,47 +226,47 @@ export function runDaTokenBridge(root = document.getElementById('forge-da-token-
     }
     window.setTimeout(() => {
       try {
+        window.top?.close?.();
+      } catch {
+        /* ignore */
+      }
+      try {
         window.close();
       } catch {
         /* ignore */
       }
-    }, 1200);
+    }, 900);
     return true;
   };
 
-  const tryCapture = () => {
-    const token = readDaImsToken();
+  const tryCapture = async () => {
+    const token = await readDaToken();
     if (token) return finish(token);
     if (Date.now() - started > MAX_WAIT_MS) {
       if (pollTimer) window.clearInterval(pollTimer);
       setStatus(
         statusEl,
-        'Timed out waiting for sign-in. Click “Sign in on da.live”, finish Adobe login, then “Use signed-in session”.',
+        'Still waiting for Adobe sign-in. Sign in if prompted, then click Try again.',
         'err',
       );
       return false;
     }
-    setStatus(
-      statusEl,
-      'Waiting for da.live sign-in… Finish Adobe login in the da.live tab, then return here.',
-      'wait',
-    );
+    setStatus(statusEl, 'Waiting for Adobe sign-in…', 'wait');
     return false;
   };
 
-  signInBtn?.addEventListener('click', () => {
-    window.open('https://da.live/', 'forge-da-live-login');
-    setStatus(statusEl, 'Complete Adobe sign-in on da.live. This page will pick up your session automatically.', 'wait');
-    tryCapture();
-  });
-
   retryBtn?.addEventListener('click', () => {
-    if (!tryCapture()) {
-      setStatus(statusEl, 'No da.live session found yet. Sign in on da.live, then try again.', 'err');
-    }
+    tryCapture().then((ok) => {
+      if (!ok) setStatus(statusEl, 'No session yet — finish Adobe sign-in, then try again.', 'err');
+    });
   });
 
   closeBtn?.addEventListener('click', () => {
+    try {
+      window.top?.close?.();
+    } catch {
+      /* ignore */
+    }
     try {
       window.close();
     } catch {
@@ -212,17 +274,16 @@ export function runDaTokenBridge(root = document.getElementById('forge-da-token-
     }
   });
 
-  window.addEventListener('storage', () => {
-    tryCapture();
+  tryCapture().then((ok) => {
+    if (!ok) {
+      pollTimer = window.setInterval(() => {
+        tryCapture();
+      }, POLL_MS);
+    }
   });
-
-  if (!tryCapture()) {
-    pollTimer = window.setInterval(tryCapture, POLL_MS);
-  }
 }
 
-// Dedicated HTML page auto-boots; forge.js imports call runDaTokenBridge(root) explicitly.
-if (typeof document !== 'undefined' && /da-token-bridge/i.test(window.location.pathname || '')) {
+if (typeof document !== 'undefined') {
   const boot = () => runDaTokenBridge();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

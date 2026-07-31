@@ -2,15 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>FORGE · da.live sign-in</title>
+    <title>FORGE · Document Authoring sign-in</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="data:," />
+    <!-- DA App SDK — provides IMS token when iframed by da.live -->
+    <script src="https://da.live/nx/utils/sdk.js" type="module"></script>
+    <script src="/tools/forge/da-token-bridge.js" type="module"></script>
     <style>
       html, body { margin: 0; min-height: 100%; background: #fafafa; }
     </style>
   </head>
   <body>
     <div id="forge-da-token-bridge"></div>
-    <script src="/tools/forge/da-token-bridge.js" type="module"></script>
   </body>
 </html>
