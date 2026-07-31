@@ -14,27 +14,47 @@ function isJwt(value) {
 
 export function readDaImsTokenFromStorage(storage = localStorage) {
   if (!storage) return '';
-  try {
-    const raw = storage.getItem('nx-ims');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      const t = parsed.tokenValue || parsed.access_token || parsed.token || '';
-      if (isJwt(t)) return t.trim();
+  const tryParse = (raw) => {
+    if (!raw) return '';
+    const trimmed = String(raw).trim();
+    if (isJwt(trimmed)) return trimmed;
+    try {
+      const parsed = JSON.parse(trimmed);
+      const t = parsed.tokenValue || parsed.access_token || parsed.token || parsed?.data?.tokenValue || '';
+      if (isJwt(t)) return String(t).trim();
+    } catch {
+      /* ignore */
     }
+    return '';
+  };
+
+  try {
+    const fromNx = tryParse(storage.getItem('nx-ims'));
+    if (fromNx) return fromNx;
   } catch {
     /* ignore */
   }
   try {
     for (let i = 0; i < storage.length; i++) {
       const key = storage.key(i);
-      if (!key?.startsWith('adobeid_ims_access_token/')) continue;
-      const val = storage.getItem(key)?.trim() || '';
-      if (isJwt(val)) return val;
+      if (!key) continue;
+      if (
+        !key.startsWith('adobeid_ims_access_token/') &&
+        !/ims.*token|tokenValue|nx-ims/i.test(key)
+      ) {
+        continue;
+      }
+      const val = tryParse(storage.getItem(key));
+      if (val) return val;
     }
   } catch {
     /* ignore */
   }
   return '';
+}
+
+function readDaImsToken() {
+  return readDaImsTokenFromStorage(localStorage) || readDaImsTokenFromStorage(sessionStorage);
 }
 
 function sendTokenToOpener(token) {
@@ -112,7 +132,7 @@ export function runDaTokenBridge(root = document.getElementById('forge-da-token-
     </style>
     <div class="forge-da-bridge">
       <h1>Document Authoring sign-in</h1>
-      <p>Sign in on <strong>da.live</strong>. This window captures your session token and sends it back to FORGE inline edit for Save / Add component.</p>
+      <p><strong>Do not pick a project.</strong> Sign in with Adobe, then click <strong>Use signed-in session</strong> below. This window sends the token back to the preview.</p>
       <div class="status" data-kind="wait" id="forgeDaBridgeStatus">Checking da.live session…</div>
       <div class="actions">
         <button type="button" class="primary" id="forgeDaBridgeSignIn">Sign in on da.live</button>
@@ -153,7 +173,7 @@ export function runDaTokenBridge(root = document.getElementById('forge-da-token-
   };
 
   const tryCapture = () => {
-    const token = readDaImsTokenFromStorage();
+    const token = readDaImsToken();
     if (token) return finish(token);
     if (Date.now() - started > MAX_WAIT_MS) {
       if (pollTimer) window.clearInterval(pollTimer);
