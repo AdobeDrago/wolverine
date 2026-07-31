@@ -91,39 +91,40 @@ p em { font-style: normal; }
 header, 
 .header-wrapper {
   background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
   border-bottom: 1px solid var(--border-color) !important;
   position: sticky !important;
   top: 0 !important;
-  z-index: 10000 !important;
+  z-index: 100000 !important;
   width: 100% !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
 }
 
-/* Base Nav & Reset */
+/* Nav Container Height & Flex Reset */
 header nav, #nav {
   max-width: var(--max-width) !important;
   margin: 0 auto !important;
-  padding: 0.75rem 1.25rem !important;
+  padding: 0 1.25rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   width: 100% !important;
+  height: 60px !important; /* Forces solid 60px height bar on mobile & desktop */
   box-sizing: border-box !important;
-  min-height: 60px !important;
+  background-color: #FFFFFF !important;
 }
 
-/* FIX: Target inner wrapper div from nav3.html so flex spreads end-to-end */
-header nav > div,
-#nav > div {
+header nav > div, #nav > div {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
   justify-content: space-between !important;
   width: 100% !important;
-  box-sizing: border-box !important;
+  height: 100% !important;
+  background-color: #FFFFFF !important;
 }
 
-/* List & Text Resets */
+/* Base Resets */
 header ul, header li, nav ul, nav li {
   list-style: none !important;
   margin: 0 !important;
@@ -134,39 +135,37 @@ header p {
   margin: 0 !important;
 }
 
-/* Brand Logo Styling */
-header .nav-brand,
-header nav .nav-brand {
-  flex: 0 0 auto !important;
-  display: flex !important;
-  align-items: center !important;
-  z-index: 10002 !important;
-}
-
-header .nav-brand a,
-header nav a[href="/"] {
-  font-size: 1.35rem !important;
-  font-weight: 900 !important;
-  color: var(--boost-black) !important;
-  text-decoration: none !important;
-  white-space: nowrap !important;
-  letter-spacing: -0.5px !important;
-}
-
-header .nav-brand a span,
-header nav a[href="/"] span {
-  color: var(--boost-orange) !important;
-}
-
 /* ==========================================================================
-   DESKTOP NAVIGATION VIEW (900px and larger)
+   DESKTOP VIEW (900px and larger)
    ========================================================================== */
 @media (min-width: 900px) {
   header .nav-hamburger {
     display: none !important;
   }
 
-  /* Center Navigation Links */
+  /* Brand Logo (Left) */
+  header .nav-brand,
+  header nav .nav-brand {
+    display: flex !important;
+    align-items: center !important;
+    flex: 0 0 auto !important;
+  }
+
+  header .nav-brand a,
+  header nav a[href="/"] {
+    font-size: 1.35rem !important;
+    font-weight: 900 !important;
+    color: var(--boost-black) !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+  }
+
+  header .nav-brand a span,
+  header nav a[href="/"] span {
+    color: var(--boost-orange) !important;
+  }
+
+  /* Nav Links (Center) */
   header .nav-sections {
     display: flex !important;
     align-items: center !important;
@@ -188,14 +187,13 @@ header nav a[href="/"] span {
     text-transform: uppercase !important;
     text-decoration: none !important;
     white-space: nowrap !important;
-    transition: color 0.2s ease !important;
   }
 
   header .nav-sections a:hover {
     color: var(--boost-orange) !important;
   }
 
-  /* Right-Aligned Buttons */
+  /* Action Buttons (Right) */
   header .nav-tools {
     display: flex !important;
     align-items: center !important;
@@ -204,8 +202,6 @@ header nav a[href="/"] span {
     margin-left: auto !important;
   }
 
-  header .nav-tools a.btn-primary,
-  header .nav-tools a.btn-secondary,
   header .nav-tools a {
     display: inline-block !important;
     width: auto !important;
@@ -219,28 +215,59 @@ header nav a[href="/"] span {
 }
 
 /* ==========================================================================
-   MOBILE NAVIGATION VIEW (Under 900px)
+   MOBILE VIEW (Under 900px)
    ========================================================================== */
 @media (max-width: 899px) {
-  /* Hamburger Button */
+  /* 1. Force BOOST MOBILE Logo Visibility on Left */
+  header .nav-brand,
+  header nav .nav-brand,
+  header nav > div > div:first-child {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex: 0 0 auto !important;
+    margin-right: auto !important;
+    z-index: 100002 !important;
+  }
+
+  header .nav-brand a,
+  header nav a[href="/"] {
+    display: inline-block !important;
+    font-size: 1.25rem !important;
+    font-weight: 900 !important;
+    color: var(--boost-black) !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+  }
+
+  header .nav-brand a span,
+  header nav a[href="/"] span {
+    color: var(--boost-orange) !important;
+  }
+
+  /* 2. Hamburger Button on Right */
   header .nav-hamburger {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     flex: 0 0 auto !important;
-    z-index: 10002 !important;
+    margin-left: auto !important;
+    z-index: 100002 !important;
+    background: transparent !important;
+    border: none !important;
   }
 
   header .nav-hamburger button {
     background: transparent !important;
     border: none !important;
-    font-size: 1.5rem !important;
+    font-size: 1.6rem !important;
     color: var(--boost-black) !important;
     cursor: pointer !important;
     padding: 0.25rem !important;
+    line-height: 1 !important;
   }
 
-  /* CLOSED STATE */
+  /* 3. CLOSED STATE: Hide links & buttons */
   header nav[aria-expanded="false"] .nav-sections,
   header nav[aria-expanded="false"] .nav-tools,
   header nav:not([aria-expanded="true"]) .nav-sections,
@@ -248,19 +275,20 @@ header nav a[href="/"] span {
     display: none !important;
   }
 
-  /* EXPANDED MOBILE DRAWER (Opens cleanly under top bar) */
+  /* 4. EXPANDED STATE: Flyout Panel Starting Below 60px Top Bar */
   header nav[aria-expanded="true"] .nav-sections {
     display: flex !important;
     position: fixed !important;
-    top: 60px !important;
+    top: 60px !important; /* Aligns panel directly under the 60px white header */
     left: 0 !important;
     width: 100vw !important;
     height: calc(100vh - 60px) !important;
     background-color: #FFFFFF !important;
+    background: #FFFFFF !important;
     flex-direction: column !important;
     padding: 1.5rem 1.5rem 6rem 1.5rem !important;
     box-sizing: border-box !important;
-    z-index: 10001 !important;
+    z-index: 100001 !important;
     overflow-y: auto !important;
   }
 
@@ -284,7 +312,7 @@ header nav a[href="/"] span {
     text-transform: uppercase !important;
   }
 
-  /* Fixed Bottom Action Buttons inside Drawer */
+  /* Action Buttons Fixed at Bottom of Drawer */
   header nav[aria-expanded="true"] .nav-tools {
     display: flex !important;
     position: fixed !important;
@@ -293,7 +321,7 @@ header nav a[href="/"] span {
     width: calc(100vw - 3rem) !important;
     flex-direction: column !important;
     gap: 0.75rem !important;
-    z-index: 10002 !important;
+    z-index: 100002 !important;
     background-color: #FFFFFF !important;
   }
 
