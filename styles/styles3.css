@@ -100,7 +100,6 @@ header,
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
 }
 
-/* Nav Container Height & Flex Reset */
 header nav, #nav {
   max-width: var(--max-width) !important;
   margin: 0 auto !important;
@@ -109,7 +108,7 @@ header nav, #nav {
   align-items: center !important;
   justify-content: space-between !important;
   width: 100% !important;
-  height: 60px !important; /* Forces solid 60px height bar on mobile & desktop */
+  height: 60px !important; /* Fixed top bar height */
   box-sizing: border-box !important;
   background-color: #FFFFFF !important;
 }
@@ -124,15 +123,17 @@ header nav > div, #nav > div {
   background-color: #FFFFFF !important;
 }
 
-/* Base Resets */
+/* Base resets inside header */
 header ul, header li, nav ul, nav li {
   list-style: none !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
-header p {
+header p, header strong {
   margin: 0 !important;
+  padding: 0 !important;
+  display: inline-block !important;
 }
 
 /* ==========================================================================
@@ -143,7 +144,7 @@ header p {
     display: none !important;
   }
 
-  /* Brand Logo (Left) */
+  /* Logo on Left */
   header .nav-brand,
   header nav .nav-brand {
     display: flex !important;
@@ -151,8 +152,7 @@ header p {
     flex: 0 0 auto !important;
   }
 
-  header .nav-brand a,
-  header nav a[href="/"] {
+  header .nav-brand a {
     font-size: 1.35rem !important;
     font-weight: 900 !important;
     color: var(--boost-black) !important;
@@ -160,12 +160,11 @@ header p {
     white-space: nowrap !important;
   }
 
-  header .nav-brand a span,
-  header nav a[href="/"] span {
+  header .nav-brand a span {
     color: var(--boost-orange) !important;
   }
 
-  /* Nav Links (Center) */
+  /* Nav Links in Center */
   header .nav-sections {
     display: flex !important;
     align-items: center !important;
@@ -193,7 +192,7 @@ header p {
     color: var(--boost-orange) !important;
   }
 
-  /* Action Buttons (Right) */
+  /* Action Buttons on Right */
   header .nav-tools {
     display: flex !important;
     align-items: center !important;
@@ -218,41 +217,44 @@ header p {
    MOBILE VIEW (Under 900px)
    ========================================================================== */
 @media (max-width: 899px) {
-  /* 1. Force BOOST MOBILE Logo Visibility on Left */
+
+  /* 1. FORCE BOOST MOBILE LOGO VISIBILITY (Left side) */
   header .nav-brand,
-  header nav .nav-brand,
-  header nav > div > div:first-child {
+  header nav .nav-brand {
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
-    flex: 0 0 auto !important;
-    margin-right: auto !important;
-    z-index: 100002 !important;
+    order: 1 !important; /* Locks logo to left */
+    flex: 1 1 auto !important;
+    align-items: center !important;
+    z-index: 100003 !important;
   }
 
-  header .nav-brand a,
-  header nav a[href="/"] {
+  header .nav-brand p,
+  header .nav-brand strong,
+  header .nav-brand a {
     display: inline-block !important;
-    font-size: 1.25rem !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 1.3rem !important;
     font-weight: 900 !important;
     color: var(--boost-black) !important;
     text-decoration: none !important;
     white-space: nowrap !important;
   }
 
-  header .nav-brand a span,
-  header nav a[href="/"] span {
+  header .nav-brand a span {
     color: var(--boost-orange) !important;
   }
 
-  /* 2. Hamburger Button on Right */
+  /* 2. HAMBURGER TOGGLE BUTTON (Right side) */
   header .nav-hamburger {
     display: flex !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: flex-end !important;
+    order: 2 !important; /* Locks button to right */
     flex: 0 0 auto !important;
-    margin-left: auto !important;
-    z-index: 100002 !important;
+    z-index: 100003 !important; /* Sits above flyout menu overlay */
     background: transparent !important;
     border: none !important;
   }
@@ -263,11 +265,11 @@ header p {
     font-size: 1.6rem !important;
     color: var(--boost-black) !important;
     cursor: pointer !important;
-    padding: 0.25rem !important;
+    padding: 0.25rem 0.5rem !important;
     line-height: 1 !important;
   }
 
-  /* 3. CLOSED STATE: Hide links & buttons */
+  /* 3. CLOSED STATE: Hide links and action buttons */
   header nav[aria-expanded="false"] .nav-sections,
   header nav[aria-expanded="false"] .nav-tools,
   header nav:not([aria-expanded="true"]) .nav-sections,
@@ -275,11 +277,11 @@ header p {
     display: none !important;
   }
 
-  /* 4. EXPANDED STATE: Flyout Panel Starting Below 60px Top Bar */
+  /* 4. EXPANDED STATE (Flyout drawer opens directly below 60px header) */
   header nav[aria-expanded="true"] .nav-sections {
     display: flex !important;
     position: fixed !important;
-    top: 60px !important; /* Aligns panel directly under the 60px white header */
+    top: 60px !important; /* Starts under top bar so header remains accessible */
     left: 0 !important;
     width: 100vw !important;
     height: calc(100vh - 60px) !important;
@@ -312,7 +314,7 @@ header p {
     text-transform: uppercase !important;
   }
 
-  /* Action Buttons Fixed at Bottom of Drawer */
+  /* Action Buttons fixed at bottom of mobile drawer */
   header nav[aria-expanded="true"] .nav-tools {
     display: flex !important;
     position: fixed !important;
