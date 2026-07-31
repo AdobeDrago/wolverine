@@ -1,0 +1,278 @@
+/* Boost Mobile Brand Theme Variables */
+:root {
+  --boost-orange: #FF7A00;
+  --boost-orange-hover: #E56E00;
+  --boost-black: #0A0A0A;
+  --boost-dark-card: #141414;
+  --boost-text-muted: #666666;
+  --bg-light: #F8F9FA;
+  --surface-white: #FFFFFF;
+  --border-color: #E2E8F0;
+  --max-width: 1200px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: var(--boost-black);
+  background-color: var(--bg-light);
+  line-height: 1.5;
+}
+
+main {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1rem 4rem 1rem;
+}
+
+h1, h2, h3 {
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+
+/* Headings & Section Headers */
+.section-title {
+  text-align: center;
+  margin: 3rem 0 1.5rem 0;
+}
+
+.section-title h2 {
+  font-size: 2.2rem;
+  color: var(--boost-black);
+}
+
+.section-title p {
+  color: var(--boost-text-muted);
+  font-size: 1.1rem;
+}
+
+/* --- Buttons --- */
+a { text-decoration: none; }
+p em { font-style: normal; }
+
+.btn-primary, .btn-secondary {
+  display: block;
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  border-radius: 40px;
+  font-weight: 800;
+  font-size: 1rem;
+  text-transform: uppercase;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary {
+  background-color: var(--boost-orange);
+  color: var(--boost-black);
+  border: 2px solid var(--boost-orange);
+}
+
+.btn-primary:hover {
+  background-color: var(--boost-orange-hover);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--boost-black);
+  border: 2px solid var(--boost-black);
+}
+
+.btn-secondary:hover {
+  background-color: var(--boost-black);
+  color: var(--surface-white);
+}
+
+/* --- Hero Banner --- */
+.hero {
+  position: relative;
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: #FFFFFF;
+  margin-bottom: 3rem;
+  padding: 3rem 2rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.hero picture {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.hero picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 100%);
+  z-index: 2;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+  max-width: 580px;
+}
+
+.promo-badge {
+  display: inline-block;
+  background-color: var(--boost-orange);
+  color: var(--boost-black);
+  font-weight: 900;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 1.05;
+  margin-bottom: 1rem;
+  color: #FFFFFF;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.95;
+}
+
+.hero .btn-primary {
+  display: inline-block;
+  width: auto;
+  padding: 1rem 2.5rem;
+}
+
+/* --- Columns Block (Value Props) --- */
+.columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 3.5rem;
+}
+
+.columns > div {
+  background: var(--surface-white);
+  padding: 2rem;
+  border-left: 5px solid var(--boost-orange);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.icon-header {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.columns h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.columns p {
+  color: var(--boost-text-muted);
+}
+
+/* --- Cards Block (Plans) --- */
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.cards > div {
+  background: var(--surface-white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  padding: 2rem 2rem 1rem 2rem;
+  background: #FAFAFA;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.plan-tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.25rem 0.6rem;
+  background: #E2E8F0;
+  color: var(--boost-black);
+  border-radius: 4px;
+}
+
+.tag-orange { background: var(--boost-orange); }
+.tag-dark { background: var(--boost-black); color: #FFF; }
+
+.card-header h3 {
+  font-size: 1.6rem;
+  margin-top: 0.75rem;
+}
+
+.price {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--boost-black);
+  line-height: 1;
+  margin: 0.5rem 0 0.25rem 0;
+}
+
+.price span {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--boost-text-muted);
+}
+
+.price-sub {
+  font-size: 0.85rem;
+  color: var(--boost-text-muted);
+}
+
+.card-body {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.card-body ul {
+  list-style: none;
+  margin-bottom: 2rem;
+}
+
+.card-body li {
+  padding: 0.6rem 0;
+  border-bottom: 1px id #F1F5F9;
+  font-size: 0.95rem;
+}
+
+.card-body p:last-child {
+  margin-top: auto;
+}
+
+/* --- Responsive Desktop Grid --- */
+@media (min-width: 768px) {
+  .columns { grid-template-columns: repeat(3, 1fr); }
+  .cards { grid-template-columns: repeat(3, 1fr); }
+}
