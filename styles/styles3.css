@@ -24,10 +24,37 @@ body {
   line-height: 1.5;
 }
 
+/* --- FIX 1: HEADER & NAVIGATION STYLING --- */
+header {
+  background-color: var(--surface-white);
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+  z-index: 1000;
+  min-height: 60px;
+}
+
+/* Restores layout space for dynamically loaded AEM nav */
+header nav {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Mobile Hamburger Menu Compatibility */
+header nav .nav-hamburger, 
+header nav button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
 main {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 1rem 4rem 1rem;
+  padding: 1rem 1rem 4rem 1rem;
 }
 
 h1, h2, h3, h4 {
@@ -97,6 +124,7 @@ p em { font-style: normal; }
   align-items: center;
   justify-content: flex-start;
   color: #FFFFFF;
+  margin-top: 1rem;
   margin-bottom: 3rem;
   padding: 3rem 2rem;
   border-radius: 8px;
@@ -314,32 +342,7 @@ p em { font-style: normal; }
   margin-bottom: 1.5rem;
 }
 
-/* --- Testimonials Section --- */
-.testimonials > div {
-  border-left: none;
-  border-top: 4px solid var(--boost-orange);
-  text-align: center;
-}
-
-.stars {
-  color: var(--boost-orange);
-  font-size: 1.25rem;
-  margin-bottom: 0.75rem;
-}
-
-.quote-text {
-  font-size: 1.05rem;
-  font-style: italic;
-  color: var(--boost-black);
-  margin-bottom: 1rem;
-}
-
-.author {
-  font-weight: 800;
-  color: var(--boost-text-muted);
-}
-
-/* --- Disclaimers & Legal Fine Print --- */
+/* --- Disclaimers --- */
 .disclaimers {
   margin-top: 4rem;
   padding: 2rem;
@@ -360,16 +363,13 @@ p em { font-style: normal; }
   margin-bottom: 0.75rem;
 }
 
-.disclaimers p:last-child {
-  margin-bottom: 0;
-}
-
-/* --- Boost Mobile Dark Footer --- */
+/* --- FIX 2: UNIFIED BOOST MOBILE FOOTER --- */
 footer {
-  background-color: var(--boost-black);
-  color: #FFFFFF;
-  padding: 4rem 1.5rem 2rem 1.5rem;
-  margin-top: 4rem;
+  background-color: var(--boost-black) !important;
+  color: #FFFFFF !important;
+  padding: 3.5rem 1.5rem 2rem 1.5rem !important;
+  margin-top: 4rem !important;
+  width: 100%;
 }
 
 .footer-container {
@@ -377,21 +377,22 @@ footer {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 2.5rem;
 }
 
-.footer-logo {
+.footer-brand .footer-logo {
   font-size: 2rem;
-  color: #FFFFFF;
+  color: #FFFFFF !important;
   margin-bottom: 0.5rem;
+  font-weight: 900;
 }
 
-.footer-logo span {
-  color: var(--boost-orange);
+.footer-brand .footer-logo span {
+  color: var(--boost-orange) !important;
 }
 
 .footer-brand p {
-  color: #999999;
+  color: #999999 !important;
   font-size: 0.95rem;
 }
 
@@ -402,73 +403,64 @@ footer {
 }
 
 .footer-columns h4 {
-  color: var(--boost-orange);
-  font-size: 1rem;
-  margin-bottom: 1rem;
+  color: var(--boost-orange) !important;
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  margin-bottom: 0.8rem !important;
+  letter-spacing: 0.5px;
 }
 
-.footer-columns ul {
-  list-style: none;
+/* Complete reset for all footer lists to remove green bullets */
+.footer-columns ul,
+footer ul {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
-.footer-columns li {
-  margin-bottom: 0.6rem;
+.footer-columns li,
+footer li {
+  list-style: none !important;
+  margin-bottom: 0.5rem !important;
+  padding: 0 !important;
 }
 
-.footer-columns a {
-  color: #CCCCCC;
-  font-size: 0.9rem;
+.footer-columns a,
+footer a {
+  color: #CCCCCC !important;
+  font-size: 0.95rem !important;
+  text-decoration: none !important;
   transition: color 0.2s ease;
 }
 
-.footer-columns a:hover {
-  color: #FFFFFF;
+.footer-columns a:hover,
+footer a:hover {
+  color: #FFFFFF !important;
 }
 
 .footer-bottom {
   max-width: var(--max-width);
-  margin: 3rem auto 0 auto;
-  padding-top: 2rem;
+  margin: 2.5rem auto 0 auto;
+  padding-top: 1.5rem;
   border-top: 1px solid #222222;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
   color: #777777;
   font-size: 0.85rem;
 }
 
-.legal-links {
-  list-style: none;
-  display: flex;
-  gap: 1.5rem;
-}
-
-.legal-links a {
-  color: #777777;
-}
-
-.legal-links a:hover {
-  color: #FFFFFF;
-}
-
-/* --- Responsive Layout (768px and up) --- */
+/* --- Responsive Desktop Grid --- */
 @media (min-width: 768px) {
   .columns { grid-template-columns: repeat(3, 1fr); }
   .cards { grid-template-columns: repeat(3, 1fr); }
   .phone-cards { grid-template-columns: repeat(2, 1fr); }
-  
+
   .footer-container {
     flex-direction: row;
     justify-content: space-between;
   }
 
   .footer-columns {
-    grid-template-columns: repeat(3, 160px);
+    grid-template-columns: repeat(5, auto);
     gap: 3rem;
-  }
-
-  .footer-bottom {
-    flex-direction: row;
-    justify-content: space-between;
   }
 }
