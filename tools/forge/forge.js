@@ -1,11 +1,25 @@
-/* FORGE v2.2 - updated 2026-05-08 */
+/* FORGE v2.1 - updated 2026-05-01 */
 /**
  * FORGE — DA.live Lit plugin
  * Brand-identity-driven EDS site generator.
  */
 import { LitElement, html, nothing } from '../../deps/lit/dist/index.js';
-import DA_SDK from 'https://da.live/nx/utils/sdk.js';
-import { daFetch as daFetchDirect } from 'https://da.live/nx/utils/daFetch.js';
+
+const DA_LIVE_UTILS = ['https://da.', 'live/nx/utils/'].join('');
+
+function importDaLiveModule(file) {
+  return import(`${DA_LIVE_UTILS}${file}`);
+}
+
+async function loadDaSdk() {
+  const mod = await importDaLiveModule('sdk.js');
+  return mod.default;
+}
+
+async function loadDaFetchDirect() {
+  const mod = await importDaLiveModule('daFetch.js');
+  return mod.daFetch;
+}
 
 const EL_NAME = 'forge-app';
 
@@ -29,6 +43,91 @@ const QUICK_PROMPTS = [
   'Improve mobile responsiveness',
 ];
 
+const WOLVERINE_EMAIL_QUICK_PROMPTS = [
+  'Can you build me a email campaign and brief for a Man/Woman, married w/children, 40+ living in Texas with the Acquisition of May 21st to July 1st of 2026',
+  'Can you build me a email campaign and brief for a Single Woman ages 25-35 living in NYC with the Acquisition of May 21st to July 1st of 2026',
+  'Can you build me a email campaign and brief for a College Students ages 18-24 with the Acquisition of May 21st to July 1st of 2026',
+];
+
+/** Match server/brand-slug.js — keep in sync for repo naming. */
+function brandToSlug(name) {
+  return String(name || 'site')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'site';
+}
+
+function looksLikePrompt(text) {
+  const s = String(text || '').trim();
+  if (!s) return false;
+  if (s.split(/\s+/).length >= 6) return true;
+  return /\b(create|build|make|new|project|storefront|website|site|named|called)\b/i.test(s);
+}
+
+function extractNameFromPrompt(text) {
+  const s = String(text || '').trim();
+  if (!s) return '';
+  const named = s.match(
+    /\b(?:named|called)\s+["']?([A-Za-z0-9][A-Za-z0-9\s.'-]{0,48}?)["']?(?:\s*[,.]|$|\s+for\b|\s+with\b)/i,
+  );
+  if (named?.[1]) return named[1].trim();
+  if (looksLikePrompt(s)) {
+    const words = s.replace(/[^\w\s'-]/g, ' ').split(/\s+/).filter(Boolean);
+    const skip = new Set([
+      'a', 'an', 'the', 'new', 'create', 'build', 'make', 'project', 'storefront', 'site',
+      'website', 'named', 'called', 'for', 'with', 'and', 'to',
+    ]);
+    for (let i = words.length - 1; i >= 0; i--) {
+      const w = words[i].replace(/[^a-z0-9]/gi, '');
+      if (w.length >= 3 && !skip.has(w.toLowerCase())) return w;
+    }
+  }
+  return '';
+}
+
+function resolveBrandSlugFromBrief(brief = {}) {
+  const siteName = String(brief.siteName || '').trim();
+  if (siteName && !looksLikePrompt(siteName)) return brandToSlug(siteName);
+  const brandName = String(brief.brandName || '').trim();
+  const extracted = extractNameFromPrompt(brandName);
+  if (extracted) return brandToSlug(extracted);
+  if (brandName && !looksLikePrompt(brandName)) return brandToSlug(brandName);
+  const clientName = String(brief.clientName || '').trim();
+  if (clientName && !looksLikePrompt(clientName)) return brandToSlug(clientName);
+  if (brandName) return brandToSlug(extractNameFromPrompt(brandName) || brandName);
+  return brandToSlug(clientName || 'site');
+}
+
+/** da.live Canvas — WYSIWYG block editing (Experience Workspace). */
+function resolveDaCanvasOrg(githubOrg) {
+  return String(window.FORGE_CONFIG?.DA_CANVAS_ORG || githubOrg || '').trim();
+}
+
+function buildDaCanvasPreviewUrl(previewBase, { org, repo, canvasUrl } = {}) {
+  if (canvasUrl) return canvasUrl;
+  if (!org || !repo) return 'https://da.live/canvas#';
+  const canvasOrg = resolveDaCanvasOrg(org);
+  if (window.ForgeDaCanvasUrl?.buildDaCanvasUrlFromPreview) {
+    return ForgeDaCanvasUrl.buildDaCanvasUrlFromPreview(previewBase || `https://main--${repo}--${org}.aem.page/`, {
+      org,
+      repo,
+      daOrg: canvasOrg,
+    });
+  }
+  try {
+    const u = new URL(previewBase || `https://main--${repo}--${org}.aem.page/`);
+    let p = decodeURIComponent(u.pathname.replace(/^\/+|\/+$/g, ''));
+    if (!p || p === 'index.html') p = '';
+    else if (p.endsWith('/index.html')) p = p.slice(0, -'/index.html'.length);
+    else if (p.endsWith('.html')) p = p.slice(0, -5);
+    const parts = [canvasOrg, repo];
+    if (p) parts.push(...p.split('/').filter(Boolean));
+    return `https://da.live/canvas#/${parts.join('/')}`;
+  } catch {
+    return `https://da.live/canvas#/${canvasOrg}/${repo}`;
+  }
+}
+
 class ForgeApp extends LitElement {
   static properties = {
     activeTab: { type: String },
@@ -51,11 +150,18 @@ class ForgeApp extends LitElement {
     _swatchGenerating: { type: Boolean, state: true },
     _swatchStatus: { type: Object, state: true },
     _swatchBrandInput: { type: String, state: true },
+    _recentProjects: { type: Array, state: true },
+    _lastProjectId: { type: String, state: true },
   };
 
   /* Render into light DOM so forge.css applies */
   createRenderRoot() {
     return this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._loadRecentProjects();
   }
 
   constructor() {
@@ -96,6 +202,9 @@ class ForgeApp extends LitElement {
     this._logoPreview = '';
     this._chatInput = '';
     this._sendingChat = false;
+    this._activeEmailCampaign = null;
+    this._pendingEmailHeroSlot = null;
+    this._selectedEmailHeroSlot = null;
     this._deviceMode = 'desktop';
     this._statusMsg = null;
     this._progress = 0;
@@ -104,15 +213,46 @@ class ForgeApp extends LitElement {
     this._swatchStatus = null;
     this._swatchBrandInput = '';
     this._apiBase = null;
-    /** @type {string} */
-    this._roadmapText = '';
-    this._roadmapLoading = false;
-    /** @type {string | null} */
-    this._roadmapLoadError = null;
+    this._recentProjects = [];
+    this._lastProjectId = '';
   }
 
   get apiBase() {
-    return this._apiBase || 'http://localhost:8082';
+    if (this._apiBase) return this._apiBase;
+    // 1. URL param  ?forge_api=https://...  (useful for testing)
+    try {
+      const p = new URLSearchParams(window.location.search).get('forge_api');
+      if (p) return p;
+    } catch { /* */ }
+    // 2. localStorage override (set via FORGE Settings panel)
+    try {
+      const stored = localStorage.getItem('forge_api_url');
+      if (stored) return stored;
+    } catch { /* */ }
+    // 3. App Builder forge-api Runtime (forge-config.js or same-origin action URL)
+    if (window.FORGE_CONFIG?.FORGE_API_URL) return window.FORGE_CONFIG.FORGE_API_URL;
+    const pkg = window.FORGE_RUNTIME?.package || 'dx-excshell-1';
+    return `${window.location.origin}/api/v1/web/${pkg}/forge-api`;
+  }
+
+  _formatFetchError(err, userMsg = '') {
+    let msg = err?.message || String(err);
+    const api = this.apiBase;
+    const onHttps = typeof window !== 'undefined' && window.location?.protocol === 'https:';
+    if (err?.name === 'TypeError' && /fetch/i.test(msg)) {
+      if (onHttps && /^http:/i.test(api)) {
+        msg =
+          `Cannot reach forge-api at ${api} from this HTTPS page (browser blocks mixed content). `
+          + 'Set FORGE API URL in Settings to your App Builder forge-api action (https://…/forge-api).';
+      } else {
+        msg =
+          `Failed to reach forge-api at ${api}. Open FORGE from App Builder CDN or set FORGE API URL in Settings.`;
+      }
+    }
+    if (/\bemail campaign\b/i.test(userMsg)) {
+      return `Email campaign error: ${msg}`;
+    }
+    return msg.startsWith('Error:') ? msg : `Error: ${msg}`;
   }
 
   /* ------------------------------------------------------------------ */
@@ -120,24 +260,185 @@ class ForgeApp extends LitElement {
   /* ------------------------------------------------------------------ */
   _selectTab(tab) {
     this.activeTab = tab;
-    if (tab === 'roadmap') this._loadCustomerRoadmap();
   }
 
-  async _loadCustomerRoadmap() {
-    if (this._roadmapLoading || this._roadmapText) return;
-    this._roadmapLoading = true;
-    this._roadmapLoadError = null;
-    this.requestUpdate();
+  /* ------------------------------------------------------------------ */
+  /*  Recent projects (same key as /dashboard + /preview.html)         */
+  /* ------------------------------------------------------------------ */
+  _siteSlugFromBrand(name) {
+    return resolveBrandSlugFromBrief({ brandName: name, siteName: '' }) || '';
+  }
+
+  _loadRecentProjects() {
     try {
-      const url = new URL('customer-demo-roadmap.md', import.meta.url).href;
-      const r = await fetch(url);
-      if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
-      this._roadmapText = await r.text();
-    } catch (e) {
-      this._roadmapLoadError = e?.message ?? String(e);
+      const list = JSON.parse(localStorage.getItem('forge_projects') || '[]');
+      this._recentProjects = [...list].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 20);
+    } catch {
+      this._recentProjects = [];
     }
-    this._roadmapLoading = false;
-    this.requestUpdate();
+  }
+
+  _persistForgeProject(project) {
+    if (!project || !project.id) return;
+    const key = 'forge_projects';
+    let list = [];
+    try {
+      list = JSON.parse(localStorage.getItem(key) || '[]');
+    } catch {
+      list = [];
+    }
+    const brandName = project.brandName || project.brief?.brandName || 'Untitled';
+    const slug = this._siteSlugFromBrand(brandName);
+    const entry = {
+      id: project.id,
+      brandName,
+      status: project.status || 'complete',
+      createdAt: project.createdAt || Date.now(),
+      urls: project.urls || {},
+    };
+    if (slug) entry.siteSlug = slug;
+    const idx = list.findIndex((x) => x.id === entry.id);
+    if (idx >= 0) list[idx] = { ...list[idx], ...entry };
+    else list.unshift(entry);
+    localStorage.setItem(key, JSON.stringify(list.slice(0, 100)));
+  }
+
+  _previewUrlForIframe(baseUrl) {
+    return baseUrl || '';
+  }
+
+  _canvasEditUrl(previewBase) {
+    const org = this._resolveDaOrg();
+    const repo = this._brandRepoSlug();
+    return buildDaCanvasPreviewUrl(previewBase, {
+      org,
+      repo,
+      canvasUrl: this.siteUrls?.canvas,
+    });
+  }
+
+  _onPreviewToolbarLinkClick(e, url) {
+    if (!url || url === '#') return;
+    e.preventDefault();
+    const openUrl = this._previewUrlForIframe(url);
+    const id = this._lastProjectId || `forge-local-${Date.now()}`;
+    if (!this._lastProjectId) this._lastProjectId = id;
+    this._persistForgeProject({
+      id,
+      brandName: this.brief.brandName || 'Untitled',
+      status: 'complete',
+      createdAt: Date.now(),
+      urls: { ...(this.siteUrls || {}), preview: openUrl },
+    });
+    this._loadRecentProjects();
+    this._postSyncForgeFromPreview();
+    window.open(openUrl, '_blank', 'noopener,noreferrer');
+  }
+
+  _githubSyncTarget() {
+    const gh = this.siteUrls?.github;
+    if (typeof gh === 'string' && gh.includes('github.com')) {
+      try {
+        const u = new URL(gh);
+        const p = u.pathname.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean);
+        if (p.length >= 2 && u.hostname.replace(/^www\./, '') === 'github.com') {
+          return `${p[0]}/${p[1].replace(/\.git$/, '')}`;
+        }
+      } catch {
+        /* fall through */
+      }
+    }
+    const org = this.brief.githubOrg || this.context?.org || 'AdobeDrago';
+    return `${org}/${this._brandRepoSlug()}`;
+  }
+
+  /** URL-safe repo slug (matches server resolveBrandSlug). */
+  _brandRepoSlug() {
+    return resolveBrandSlugFromBrief(this.brief);
+  }
+
+  /** Org/repo used for GitHub, DA upload, and HLX preview — brief wins over Coworker context. */
+  _resolveDaOrg() {
+    return (this.brief.githubOrg || '').trim() || this.context?.org || 'AdobeDrago';
+  }
+
+  _resolveDaRepo() {
+    return this._brandRepoSlug();
+  }
+
+  /** True when da.live shell project ≠ FORGE generation target (common Geometrix confusion). */
+  _coworkerTargetMismatch() {
+    if (!this.context?.org || !this.context?.repo) return false;
+    const org = this._resolveDaOrg();
+    const repo = this._resolveDaRepo();
+    return this.context.org !== org || this.context.repo !== repo;
+  }
+
+  /** IMS bearer from da.live session (Coworker / da.live tab). */
+  _getDaBearerToken() {
+    try {
+      const raw = localStorage.getItem('nx-ims');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const t = parsed.tokenValue || parsed.access_token || parsed.token || '';
+        if (t?.startsWith('eyJ') && t.split('.').length === 3) return t;
+      }
+    } catch {
+      /* ignore */
+    }
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key?.startsWith('adobeid_ims_access_token/')) continue;
+        const val = localStorage.getItem(key)?.trim() || '';
+        if (val.startsWith('eyJ') && val.split('.').length === 3) return val;
+      }
+    } catch {
+      /* ignore */
+    }
+    return '';
+  }
+
+  async _writeDaPage(org, repo, page, fetchImpl) {
+    const fileName = String(page.path || 'index.html').replace(/^\/+/, '');
+    const url = `https://admin.da.live/source/${org}/${repo}/${fileName}`;
+    const makeForm = () => {
+      const form = new FormData();
+      form.append('data', new Blob([page.html], { type: 'text/html' }), fileName);
+      return form;
+    };
+    for (const method of ['PUT', 'POST']) {
+      try {
+        const resp = await fetchImpl(url, { method, body: makeForm() });
+        if (resp.ok || resp.status === 201) {
+          return { ok: true, method, status: resp.status };
+        }
+        if (resp.status === 405) continue;
+        const body = await resp.text().catch(() => '');
+        return { ok: false, status: resp.status, body: body.slice(0, 200) };
+      } catch (e) {
+        return { ok: false, status: 0, body: e.message };
+      }
+    }
+    return { ok: false, status: 0, body: 'PUT and POST both failed' };
+  }
+
+  _postSyncForgeFromPreview() {
+    const target = this._githubSyncTarget();
+    if (!target || !/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(target)) return;
+    const body = { target };
+    const pid = this._lastProjectId || '';
+    if (pid && /^forge-\d+$/.test(pid)) body.projectId = pid;
+    fetch(`${this.apiBase}/api/sync-forge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+      .then(async (r) => {
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) console.warn('[FORGE sync-forge]', j);
+      })
+      .catch((err) => console.warn('[FORGE sync-forge]', err));
   }
 
   /* ------------------------------------------------------------------ */
@@ -254,14 +555,20 @@ class ForgeApp extends LitElement {
     this._progress = 5;
 
     try {
+      const repoSlug = this._brandRepoSlug();
+      if (looksLikePrompt(this.brief.brandName) && (!this.brief.siteName || this.brief.siteName === this.context?.repo)) {
+        this.brief = { ...this.brief, siteName: repoSlug };
+      }
+
       // Start generation
       const resp = await fetch(`${this.apiBase}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...this.brief,
-          clientName: this.brief.siteName || this.brief.brandName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'site',
-          githubOrg: this.brief.githubOrg || this.context?.org || 'cklein08',
+          siteName: repoSlug,
+          githubOrg: this._resolveDaOrg(),
+          daToken: this._getDaBearerToken() || undefined,
         }),
       });
       if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
@@ -272,10 +579,65 @@ class ForgeApp extends LitElement {
       // If server returns result directly
       if (data.urls || data.siteUrls) {
         this._progress = 55;
-        this.siteUrls = data.urls || data.siteUrls;
+        this.siteUrls = {
+          ...(data.urls || data.siteUrls || {}),
+          preview: data.urls?.preview || `https://main--${data.repoName || this._resolveDaRepo()}--${data.orgName || this._resolveDaOrg()}.aem.page/`,
+          da: data.urls?.da || `https://da.live/#/${data.orgName || this._resolveDaOrg()}/${data.repoName || this._resolveDaRepo()}`,
+        };
         this.previewUrl = this.siteUrls.preview || '';
-        this.generationLog = [...this.generationLog, { text: `✅ Site generated: ${data.outputDir || ''}`, done: true }];
+        this.generationLog = [...this.generationLog, {
+          text: `✅ Site generated → ${data.orgName || this._resolveDaOrg()}/${data.repoName || this._resolveDaRepo()} (${data.outputDir || ''})`,
+          done: true,
+        }];
         this.generationLog = [...this.generationLog, { text: `📁 ${data.fileCount || 'Files'} created`, done: true }];
+
+        if (data.daResult) {
+          const dr = data.daResult;
+          if (dr.skipped) {
+            this.generationLog = [...this.generationLog, { text: `⚠️ DA (server): ${dr.hint || 'Upload skipped — no bearer.'}`, done: true }];
+          } else {
+            this.generationLog = [...this.generationLog, {
+              text: `📤 DA (server): ${dr.uploaded}/${dr.total} pages uploaded${dr.failures?.length ? ` (${dr.failures.length} failed)` : ''}`,
+              done: true,
+            }];
+            if (dr.failures?.length) {
+              for (const f of dr.failures.slice(0, 5)) {
+                this.generationLog = [...this.generationLog, {
+                  text: `   ↳ ${f.path || '?'}: HTTP ${f.status || '—'} ${(f.body || f.error || '').slice(0, 80)}`,
+                  done: true,
+                }];
+              }
+            }
+          }
+        }
+        if (data.edsResult?.previewed?.length) {
+          const ok = data.edsResult.previewed.filter((x) => (x.status || 0) < 400 && !x.error).length;
+          this.generationLog = [...this.generationLog, {
+            text: `🔄 HLX preview: ${ok}/${data.edsResult.previewed.length} admin.hlx.page POSTs OK`,
+            done: true,
+          }];
+        }
+        if (data.edsDelivery) {
+          const ed = data.edsDelivery;
+          if (ed.ready) {
+            this.generationLog = [...this.generationLog, {
+              text: `✅ EDS preview registered — ${ed.previewUrl || this.siteUrls.preview}`,
+              done: true,
+            }];
+          } else {
+            const block = (ed.blockers || []).slice(0, 2).join('; ');
+            this.generationLog = [...this.generationLog, {
+              text: `⚠️ EDS auto-setup: ${block || 'preview not ready'}${ed.steps?.codeSyncRepo?.installUrl ? ' — install AEM Code Sync on GitHub org once.' : ''}`,
+              done: true,
+            }];
+          }
+        }
+        if (data.urls?.da) {
+          this.generationLog = [...this.generationLog, {
+            text: `🔗 Authoring: ${data.urls.da} (use this org/repo — not import-only /preview/ URLs alone)`,
+            done: true,
+          }];
+        }
 
         // Store pages and push content to DA if we have daFetch
         if (data.pages?.length) {
@@ -309,6 +671,18 @@ class ForgeApp extends LitElement {
         }
       }
 
+      if (data.projectId) {
+        this._lastProjectId = data.projectId;
+        this._persistForgeProject({
+          id: data.projectId,
+          brandName: this.brief.brandName,
+          status: 'complete',
+          createdAt: Date.now(),
+          urls: { ...(data.urls || {}), ...(this.siteUrls || {}) },
+        });
+        this._loadRecentProjects();
+      }
+
       this._progress = 100;
       this.generating = false;
       this._showStatus('Site generation complete!', 'success');
@@ -329,41 +703,49 @@ class ForgeApp extends LitElement {
     // as a plugin). Fall back to the directly-imported daFetch, which works
     // standalone as long as the user is logged into DA.live in this browser
     // (it reads the IMS token via localStorage 'nx-ims' / loadIms()).
-    const fetch = this._daFetch || daFetchDirect;
+    const fetch = this._daFetch || await loadDaFetchDirect();
 
-    const org = this.brief.githubOrg || this.context?.org || 'cklein08';
-    const repoSlug = this.brief.siteName || this.brief.brandName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'site';
-    const adminOrigin = 'https://admin.da.live';
+    // Must match server generateSite org/repo (fstab + *.aem.page), not Coworker sidebar project.
+    const org = data.orgName || this._resolveDaOrg();
+    const repoSlug = data.repoName || this._resolveDaRepo();
     const pages = data.pages || this._generatedPages || [];
 
     if (!pages.length) return;
 
+    if (this._coworkerTargetMismatch()) {
+      this.generationLog = [...this.generationLog, {
+        text: `ℹ️ Coworker has ${this.context.org}/${this.context.repo} open; FORGE uploads to ${org}/${repoSlug} (your brief). Preview uses ${org}/${repoSlug}, not the Geometrix demo.`,
+        done: true,
+      }];
+    }
+
     this._progress = 65;
-    this.generationLog = [...this.generationLog, { text: `📤 Pushing ${pages.length} pages to DA (${org}/${repoSlug})…`, done: false }];
+    this.generationLog = [...this.generationLog, {
+      text: `📤 Pushing ${pages.length} pages to DA (${org}/${repoSlug}) via ${this._daFetch ? 'daFetch' : 'daFetch (import)'}…`,
+      done: false,
+    }];
 
     let pushed = 0;
+    const clientFailures = [];
     for (const page of pages) {
-      try {
-        // Match the DA SDK's own saveToDa: PUT multipart/form-data with a `data` blob.
-        // path: 'index.html' → /source/{org}/{repo}/index.html
-        const url = `${adminOrigin}/source/${org}/${repoSlug}/${page.path}`;
-        const form = new FormData();
-        form.append('data', new Blob([page.html], { type: 'text/html' }), page.path);
-        const resp = await fetch(url, { method: 'PUT', body: form });
-        if (resp.ok) {
-          pushed++;
-        } else {
-          const body = await resp.text().catch(() => '');
-          console.warn(`[FORGE] DA push failed ${page.path}: ${resp.status} ${body.slice(0, 120)}`);
-        }
-      } catch (err) {
-        console.warn(`[FORGE] DA push error ${page.path}:`, err);
+      const result = await this._writeDaPage(org, repoSlug, page, fetch);
+      if (result.ok) {
+        pushed++;
+      } else {
+        clientFailures.push({ path: page.path, ...result });
+        console.warn(`[FORGE] DA push failed ${page.path}:`, result.status, result.body);
       }
     }
 
     if (pushed === 0) {
+      const detail = clientFailures[0]
+        ? ` (${clientFailures[0].path}: ${clientFailures[0].status} ${clientFailures[0].body || ''})`
+        : '';
       this.generationLog = [...this.generationLog,
-        { text: '⚠️ DA upload failed — make sure you are logged into da.live in this browser and try again.', done: true },
+        {
+          text: `⚠️ DA upload failed for ${org}/${repoSlug}${detail} — log into da.live/Coworker in this browser, or set DA_ADMIN_TOKEN on the FORGE server.`,
+          done: true,
+        },
       ];
       return;
     }
@@ -415,16 +797,38 @@ class ForgeApp extends LitElement {
     this._sendingChat = true;
 
     try {
-      const resp = await fetch(`${this.apiBase}/api/copilot`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: userMsg,
-          brief: this.brief,
-          org: this.context?.org || this.brief.githubOrg,
-          repo: this.context?.repo || this.brief.siteName,
-        }),
-      });
+      const refineSlot = this._pendingEmailHeroSlot;
+      this._pendingEmailHeroSlot = null;
+
+      let resp;
+      if (this._activeEmailCampaign?.personaId && !/\bemail campaign\b/i.test(userMsg)) {
+        resp = await fetch(`${this.apiBase}/api/social/email-campaign/refine`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            personaId: this._activeEmailCampaign.personaId,
+            message: userMsg,
+            forgePublicBase: this.apiBase.replace(/\/$/, ''),
+            refineHeroSlot: refineSlot,
+            selectHeroVariant: refineSlot?.replace(/^email-hero-/, ''),
+            selectHeroOnly: /^use\s+hero\s+image/i.test(userMsg),
+            heroImageAssets: this._activeEmailCampaign.heroImageAssets,
+            selectedHeroVariant: this._selectedEmailHeroSlot?.replace(/^email-hero-/, ''),
+            heroImageSource: this._activeEmailCampaign.heroImageSource,
+          }),
+        });
+      } else {
+        resp = await fetch(`${this.apiBase}/api/copilot`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: userMsg,
+            brief: this.brief,
+            org: this.context?.org || this.brief.githubOrg,
+            repo: this.context?.repo || this.brief.siteName,
+          }),
+        });
+      }
       if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
       const data = await resp.json();
 
@@ -445,20 +849,34 @@ class ForgeApp extends LitElement {
         })),
       }));
 
+      const assessmentText = Array.isArray(data.assessment)
+        ? data.assessment.join('\n')
+        : data.assessment || data.message || data.response || data.note || 'Done.';
+
+      const emailCampaign = data.emailCampaign || null;
+      if (emailCampaign) {
+        this._activeEmailCampaign = emailCampaign;
+        if (emailCampaign.selectedHeroVariant) {
+          this._selectedEmailHeroSlot = `email-hero-${emailCampaign.selectedHeroVariant}`;
+        }
+      }
+
       this.chatMessages = [
         ...this.chatMessages,
         {
           role: 'assistant',
-          text: data.assessment || data.message || data.response || 'Done.',
-          scopes,
+          text: assessmentText,
+          scopes: emailCampaign ? ['emailCampaign', ...scopes] : scopes,
           diffs,
+          emailCampaign,
+          heroImageAssets: emailCampaign?.heroImageAssets || [],
         },
       ];
       if (data.previewUrl) this.previewUrl = data.previewUrl;
     } catch (err) {
       this.chatMessages = [
         ...this.chatMessages,
-        { role: 'assistant', text: `Error: ${err.message}` },
+        { role: 'assistant', text: this._formatFetchError(err, userMsg) },
       ];
     }
     this._sendingChat = false;
@@ -469,6 +887,18 @@ class ForgeApp extends LitElement {
       e.preventDefault();
       this._sendPrompt(this._chatInput);
     }
+  }
+
+  _isWolverineBrief() {
+    const name = `${this.brief?.brandName || ''} ${this.brief?.siteName || ''}`.toLowerCase();
+    return Boolean(this.brief?.wolverineDemo || this.brief?.echoStarDemo || name.includes('wolverine'));
+  }
+
+  _copilotQuickPrompts() {
+    if (this._isWolverineBrief()) {
+      return [...WOLVERINE_EMAIL_QUICK_PROMPTS, ...QUICK_PROMPTS.slice(0, 2)];
+    }
+    return QUICK_PROMPTS;
   }
 
   /* ------------------------------------------------------------------ */
@@ -749,7 +1179,7 @@ class ForgeApp extends LitElement {
                 <option value="">Select source…</option>
                 <option value="google-sheets" ?selected=${b.commerceSource === 'google-sheets'}>Google Sheets</option>
                 <option value="manual" ?selected=${b.commerceSource === 'manual'}>Manual Entry</option>
-                <option value="adobe-commerce" ?selected=${b.commerceSource === 'adobe-commerce'}>Adobe Commerce (Magento)</option>
+                <option value="adobe-commerce" ?selected=${b.commerceSource === 'adobe-commerce'}>Commerce (Magento)</option>
               </select>
             </div>
             ${b.commerceSource === 'google-sheets' ? html`
@@ -766,7 +1196,7 @@ class ForgeApp extends LitElement {
             ` : nothing}
             ${b.commerceSource === 'adobe-commerce' ? html`
               <div class="forge__field" style="margin-bottom:0;">
-                <label class="forge__label">Adobe Commerce / Magento URL</label>
+                <label class="forge__label">Commerce / Magento URL</label>
                 <input
                   class="forge__input"
                   type="url"
@@ -795,7 +1225,7 @@ class ForgeApp extends LitElement {
               type="text"
               .value=${b.githubOrg || this.context?.org || ''}
               @input=${(e) => this._updateBrief('githubOrg', e.target.value)}
-              placeholder="cklein08"
+              placeholder="AdobeDrago"
             />
           </div>
           <div class="forge__field" style="flex:1;min-width:200px;">
@@ -829,8 +1259,15 @@ class ForgeApp extends LitElement {
           </div>
           <div style="font-size:12px;color:#888;margin-top:2px;">
             ${this.brief.createNewRepo !== false
-              ? html`Will create <strong>${b.githubOrg || this.context?.org || 'cklein08'}/${b.siteName || b.brandName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'site'}</strong> on GitHub`
-              : html`Will push to existing repo <strong>${b.githubOrg || this.context?.org || 'cklein08'}/${b.siteName || b.brandName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'site'}</strong>`}
+              ? html`Will create <strong>${this._resolveDaOrg()}/${this._resolveDaRepo()}</strong> on GitHub`
+              : html`Will push to existing repo <strong>${this._resolveDaOrg()}/${this._resolveDaRepo()}</strong>`}
+            ${this._coworkerTargetMismatch()
+              ? html`<p style="margin:8px 0 0;font-size:12px;color:var(--spectrum-orange-700);">
+                  Coworker project is <strong>${this.context.org}/${this.context.repo}</strong> (e.g. Geometrix demo).
+                  FORGE will generate and upload to <strong>${this._resolveDaOrg()}/${this._resolveDaRepo()}</strong> instead.
+                  Open that repo in da.live after generate — not the sidebar demo.
+                </p>`
+              : nothing}
           </div>
         </div>
 
@@ -868,6 +1305,50 @@ class ForgeApp extends LitElement {
     `;
   }
 
+  _selectEmailHeroTile(slot) {
+    this._selectedEmailHeroSlot = slot;
+    if (this._activeEmailCampaign) {
+      this._activeEmailCampaign = {
+        ...this._activeEmailCampaign,
+        selectedHeroVariant: slot.replace(/^email-hero-/, ''),
+      };
+    }
+    void this._sendPrompt(`Use hero image ${slot}`);
+  }
+
+  _prefillEmailHeroRefine(slot) {
+    this._pendingEmailHeroSlot = slot;
+    this._chatInput = `For the Firefly **${slot}** tile, change it so that: `;
+    this.requestUpdate();
+  }
+
+  _renderEmailHeroGrid(assets, msgIndex) {
+    if (!assets?.length) return nothing;
+    const selected = this._selectedEmailHeroSlot;
+    return html`
+      <div class="forge__email-hero-grid">
+        <div class="forge__email-hero-grid-title">Email hero images (click to select · refine in chat)</div>
+        <div class="forge__email-hero-tiles">
+          ${assets.map(
+            (a) => html`
+              <div class="forge__email-hero-tile${selected === a.slot ? ' forge__email-hero-tile--selected' : ''}">
+                <button type="button" class="forge__email-hero-img-btn" @click=${() => this._selectEmailHeroTile(a.slot)}>
+                  <img src=${a.url} alt=${a.label || a.slot} loading="lazy" />
+                </button>
+                <div class="forge__email-hero-cap">
+                  <strong>${a.label || a.slot}</strong>
+                  <button type="button" class="forge__link-btn" @click=${() => this._prefillEmailHeroRefine(a.slot)}>
+                    Refine…
+                  </button>
+                </div>
+              </div>
+            `,
+          )}
+        </div>
+      </div>
+    `;
+  }
+
   /* ------------------------------------------------------------------ */
   /*  Render: Co-Pilot tab                                               */
   /* ------------------------------------------------------------------ */
@@ -880,7 +1361,7 @@ class ForgeApp extends LitElement {
 
         <!-- Quick prompts -->
         <div class="forge__quick-prompts">
-          ${QUICK_PROMPTS.map(
+          ${this._copilotQuickPrompts().map(
             (p) => html`
               <button
                 class="forge__quick-btn"
@@ -920,6 +1401,16 @@ class ForgeApp extends LitElement {
                           `,
                         )
                       : nothing}
+                    ${m.emailCampaign
+                      ? html`
+                          ${this._renderEmailHeroGrid(m.heroImageAssets || m.emailCampaign.heroImageAssets, 0)}
+                          <div class="forge__email-campaign-links" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
+                            <a class="forge__btn forge__btn--blue" href="${m.emailCampaign.reviewUrl}" target="_blank" rel="noopener">Review email</a>
+                            <a class="forge__btn" href="${m.emailCampaign.previewUrl}" target="_blank" rel="noopener">Preview HTML</a>
+                            <a class="forge__btn" href="${m.emailCampaign.inboxUrl}" target="_blank" rel="noopener">Simulate journey</a>
+                          </div>
+                        `
+                      : nothing}
                   </div>
                 `,
               )}
@@ -954,9 +1445,16 @@ class ForgeApp extends LitElement {
   /* ------------------------------------------------------------------ */
   _renderPreviewTab() {
     const urls = this.siteUrls || {};
+    const org = this._resolveDaOrg();
+    const repo = this._brandRepoSlug();
+    const daAuthoring = urls.da || `https://da.live/#/${org}/${repo}`;
+    const previewBase = urls.preview || this.previewUrl || `https://main--${repo}--${org}.aem.page/`;
+    const canvasUrl = urls.canvas || buildDaCanvasPreviewUrl(previewBase, { org, repo });
+    const previewTarget = this._previewUrlForIframe(previewBase);
     const links = [
-      { label: '🔗 Preview', url: urls.preview || this.previewUrl },
-      { label: '📝 DA', url: urls.da },
+      { label: '🔗 *.aem.page', url: previewBase, pin: true },
+      { label: '✎ Canvas edit', url: canvasUrl },
+      { label: '📝 DA authoring', url: daAuthoring },
       { label: '🌐 Live', url: urls.live },
       { label: '🐙 GitHub', url: urls.github },
       { label: '🔨 FORGE', url: urls.forge },
@@ -964,12 +1462,28 @@ class ForgeApp extends LitElement {
 
     return html`
       <div class="forge-tabs__panel" ?hidden=${this.activeTab !== 'preview'}>
-        ${this.previewUrl
+        <div class="forge__callout" style="margin:0 0 16px;padding:12px 14px;border-radius:8px;background:var(--spectrum-orange-100);border:1px solid var(--spectrum-orange-400);font-size:12px;line-height:1.55;">
+          <strong>Ignore Coworker “da.live preview” URLs</strong> (<code>da.live/preview/…</code>) — they show the
+          sidebar project
+          ${this.context?.org && this.context?.repo
+            ? html` <strong>${this.context.org}/${this.context.repo}</strong> (often Geometrix)`
+            : ''},
+          not FORGE output. Target: <strong>${org}/${repo}</strong> — use the links below.
+        </div>
+        ${previewTarget
           ? html`
               <div class="forge__preview-wrap">
                 <div class="forge__preview-toolbar">
-                  <span style="font-weight:600;font-size:13px;">Site Preview</span>
+                  <span style="font-weight:600;font-size:13px;">Site Preview · ${org}/${repo}</span>
                   <div class="forge__device-btns">
+                    <button
+                      class="forge__device-btn"
+                      title="Open da.live Canvas (WYSIWYG block editing)"
+                      @click=${async () => {
+                        if (window.__forgeConfigReady) await window.__forgeConfigReady;
+                        window.open(this._canvasEditUrl(previewBase), '_blank', 'noopener,noreferrer');
+                      }}
+                    >✎ Canvas edit</button>
                     ${['desktop', 'tablet', 'mobile'].map(
                       (d) => html`
                         <button
@@ -982,14 +1496,30 @@ class ForgeApp extends LitElement {
                 </div>
                 <iframe
                   class="forge__preview-iframe ${this._deviceMode !== 'desktop' ? `forge__preview-iframe--${this._deviceMode}` : ''}"
-                  src="${this.previewUrl}"
+                  src="${previewTarget}"
                 ></iframe>
               </div>
               <div class="forge__links-row">
-                ${links.map(
-                  (l) => html`<a class="forge__link-btn" href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`,
+                ${links.map((l) =>
+                  l.pin
+                    ? html`<a
+                        class="forge__link-btn"
+                        href="${l.url}"
+                        target="_blank"
+                        rel="noopener"
+                        @click=${(e) => this._onPreviewToolbarLinkClick(e, l.url)}
+                      >${l.label}</a>`
+                    : html`<a class="forge__link-btn" href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`,
                 )}
               </div>
+              <p style="font-size:12px;color:var(--spectrum-gray-600);margin:12px 0 0;line-height:1.5;">
+                <strong>Authoring shell:</strong>
+                <a href="${daAuthoring}" target="_blank" rel="noopener">${daAuthoring}</a>
+                — open this repo in da.live (not <code>/preview/…</code> import URLs).
+                ${looksLikePrompt(this.brief.brandName)
+                  ? html` Set <strong>Site Name</strong> to <code>wolverine</code> (short slug) on the Brief tab before regenerating if the repo name was wrong.`
+                  : nothing}
+              </p>
             `
           : html`
               <div style="text-align:center;padding:60px 20px;color:var(--spectrum-gray-500);">
@@ -1282,32 +1812,53 @@ class ForgeApp extends LitElement {
     this._showStatus('Project "' + project.name + '" imported to brief!', 'success');
   }
 
-  _renderRoadmapTab() {
-    return html`
-      <div class="forge__roadmap-wrap">
-        <h2 class="forge__roadmap-title">Customer demo — next steps</h2>
-        <p class="forge__lead forge__roadmap-intro">
-          Decisions and action items for the current demo window. Full product backlog is in
-          <a href="https://github.com/cklein08/forge/blob/main/ROADMAP.md" target="_blank" rel="noopener">ROADMAP.md</a>
-          on the FORGE repo.
-        </p>
-        ${this._roadmapLoading
-          ? html`<p class="forge__roadmap-status">Loading…</p>`
-          : nothing}
-        ${this._roadmapLoadError
-          ? html`<p class="forge__status forge__status--error">Could not load roadmap file: ${this._roadmapLoadError}</p>`
-          : nothing}
-        ${this._roadmapText
-          ? html`<pre class="forge__roadmap-pre" aria-label="Customer demo roadmap">${this._roadmapText}</pre>`
-          : nothing}
-      </div>
-    `;
+  _saveApiUrl(url) {
+    try {
+      if (url.trim()) localStorage.setItem('forge_api_url', url.trim());
+      else localStorage.removeItem('forge_api_url');
+      this._apiBase = url.trim() || null;
+      this._showStatus('API URL saved — FORGE will use it for all requests.', 'success');
+    } catch { /* */ }
   }
 
   _renderDashboard() {
     if (this.activeTab !== 'dashboard') return nothing;
+    const storedApi = (() => { try { return localStorage.getItem('forge_api_url') || ''; } catch { return ''; } })();
     return html`
       <div style="padding:24px 0;">
+        <!-- API URL banner — shown when not configured for cloud -->
+        ${!storedApi && !window.FORGE_CONFIG?.FORGE_API_URL ? html`
+          <div style="padding:14px 16px;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;margin-bottom:20px;font-size:13px;">
+            <strong>⚠️ No forge-api URL configured.</strong>
+            Open FORGE from App Builder CDN (Experience Cloud) or enter your forge-api action URL in Settings below.
+          </div>
+        ` : nothing}
+        ${this._recentProjects.length
+          ? html`
+            <div style="margin-bottom:24px;padding:16px 18px;background:var(--spectrum-gray-50);border:1px solid var(--spectrum-gray-200);border-radius:8px;">
+              <h3 style="margin:0 0 4px;font-size:14px;font-weight:700;color:var(--spectrum-gray-900);">Recent FORGE sites</h3>
+              <p style="margin:0 0 12px;font-size:12px;color:var(--spectrum-gray-600);line-height:1.45;">
+                Pinned here and in <code>forge_projects</code> (this origin). da.live’s own sidebar lists repos you open in Document Authoring — use <strong>DA authoring</strong> below so the org/repo shows there too.
+              </p>
+              <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
+                ${this._recentProjects.map(
+                  (p) => html`
+                    <li style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 12px;background:#fff;border:1px solid var(--spectrum-gray-200);border-radius:6px;">
+                      <strong style="font-size:13px;">${p.brandName || 'Untitled'}</strong>
+                      <span style="font-size:12px;color:var(--spectrum-gray-500);">● ${p.status || 'draft'}</span>
+                      ${p.urls?.da
+                        ? html`<a class="forge__link-btn" style="font-size:12px;" href="${p.urls.da}" target="_blank" rel="noopener">DA authoring</a>`
+                        : nothing}
+                      ${p.urls?.preview
+                        ? html`<a class="forge__link-btn" style="font-size:12px;" href="${p.urls.preview}" target="_blank" rel="noopener">Preview</a>`
+                        : nothing}
+                    </li>
+                  `,
+                )}
+              </ul>
+            </div>
+          `
+          : nothing}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
           <div class="forge__card" @click=${() => this._selectTab('brief')} style="cursor:pointer;padding:24px;background:var(--spectrum-gray-50);border:1px solid var(--spectrum-gray-200);border-radius:8px;text-align:center;transition:border-color 0.2s,box-shadow 0.2s;">
             <div style="font-size:36px;margin-bottom:12px;">📋</div>
@@ -1344,13 +1895,35 @@ class ForgeApp extends LitElement {
               View your generated site — preview in iframe, open in Universal Editor, DA, or publish to live.
             </p>
           </div>
-          <div class="forge__card" @click=${() => this._selectTab('roadmap')} style="cursor:pointer;grid-column:1 / -1;padding:24px;background:var(--spectrum-gray-50);border:1px solid var(--spectrum-gray-200);border-radius:8px;text-align:center;transition:border-color 0.2s,box-shadow 0.2s;">
-            <div style="font-size:36px;margin-bottom:12px;">📌</div>
-            <h3 style="margin:0 0 8px;font-size:16px;font-weight:700;color:var(--spectrum-gray-900);">Next steps (demo)</h3>
-            <p style="margin:0;font-size:13px;color:var(--spectrum-gray-600);line-height:1.5;">
-              Stakeholder decisions and action items — AJO fragments, IMS access, audience data, Catalyze out of scope.
-            </p>
+        </div>
+
+        <!-- Settings -->
+        <div style="margin-top:24px;padding:20px;background:var(--spectrum-gray-50);border:1px solid var(--spectrum-gray-200);border-radius:8px;">
+          <h3 style="margin:0 0 12px;font-size:14px;font-weight:700;color:var(--spectrum-gray-900);">⚙️ Settings</h3>
+          <div style="display:flex;gap:8px;align-items:flex-end;">
+            <div class="forge__field" style="flex:1;margin-bottom:0;">
+              <label class="forge__label">FORGE API URL</label>
+              <input
+                class="forge__input"
+                type="url"
+                id="forge-api-url-input"
+                placeholder="https://…adobeio-static.net/api/v1/web/dx-excshell-1/forge-api"
+                .value=${storedApi}
+              />
+            </div>
+            <button class="forge__btn forge__btn--primary" style="white-space:nowrap;"
+              @click=${() => {
+                const val = this.renderRoot.querySelector('#forge-api-url-input')?.value || '';
+                this._saveApiUrl(val);
+              }}
+            >Save</button>
+            ${storedApi ? html`
+              <button class="forge__btn forge__btn--ghost" @click=${() => { this._saveApiUrl(''); }}>Clear</button>
+            ` : nothing}
           </div>
+          <p style="font-size:12px;color:var(--spectrum-gray-500);margin:8px 0 0;line-height:1.5;">
+            App Builder <strong>forge-api</strong> action URL. Leave blank when opened from the FORGE CDN — <code>forge-config.js</code> sets it automatically.
+          </p>
         </div>
       </div>
     `;
@@ -1378,7 +1951,6 @@ class ForgeApp extends LitElement {
           </div>
           ${this.activeTab === 'swatch' ? this._renderSwatchTab() : nothing}
           ${this.activeTab === 'workfront' ? this._renderWorkfrontTab() : nothing}
-          ${this.activeTab === 'roadmap' ? this._renderRoadmapTab() : nothing}
           ${['brief','copilot','preview'].includes(this.activeTab) ? html`
             ${this._renderTabs()}
             ${this._renderBriefTab()}
@@ -1402,7 +1974,7 @@ export default async function init(el) {
   try {
     // DA_SDK hangs forever when loaded outside DA.live shell — race with a timeout
     const sdk = await Promise.race([
-      DA_SDK,
+      loadDaSdk(),
       new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
     ]);
     context = sdk.context ?? null;
@@ -1410,13 +1982,34 @@ export default async function init(el) {
   } catch { /* standalone or timeout — continue without DA context */ }
 
   const cmp = document.createElement(EL_NAME);
-  if (context) cmp.context = context;
+  if (context) {
+    cmp.context = context;
+    // Prefill org/repo for editing; generation uses brief.githubOrg + brand slug, not context alone.
+    cmp.brief = {
+      ...cmp.brief,
+      githubOrg: cmp.brief.githubOrg || context.org || '',
+      siteName: cmp.brief.siteName || context.repo || '',
+    };
+  }
   if (daFetch) cmp._daFetch = daFetch;
   el.replaceChildren();
   el.append(cmp);
 }
 
 function boot() {
+  const params = new URLSearchParams(window.location.search);
+  // Popup bridge from *.aem.page inline-edit: capture da.live IMS and postMessage back.
+  if (params.get('forgeTokenBridge') === '1') {
+    const root = document.getElementById('forge-root') || document.body;
+    root.id = root.id || 'forge-da-token-bridge';
+    import('./da-token-bridge.js')
+      .then((m) => m.runDaTokenBridge(root))
+      .catch((err) => {
+        root.textContent = `Could not start da.live sign-in bridge: ${err?.message || err}`;
+      });
+    return;
+  }
+
   const root = document.getElementById('forge-root');
   if (!root) return;
   Promise.resolve(init(root)).catch((err) => {

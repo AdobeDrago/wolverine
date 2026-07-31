@@ -4,13 +4,41 @@
  */
 
 const TEXT_TAGS = 'h1,h2,h3,h4,h5,h6,p,li,em,strong';
+/** EDS CTAs are usually <a class="button">; some pages use native <button>. */
+const CTA_TAGS = 'a[href],button';
+
+export function isForgeEditChrome(el) {
+  return Boolean(
+    el?.closest?.(
+      '.forge-edit-badge, .forge-edit-delete, .forge-edit-drop-zone, .forge-edit-media-toolbar, .forge-edit-banner, .forge-edit-dialog-backdrop, .forge-edit-menu, .forge-personalization-backdrop',
+    ),
+  );
+}
 
 export function isLeafTextField(el) {
   if (!el?.matches) return false;
-  if (!el.matches(`${TEXT_TAGS},a`)) return false;
-  if (el.closest('.forge-edit-badge, .forge-edit-drop-zone, .forge-edit-media-toolbar')) return false;
-  const nested = el.querySelector(`${TEXT_TAGS},a`);
+  if (!el.matches(`${TEXT_TAGS},${CTA_TAGS}`)) return false;
+  if (isForgeEditChrome(el)) return false;
+  const nested = el.querySelector(`${TEXT_TAGS},${CTA_TAGS}`);
   return !nested || nested === el;
+}
+
+function makeTextEditable(el, { onDirty } = {}) {
+  el.classList.add('forge-edit-field');
+  el.contentEditable = 'true';
+  el.spellcheck = true;
+  if (el.matches('a[href],button,.button')) {
+    el.title = el.matches('a[href],.button')
+      ? 'Edit button label · double-click for URL / accessible name'
+      : 'Edit button label · double-click for accessible name';
+  }
+  el.addEventListener('input', () => {
+    el.classList.add('forge-edit-field--dirty');
+    onDirty?.();
+  });
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !el.matches('p,li')) e.preventDefault();
+  });
 }
 
 function isEditModeActive() {
@@ -208,34 +236,45 @@ export function openImageAdaPanel(img, { onDirty } = {}) {
 }
 
 /**
- * ADA panel for a link: URL + accessible name (aria-label).
+ * ADA panel for a link/button CTA: optional URL + accessible name (aria-label).
+ * Native <button> omits the URL field.
  */
 export function openLinkAdaPanel(anchor, { onDirty } = {}) {
   if (!anchor) return;
   closeAdaToolbar();
 
-  const currentHref = anchor.getAttribute('href') || '';
+  const isNativeButton = anchor.tagName === 'BUTTON';
+  const currentHref = isNativeButton ? '' : anchor.getAttribute('href') || '';
   const currentLabel = anchor.getAttribute('aria-label') || anchor.getAttribute('title') || '';
+  const visible = (anchor.textContent || '').trim();
 
   const toolbar = document.createElement('div');
   toolbar.className = 'forge-edit-media-toolbar';
   toolbar.setAttribute('role', 'dialog');
-  toolbar.setAttribute('aria-label', 'ADA link settings');
+  toolbar.setAttribute('aria-label', isNativeButton ? 'Button settings' : 'Button / link settings');
   toolbar.innerHTML = `
     <header>
-      <strong>ADA · Link</strong>
+      <strong>${isNativeButton ? 'Button' : 'Button / CTA'}</strong>
       <button type="button" class="forge-edit-media-toolbar__close" aria-label="Close">×</button>
     </header>
     <label class="forge-edit-media-toolbar__field">
+      <span>Button label</span>
+      <input type="text" name="labelText" value="${escapeAttr(visible)}" autocomplete="off" />
+    </label>
+    ${
+      isNativeButton
+        ? ''
+        : `<label class="forge-edit-media-toolbar__field">
       <span>Link URL</span>
       <input type="url" name="href" value="${escapeAttr(currentHref)}" autocomplete="off" />
-    </label>
+    </label>`
+    }
     <label class="forge-edit-media-toolbar__field">
       <span>Accessible name</span>
       <input type="text" name="ariaLabel" value="${escapeAttr(currentLabel)}" autocomplete="off"
         placeholder="Optional aria-label when visible text is unclear" />
     </label>
-    <p class="forge-edit-media-toolbar__hint">Use when the link text alone is not descriptive (e.g. “Learn more”).</p>
+    <p class="forge-edit-media-toolbar__hint">Edit the label here or click the button text on the page. Use accessible name when the label alone is vague (e.g. “Learn more”).</p>
     <footer>
       <button type="button" data-action="cancel">Cancel</button>
       <button type="button" class="primary" data-action="apply">Apply</button>
@@ -245,6 +284,7 @@ export function openLinkAdaPanel(anchor, { onDirty } = {}) {
   document.body.append(toolbar);
   placeToolbar(toolbar, anchor);
 
+  const textInput = toolbar.querySelector('input[name="labelText"]');
   const hrefInput = toolbar.querySelector('input[name="href"]');
   const labelInput = toolbar.querySelector('input[name="ariaLabel"]');
 
@@ -252,8 +292,17 @@ export function openLinkAdaPanel(anchor, { onDirty } = {}) {
   toolbar.querySelector('.forge-edit-media-toolbar__close')?.addEventListener('click', dismiss);
   toolbar.querySelector('[data-action="cancel"]')?.addEventListener('click', dismiss);
   toolbar.querySelector('[data-action="apply"]')?.addEventListener('click', () => {
-    const href = (hrefInput?.value || '').trim();
-    if (href) anchor.setAttribute('href', href);
+    const nextText = (textInput?.value || '').trim();
+    if (nextText && nextText !== (anchor.textContent || '').trim()) {
+      // Keep simple text CTAs as a single text node (EDS button pattern).
+      if (!anchor.querySelector('img, picture, svg')) {
+        anchor.textContent = nextText;
+      }
+    }
+    if (!isNativeButton) {
+      const href = (hrefInput?.value || '').trim();
+      if (href) anchor.setAttribute('href', href);
+    }
     const label = (labelInput?.value || '').trim();
     if (label) {
       anchor.setAttribute('aria-label', label);
@@ -265,7 +314,7 @@ export function openLinkAdaPanel(anchor, { onDirty } = {}) {
     dismiss();
   });
 
-  hrefInput?.focus();
+  (textInput || hrefInput)?.focus();
 }
 
 /**
@@ -279,9 +328,9 @@ export function openAdaPanelForTarget(target, { onDirty } = {}) {
     openImageAdaPanel(img, { onDirty });
     return true;
   }
-  const link = target.closest('a[href]');
-  if (link && !link.closest('.forge-edit-media-toolbar')) {
-    openLinkAdaPanel(link, { onDirty });
+  const cta = target.closest('a[href], button');
+  if (cta && !isForgeEditChrome(cta) && !cta.closest('.forge-edit-media-toolbar')) {
+    openLinkAdaPanel(cta, { onDirty });
     return true;
   }
   return false;
@@ -293,22 +342,18 @@ export function instrumentEditableFields(blockEl, { onDirty } = {}) {
 
   blockEl.querySelectorAll(TEXT_TAGS).forEach((el) => {
     if (!isLeafTextField(el)) return;
-    el.classList.add('forge-edit-field');
-    el.contentEditable = 'true';
-    el.spellcheck = true;
-    el.addEventListener('input', () => {
-      el.classList.add('forge-edit-field--dirty');
-      onDirty?.();
-    });
-    el.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !el.matches('p,li')) e.preventDefault();
-    });
+    makeTextEditable(el, { onDirty });
   });
 
-  blockEl.querySelectorAll('a[href]').forEach((el) => {
+  // EDS button CTAs (<a class="button">) + native <button> labels.
+  blockEl.querySelectorAll(CTA_TAGS).forEach((el) => {
     if (!isLeafTextField(el)) return;
+    makeTextEditable(el, { onDirty });
     el.addEventListener('click', (e) => {
-      if (isEditModeActive()) e.preventDefault();
+      if (isEditModeActive()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
     });
     el.addEventListener('dblclick', (e) => {
       e.preventDefault();
@@ -318,7 +363,7 @@ export function instrumentEditableFields(blockEl, { onDirty } = {}) {
   });
 
   blockEl.querySelectorAll('picture, img').forEach((el) => {
-    if (el.closest('.forge-edit-badge, .forge-edit-media-toolbar')) return;
+    if (el.closest('.forge-edit-badge, .forge-edit-delete, .forge-edit-media-toolbar')) return;
     const img = el.tagName === 'IMG' ? el : el.querySelector('img');
     if (!img) return;
     img.classList.add('forge-edit-media');

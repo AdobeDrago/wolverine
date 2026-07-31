@@ -3,7 +3,7 @@
  * Edit text, links, and images on the page; save to Document Authoring. No Universal Editor.
  */
 
-import { insertBlockOnDaPageClient } from './forge-inline-edit-da.js';
+import { deleteBlockOnDaPageClient, insertBlockOnDaPageClient } from './forge-inline-edit-da.js';
 import {
   closeAdaToolbar,
   computeAdaComplianceScore,
@@ -21,10 +21,12 @@ import {
 } from './forge-inline-edit-commerce.js';
 import { productBrandName } from './forge-product-brand.js';
 import {
+  getPreviewSegmentId,
   initPersonalizationOnBlock,
   mountPreviewJourneyControl,
   mountPreviewSegmentControl,
   openPersonalizationPanel,
+  preparePersonalizedBlocksForSegmentSave,
   setClassifyBlockMeta,
   syncVariantVisibility,
   updatePersonalizationBadge,
@@ -32,7 +34,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 17;
+export const FORGE_INLINE_EDIT_BUILD = 24;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -96,6 +98,15 @@ function isEditMode() {
   return vse === 'forge';
 }
 
+/** DA/GitHub org slugs are case-sensitive on admin.da.live — normalize known demos. */
+function normalizeOrgRepo(org, repo) {
+  let o = String(org || '').trim();
+  let r = String(repo || '').trim();
+  if (o && o.toLowerCase() === 'adobedrago') o = 'AdobeDrago';
+  if (r && r.toLowerCase() === 'wolverine') r = 'wolverine';
+  return { org: o, repo: r };
+}
+
 function resolveOrgRepo() {
   const params = new URLSearchParams(window.location.search);
   let org = params.get(FORGE_ORG_PARAM);
@@ -107,7 +118,7 @@ function resolveOrgRepo() {
       org = org || m[2];
     }
   }
-  return { org, repo };
+  return normalizeOrgRepo(org, repo);
 }
 
 function resolveForgeApiBase() {
@@ -127,7 +138,15 @@ function resolveForgeApiBase() {
 
 function resolveDaToken() {
   try {
-    return sessionStorage.getItem('forge_da_token') || localStorage.getItem('forge_da_token') || '';
+    const raw =
+      sessionStorage.getItem('forge_da_token') || localStorage.getItem('forge_da_token') || '';
+    if (!raw) return '';
+    if (!isDaJwt(raw)) {
+      // Stale/non-JWT leftovers (or cleared cookies while storage kept junk) — force re-login.
+      clearStoredDaToken();
+      return '';
+    }
+    return raw;
   } catch {
     return '';
   }
@@ -135,9 +154,10 @@ function resolveDaToken() {
 
 function storeDaToken(token) {
   const t = String(token || '').trim();
-  if (!t) return;
+  if (!t || !isDaJwt(t)) return;
   try {
     sessionStorage.setItem('forge_da_token', t);
+    updateDaAuthBanner();
   } catch {
     /* ignore */
   }
@@ -146,46 +166,153 @@ function storeDaToken(token) {
 /** Singleton — never stack two Document Authoring sign-in dialogs. */
 let daTokenPromptPromise = null;
 
+function daTokenBridgeUrls(org, repo) {
+  if (!org || !repo) {
+    return {
+      primary: 'https://da.live/',
+      fallback: 'https://da.live/',
+    };
+  }
+  const base = `https://da.live/app/${encodeURIComponent(org)}/${encodeURIComponent(repo)}/tools/forge`;
+  return {
+    primary: `${base}/da-token-bridge`,
+    fallback: `${base}/forge?forgeTokenBridge=1`,
+  };
+}
+
+function isDaJwt(value) {
+  const t = String(value || '').trim();
+  return t.startsWith('eyJ') && t.split('.').length === 3 && t.length > 500;
+}
+
+/**
+ * Open da.live login, capture IMS token via postMessage, store it, dismiss UI.
+ * Capture-after-login only — no paste field or manual token submit control.
+ */
 function promptDaToken() {
   if (daTokenPromptPromise) return daTokenPromptPromise;
   daTokenPromptPromise = new Promise((resolve) => {
     document.querySelectorAll('.forge-edit-token-backdrop').forEach((n) => n.remove());
+    const { org, repo } = resolveOrgRepo();
+    const urls = daTokenBridgeUrls(org, repo);
+
     const backdrop = document.createElement('div');
     backdrop.className = 'forge-edit-dialog-backdrop forge-edit-token-backdrop';
     const dialog = document.createElement('div');
-    dialog.className = 'forge-edit-dialog forge-edit-token-dialog';
+    dialog.className = 'forge-edit-dialog forge-edit-token-dialog forge-edit-token-dialog--wait';
     dialog.innerHTML = `
-      <header>Document Authoring sign-in</header>
+      <header>Sign in to Document Authoring</header>
       <div class="dialog-body">
-        <p>
-          Paste your <strong>da.live</strong> IMS token (<code>tokenValue</code> from localStorage, starts with <code>eyJ</code>),
-          or open <a href="https://da.live" target="_blank" rel="noopener">da.live</a> in this browser and sign in, then retry.
-        </p>
-        <input type="password" id="forgeDaTokenField" placeholder="eyJ…" autocomplete="off" />
+        <p>Complete Adobe sign-in in the <strong>da.live</strong> window. This closes automatically when your session is captured.</p>
+        <p class="forge-edit-token-status" id="forgeDaTokenStatus" data-kind="wait">Opening da.live…</p>
       </div>
       <footer>
         <button type="button" data-action="cancel">Cancel</button>
-        <button type="button" class="primary" data-action="save">Save token</button>
+        <button type="button" class="primary" data-action="reopen">Reopen da.live</button>
       </footer>
     `;
     backdrop.append(dialog);
     document.body.append(backdrop);
-    const field = dialog.querySelector('#forgeDaTokenField');
-    field?.focus();
-    const finish = (val) => {
-      daTokenPromptPromise = null;
-      backdrop.remove();
-      resolve(val);
+
+    const statusEl = dialog.querySelector('#forgeDaTokenStatus');
+    let popup = null;
+    let pollTimer = 0;
+    let settled = false;
+
+    const setStatus = (text, kind = 'wait') => {
+      if (!statusEl) return;
+      statusEl.textContent = text;
+      statusEl.dataset.kind = kind;
     };
-    dialog.querySelector('[data-action="cancel"]')?.addEventListener('click', () => finish(''));
-    dialog.querySelector('[data-action="save"]')?.addEventListener('click', () => {
-      const val = field?.value?.trim() || '';
-      if (val) storeDaToken(val);
+
+    const cleanup = () => {
+      if (pollTimer) window.clearInterval(pollTimer);
+      pollTimer = 0;
+      window.removeEventListener('message', onMessage);
+    };
+
+    const finish = (val) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      daTokenPromptPromise = null;
+      try {
+        popup?.close();
+      } catch {
+        /* ignore */
+      }
+      backdrop.remove();
+      resolve(val || '');
+    };
+
+    const acceptToken = (raw) => {
+      const val = String(raw || '').trim();
+      if (!isDaJwt(val)) return false;
+      storeDaToken(val);
+      updateDaAuthBanner();
+      showToast('Signed in to Document Authoring');
       finish(val);
-    });
+      return true;
+    };
+
+    const onMessage = (e) => {
+      if (e.data?.type !== 'forge:set-da-token' || !e.data.token) return;
+      if (popup && e.source && e.source !== popup && e.source !== window) return;
+      acceptToken(e.data.token);
+    };
+
+    const openLogin = () => {
+      setStatus('Waiting for Adobe sign-in on da.live…', 'wait');
+      try {
+        popup?.close();
+      } catch {
+        /* ignore */
+      }
+      popup = window.open(urls.primary, 'forge-da-token', 'width=560,height=720');
+      if (!popup) {
+        setStatus('Popup blocked — allow popups for this site, then click Reopen da.live.', 'err');
+        return;
+      }
+      popup.focus();
+
+      window.setTimeout(() => {
+        if (settled || !popup || popup.closed) return;
+        try {
+          if (/404|not found/i.test(popup.document?.title || '')) {
+            popup.location.href = urls.fallback;
+          }
+        } catch {
+          /* cross-origin while on da.live */
+        }
+      }, 1800);
+
+      if (pollTimer) window.clearInterval(pollTimer);
+      pollTimer = window.setInterval(() => {
+        if (settled) return;
+        const existing = resolveDaToken();
+        if (isDaJwt(existing)) {
+          acceptToken(existing);
+          return;
+        }
+        if (popup?.closed) {
+          window.clearInterval(pollTimer);
+          pollTimer = 0;
+          if (!settled) {
+            setStatus('da.live window closed before sign-in finished. Click Reopen da.live.', 'err');
+          }
+        }
+      }, 700);
+    };
+
+    window.addEventListener('message', onMessage);
+    dialog.querySelector('[data-action="cancel"]')?.addEventListener('click', () => finish(''));
+    dialog.querySelector('[data-action="reopen"]')?.addEventListener('click', openLogin);
     backdrop.addEventListener('click', (e) => {
       if (e.target === backdrop) finish('');
     });
+
+    // Immediately open da.live; waiting UI closes when the bridge posts the token.
+    openLogin();
   });
   return daTokenPromptPromise;
 }
@@ -197,6 +324,18 @@ function clearStoredDaToken() {
   } catch {
     /* ignore */
   }
+  updateDaAuthBanner();
+}
+
+function updateDaAuthBanner() {
+  const btn = document.querySelector('.forge-edit-banner__da-auth');
+  if (!btn) return;
+  const signedIn = Boolean(resolveDaToken());
+  btn.textContent = signedIn ? 'DA signed in' : 'Sign in to DA';
+  btn.dataset.signedIn = signedIn ? '1' : '0';
+  btn.title = signedIn
+    ? 'Document Authoring token stored for this tab (sessionStorage). Click to sign in again.'
+    : 'Required for Save / Add component. Not a browser cookie — clearing cookies will not sign you out of DA.';
 }
 
 function sectionLabel(el) {
@@ -298,12 +437,20 @@ function showBanner() {
   const pageLabel = currentPagePath() === 'index' ? 'Home' : currentPagePath();
   bar.innerHTML = `<strong>${productBrandName()} inline edit</strong>
     <span>${target} · ${pageLabel}</span>
+    <button type="button" class="forge-edit-banner__da-auth" data-signed-in="0">Sign in to DA</button>
     <button type="button" class="forge-edit-banner__ada-score" title="ADA compliance">ADA —</button>
-    <button type="button" class="forge-edit-banner__save" disabled>Save page</button>
-    <span class="forge-edit-banner__hint">Click image → ADA alt · Double-click link → accessible name</span>`;
+    <button type="button" class="forge-edit-banner__save" disabled>Save page</button>`;
   document.body.prepend(bar);
   document.documentElement.classList.add('forge-edit-active');
+  bar.querySelector('.forge-edit-banner__da-auth')?.addEventListener('click', async () => {
+    clearStoredDaToken();
+    const token = await promptDaToken();
+    if (token) showToast('Document Authoring signed in — Save / Add component ready');
+    else showToast('DA sign-in cancelled — Add component will not persist until you sign in', true);
+    updateDaAuthBanner();
+  });
   bar.querySelector('.forge-edit-banner__save')?.addEventListener('click', () => savePage());
+  updateDaAuthBanner();
   bar.querySelector('.forge-edit-banner__ada-score')?.addEventListener('click', () => {
     const first = document.querySelector('main img.forge-edit-media--needs-alt, main img:not([alt])');
     if (first) {
@@ -317,7 +464,9 @@ function showBanner() {
   refreshAdaMediaFlags(document);
   updateAdaScoreBanner();
   setClassifyBlockMeta(classifyBlock);
-  mountPreviewSegmentControl(bar);
+  mountPreviewSegmentControl(bar, [], {
+    confirmIfDirty: () => pageDirty,
+  });
   mountPreviewJourneyControl(bar);
 }
 
@@ -331,10 +480,46 @@ function decorateBlock(el, meta) {
   badge.className = 'forge-edit-badge';
   badge.textContent = `${meta.label} (${meta.category})`;
   el.append(badge);
+  const delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.className = 'forge-edit-delete';
+  delBtn.textContent = 'Delete';
+  delBtn.title = 'Delete this component from Document Authoring';
+  delBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    deleteComponent(el, meta);
+  });
+  el.append(delBtn);
   instrumentEditableFields(el, { onDirty: setPageDirty });
   if (el.hasAttribute('data-forge-personalization')) {
     initPersonalizationOnBlock(el, meta, { onDirty: setPageDirty, classify: classifyBlock });
   }
+}
+
+function sectionIndexForBlock(blockEl) {
+  const main = document.querySelector('main');
+  if (!main || !blockEl) return -1;
+  const section = blockEl.closest('main > div') || blockEl;
+  return mainSections(main).indexOf(section);
+}
+
+function reloadAfterMutation(result) {
+  const seg = getPreviewSegmentId();
+  if (result?.previewUrl) {
+    try {
+      const u = new URL(result.previewUrl, window.location.origin);
+      if (seg) u.searchParams.set('forge-preview-segment', seg);
+      window.location.href = u.toString();
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
+  const u = new URL(window.location.href);
+  u.searchParams.set('_t', String(Date.now()));
+  if (seg) u.searchParams.set('forge-preview-segment', seg);
+  window.location.href = u.toString();
 }
 
 function findBlocks(root) {
@@ -412,7 +597,7 @@ async function insertBlockOnDaClientWithPrompt(blockId, afterIndex, products = n
   if (forcePrompt) clearStoredDaToken();
   if (!token) token = await promptDaToken();
   if (!token) {
-    throw new Error('DA token required — sign in on da.live or paste tokenValue');
+    throw new Error('DA token required — Sign in on da.live when prompted');
   }
 
   const payload = {
@@ -443,8 +628,7 @@ async function insertBlockOnDaClientWithPrompt(blockId, afterIndex, products = n
 async function insertBlock(blockId, afterIndex, products = null) {
   const { org, repo } = resolveOrgRepo();
   if (!org || !repo) {
-    showToast('Missing org/repo — add forge-org and forge-repo query params', true);
-    return null;
+    throw new Error('Missing org/repo — add forge-org and forge-repo query params');
   }
 
   const apiBase = resolveForgeApiBase();
@@ -462,6 +646,117 @@ async function insertBlock(blockId, afterIndex, products = null) {
   }
 
   return insertBlockOnDaClientWithPrompt(blockId, afterIndex, products);
+}
+
+async function deleteBlockViaForgeApi(sectionIndex, apiBase) {
+  const { org, repo } = resolveOrgRepo();
+  const headers = { 'Content-Type': 'application/json' };
+  const daToken = resolveDaToken();
+  if (daToken) headers['X-Forge-Da-Token'] = daToken;
+
+  const res = await fetch(`${apiBase}/api/inline-edit/delete-block`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      org,
+      repo,
+      pagePath: currentPagePath(),
+      sectionIndex,
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.error || data.hint || `Delete failed (${res.status})`);
+    err.needsToken = Boolean(data.needsToken) || res.status === 401 || res.status === 403;
+    err.hint = data.hint || '';
+    throw err;
+  }
+  return data;
+}
+
+async function deleteBlockOnDaClientWithPrompt(sectionIndex, { forcePrompt = false } = {}) {
+  const { org, repo } = resolveOrgRepo();
+  let token = forcePrompt ? '' : resolveDaToken();
+  if (forcePrompt) clearStoredDaToken();
+  if (!token) token = await promptDaToken();
+  if (!token) {
+    throw new Error('DA token required — Sign in on da.live when prompted');
+  }
+
+  const payload = {
+    org,
+    repo,
+    pagePath: currentPagePath(),
+    sectionIndex,
+    token,
+  };
+
+  let result = await deleteBlockOnDaPageClient(payload);
+  if (!result.ok && result.needsToken) {
+    clearStoredDaToken();
+    const retry = await promptDaToken();
+    if (retry) {
+      result = await deleteBlockOnDaPageClient({ ...payload, token: retry });
+    }
+  }
+  if (!result.ok) {
+    throw new Error(result.error || result.hint || 'Delete failed');
+  }
+  return result;
+}
+
+async function deleteBlock(sectionIndex) {
+  const { org, repo } = resolveOrgRepo();
+  if (!org || !repo) {
+    throw new Error('Missing org/repo — add forge-org and forge-repo query params');
+  }
+
+  const apiBase = resolveForgeApiBase();
+  if (apiBase) {
+    try {
+      return await deleteBlockViaForgeApi(sectionIndex, apiBase);
+    } catch (e) {
+      const authFail =
+        e?.needsToken ||
+        /DA write failed:\s*40[13]|DA token required|401|403/i.test(String(e?.message || ''));
+      if (!authFail) throw e;
+      return deleteBlockOnDaClientWithPrompt(sectionIndex, { forcePrompt: true });
+    }
+  }
+
+  return deleteBlockOnDaClientWithPrompt(sectionIndex);
+}
+
+async function deleteComponent(blockEl, meta) {
+  const idx = sectionIndexForBlock(blockEl);
+  if (idx < 0) {
+    showToast('Could not find this component’s section to delete', true);
+    return;
+  }
+  const label = meta?.label || blockEl?.dataset?.forgeBlockId || 'component';
+  const ok = window.confirm(
+    `Delete “${label}” from Document Authoring?\n\nThis removes the whole section and reloads preview.`,
+  );
+  if (!ok) return;
+
+  try {
+    if (!resolveDaToken()) {
+      const token = await promptDaToken();
+      if (!token) {
+        showToast('Sign in to Document Authoring is required to delete components', true);
+        return;
+      }
+    }
+    showToast(`Deleting ${label}…`);
+    const result = await deleteBlock(idx);
+    if (!result?.ok && !result?.previewUrl) {
+      throw new Error(result?.error || result?.hint || 'Delete failed — section was not removed');
+    }
+    showToast(`Deleted ${label} — reloading preview…`);
+    reloadAfterMutation(result);
+  } catch (e) {
+    showToast(e.message || 'Delete failed', true);
+  }
 }
 
 async function pickProductsForBlock(blockId, selectedIds = null) {
@@ -513,6 +808,14 @@ function openAddDialog({ afterIndex = -1, anchorEl = null } = {}) {
         const original = meta?.label || id;
         btn.textContent = blockNeedsProductPicker(id) ? 'Choose products…' : 'Saving…';
         try {
+          if (!resolveDaToken()) {
+            btn.textContent = 'Sign in…';
+            const token = await promptDaToken();
+            if (!token) {
+              throw new Error('Sign in to Document Authoring is required to add components');
+            }
+            btn.textContent = blockNeedsProductPicker(id) ? 'Choose products…' : 'Saving…';
+          }
           let products = null;
           if (blockNeedsProductPicker(id)) {
             products = await pickProductsForBlock(id);
@@ -524,17 +827,16 @@ function openAddDialog({ afterIndex = -1, anchorEl = null } = {}) {
             btn.textContent = 'Saving…';
           }
           const result = await insertBlock(id, afterIndex, products);
+          if (!result?.ok && !result?.previewUrl) {
+            throw new Error(result?.error || result?.hint || 'Insert failed — block was not saved');
+          }
           backdrop.remove();
           showToast(
             products?.length
               ? `Added ${meta?.label || id} with ${products.length} product${products.length === 1 ? '' : 's'} — reloading…`
               : `Added ${meta?.label || id} — reloading preview…`,
           );
-          if (result?.previewUrl) {
-            window.location.href = result.previewUrl;
-          } else {
-            window.location.reload();
-          }
+          reloadAfterMutation(result);
         } catch (e) {
           btn.disabled = false;
           btn.textContent = original;
@@ -592,6 +894,19 @@ async function savePage() {
   }
 
   try {
+    const previewSegment = getPreviewSegmentId();
+    if (
+      previewSegment &&
+      document.body.classList.contains('xwalk-persona-segment-landing') &&
+      !document.querySelector('[data-forge-personalization]')
+    ) {
+      const proceed = window.confirm(
+        'Segment preview rebuilt this page as the campaign layout. Saving will store that campaign layout as the page source (replacing the default BYOD grid).\n\nContinue? Cancel to clear Segment (Preview: default), reload, then edit the grid — or add personalization variants on blocks for per-segment versions.',
+      );
+      if (!proceed) return;
+    }
+
+    const prepared = preparePersonalizedBlocksForSegmentSave(previewSegment);
     const result = await savePageToDaClient({
       org,
       repo,
@@ -612,7 +927,13 @@ async function savePage() {
     }
     pageDirty = false;
     btn?.classList.remove('forge-edit-banner__save--dirty');
-    showToast('Saved to Document Authoring — refreshing preview…');
+    const segNote =
+      prepared.segmentId && prepared.variantCount
+        ? ` · segment variant (${prepared.variantCount} block${prepared.variantCount === 1 ? '' : 's'})`
+        : prepared.segmentId
+          ? ' · segment preview'
+          : '';
+    showToast(`Saved to Document Authoring${segNote} — refreshing preview…`);
     const u = new URL(window.location.href);
     u.searchParams.set('_t', String(Date.now()));
     window.location.href = u.toString();
@@ -634,7 +955,8 @@ function showContextMenu(x, y, blockEl, meta, targetEl) {
   const adaTarget =
     targetEl?.closest?.('img') ||
     targetEl?.closest?.('picture') ||
-    targetEl?.closest?.('a[href]');
+    targetEl?.closest?.('a[href]') ||
+    targetEl?.closest?.('button:not(.forge-edit-delete)');
   const commerceTarget =
     meta.category === 'commerce' ||
     blockNeedsProductPicker(meta.id) ||
@@ -647,6 +969,7 @@ function showContextMenu(x, y, blockEl, meta, targetEl) {
     <li data-action="ada"${adaTarget ? '' : ' class="disabled"'}>ADA / accessibility…</li>
     <li data-action="personalize">Personalization (RT CDP / AJO)…</li>
     <li data-action="add-after">Add component after…</li>
+    <li data-action="delete" class="forge-edit-menu__danger">Delete component…</li>
     <li data-action="save">Save page to Document Authoring</li>
   `;
   menu.style.left = `${x}px`;
@@ -694,6 +1017,8 @@ function showContextMenu(x, y, blockEl, meta, targetEl) {
       const sections = main ? mainSections(main) : [];
       const idx = sections.indexOf(blockEl.closest('main > div') || blockEl);
       openAddDialog({ afterIndex: idx >= 0 ? idx : -1, anchorEl: blockEl });
+    } else if (action === 'delete') {
+      deleteComponent(blockEl, meta);
     } else if (action === 'save') {
       savePage();
     }
@@ -781,6 +1106,16 @@ function init() {
   globalThis.__forgeInlineEditInit = true;
 
   showBanner();
+  // Ask for DA sign-in as soon as edit mode opens (not only on Save / Add / Delete).
+  if (!resolveDaToken()) {
+    window.setTimeout(() => {
+      if (resolveDaToken() || daTokenPromptPromise) return;
+      promptDaToken().then((token) => {
+        updateDaAuthBanner();
+        if (token) showToast('Document Authoring signed in — Save / Add / Delete ready');
+      });
+    }, 400);
+  }
   scanAndDecorate();
   document.addEventListener('contextmenu', onContextMenu);
   document.addEventListener('click', (e) => {
