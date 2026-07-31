@@ -68,19 +68,37 @@ export function readDaImsTokenFromStorage(storage = localStorage) {
 
 async function readTokenFromDaSdk() {
   try {
-    let sdkPromise = globalThis.DA_SDK;
-    if (!sdkPromise) {
-      await import('https://da.live/nx/utils/sdk.js');
-      sdkPromise = globalThis.DA_SDK;
-    }
+    // Official SDK is `export default` — it does NOT set globalThis.DA_SDK.
+    // forge.js uses mod.default; the old globalThis check always returned ''.
+    const mod = await import('https://da.live/nx/utils/sdk.js');
+    const sdkPromise = mod?.default || globalThis.DA_SDK;
     if (!sdkPromise) return '';
-    const api = await sdkPromise;
+    const api = await Promise.race([
+      Promise.resolve(sdkPromise),
+      new Promise((_, reject) => {
+        window.setTimeout(() => reject(new Error('DA_SDK timeout')), 12_000);
+      }),
+    ]);
     const token = api?.token || api?.accessToken || '';
     if (isJwt(token)) return String(token).trim();
   } catch {
-    /* not in DA shell yet, or SDK unavailable */
+    /* not in DA shell yet, or SDK unavailable / timed out */
   }
   return '';
+}
+
+/** Parent da.live posts { ready, token, ports } — catch token even if SDK await races. */
+function watchDaParentToken(onToken) {
+  const handler = (e) => {
+    try {
+      const t = e?.data?.token;
+      if (isJwt(t)) onToken(String(t).trim());
+    } catch {
+      /* ignore */
+    }
+  };
+  window.addEventListener('message', handler);
+  return () => window.removeEventListener('message', handler);
 }
 
 async function readDaToken() {
@@ -329,6 +347,7 @@ export function runDaTokenBridge(root = document.getElementById('forge-da-token-
   const started = Date.now();
   let done = false;
   let pollTimer = 0;
+  let unwatchParent = () => {};
 
   const finish = (token) => {
     if (done) return true;
@@ -336,6 +355,11 @@ export function runDaTokenBridge(root = document.getElementById('forge-da-token-
     sendTokenMessages(token);
     done = true;
     if (pollTimer) window.clearInterval(pollTimer);
+    try {
+      unwatchParent();
+    } catch {
+      /* ignore */
+    }
     setStatus(statusEl, 'Signed in — returning to preview…', 'ok');
     if (retryBtn) retryBtn.disabled = true;
     if (closeBtn) {
@@ -360,14 +384,20 @@ export function runDaTokenBridge(root = document.getElementById('forge-da-token-
     return true;
   };
 
+  // Capture token from da.live parent postMessage immediately (same channel as DA_SDK).
+  unwatchParent = watchDaParentToken((token) => {
+    finish(token);
+  });
+
   const tryCapture = async () => {
+    if (done) return true;
     const token = await readDaToken();
     if (token) return finish(token);
     if (Date.now() - started > MAX_WAIT_MS) {
       if (pollTimer) window.clearInterval(pollTimer);
       setStatus(
         statusEl,
-        'Still waiting for Adobe sign-in. Sign in if prompted, then click Try again.',
+        'Still waiting for Adobe sign-in. Use the profile menu in this window to sign in, then click Try again.',
         'err',
       );
       return false;
