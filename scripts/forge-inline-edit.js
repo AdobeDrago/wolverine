@@ -34,7 +34,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 33;
+export const FORGE_INLINE_EDIT_BUILD = 34;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -254,7 +254,7 @@ function promptDaToken() {
     dialog.innerHTML = `
       <header style="padding:14px 16px;border-bottom:1px solid #e8e8e8;font-weight:700;color:#1d1d1d !important;-webkit-text-fill-color:#1d1d1d !important;background:#fff !important;">Sign in with Adobe</header>
       <div class="dialog-body" style="padding:12px 16px 16px;color:#1d1d1d !important;-webkit-text-fill-color:#1d1d1d !important;background:#fff !important;">
-        <p style="margin:0 0 12px;color:#1d1d1d !important;-webkit-text-fill-color:#1d1d1d !important;">Click <strong style="color:#1d1d1d !important;-webkit-text-fill-color:#1d1d1d !important;">Sign in with Adobe</strong> (opens a new tab). When Adobe finishes, this dialog closes automatically — nothing to copy.</p>
+        <p style="margin:0 0 12px;color:#1d1d1d !important;-webkit-text-fill-color:#1d1d1d !important;">Click the blue button (new tab). Sign in with Adobe. When the other tab says <strong style="color:#1d1d1d !important;">Signed in</strong>, this dialog closes — nothing to copy.</p>
         <p style="margin:0 0 14px;">
           <a data-action="signin" href="${signInUrl.replace(/"/g, '&quot;')}" target="_blank" rel="noopener"
              style="display:inline-block;padding:10px 16px;border-radius:6px;background:#1473e6 !important;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;text-decoration:none;font-weight:700;">Sign in with Adobe</a>

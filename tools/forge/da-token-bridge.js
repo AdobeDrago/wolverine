@@ -257,27 +257,72 @@ function setStatus(el, text, kind = '') {
 function handleCapturedReturn() {
   const q = params();
   if (q.get('forgeDaCaptured') !== '1') return false;
+
+  const finishWithToken = (token) => {
+    if (!isJwt(token)) return false;
+    persistTokenForPreview(token);
+    sendTokenMessages(token);
+    document.body.innerHTML = `
+    <div style="font-family:adobe-clean,system-ui,sans-serif;max-width:28rem;margin:3rem auto;padding:1.5rem;text-align:center;color:#1d1d1d;background:#fff">
+      <h1 style="font-size:1.25rem;color:#1d1d1d">Signed in</h1>
+      <p style="color:#1d1d1d">Session captured. You can close this tab and return to the preview.</p>
+    </div>`;
+    window.setTimeout(() => {
+      try {
+        window.close();
+      } catch {
+        /* ignore */
+      }
+    }, 600);
+    return true;
+  };
+
   let token = '';
   try {
     token = decodeURIComponent((window.location.hash || '').replace(/^#/, '')).trim();
   } catch {
     token = (window.location.hash || '').replace(/^#/, '').trim();
   }
-  if (!isJwt(token)) return false;
-  persistTokenForPreview(token);
-  sendTokenMessages(token);
+  if (isJwt(token)) return finishWithToken(token);
+
+  const forgeCode = (q.get('forgeCode') || '').trim();
+  if (!forgeCode) return false;
+
   document.body.innerHTML = `
-    <div style="font-family:adobe-clean,system-ui,sans-serif;max-width:28rem;margin:3rem auto;padding:1.5rem;text-align:center">
-      <h1 style="font-size:1.25rem">Signed in</h1>
-      <p>Session captured. You can close this window and return to the preview.</p>
+    <div style="font-family:adobe-clean,system-ui,sans-serif;max-width:28rem;margin:3rem auto;padding:1.5rem;text-align:center;color:#1d1d1d;background:#fff">
+      <h1 style="font-size:1.25rem;color:#1d1d1d">Finishing sign-in…</h1>
+      <p style="color:#1d1d1d">Capturing your Adobe session for Document Authoring.</p>
     </div>`;
-  window.setTimeout(() => {
+
+  const authBase =
+    (typeof window !== 'undefined' && window.FORGE_CONFIG?.FORGE_AUTH_URL) ||
+    'https://4191536-wolverine.adobeio-static.net/api/v1/web/dx-excshell-1/forge-auth';
+
+  (async () => {
     try {
-      window.close();
-    } catch {
-      /* ignore */
+      const res = await fetch(
+        `${String(authBase).replace(/\/$/, '')}/adobe/capture-exchange?code=${encodeURIComponent(forgeCode)}`,
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !isJwt(data.access_token)) {
+        document.body.innerHTML = `
+          <div style="font-family:system-ui;max-width:28rem;margin:3rem auto;padding:1.5rem;color:#1d1d1d">
+            <h1>Sign-in capture failed</h1>
+            <p style="color:#b10e1c">${data.error || res.status}</p>
+            <p>Close this tab and click Sign in with Adobe again.</p>
+          </div>`;
+        return;
+      }
+      finishWithToken(String(data.access_token).trim());
+    } catch (e) {
+      document.body.innerHTML = `
+        <div style="font-family:system-ui;max-width:28rem;margin:3rem auto;padding:1.5rem;color:#1d1d1d">
+          <h1>Sign-in capture failed</h1>
+          <p style="color:#b10e1c">${e?.message || e}</p>
+          <p>Close this tab and click Sign in with Adobe again.</p>
+        </div>`;
     }
-  }, 600);
+  })();
   return true;
 }
 
