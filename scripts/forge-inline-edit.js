@@ -34,7 +34,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 32;
+export const FORGE_INLINE_EDIT_BUILD = 33;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -228,33 +228,48 @@ function isDaJwt(value) {
 }
 
 /**
- * Open Adobe IMS sign-in (forge-auth / CDN bridge). No da.live SDK.
+ * Adobe IMS sign-in for Document Authoring. No da.live SDK.
+ * Uses a visible in-dialog link (new tab) — small IMS popups often render blank.
  */
 function promptDaToken() {
   if (daTokenPromptPromise) return daTokenPromptPromise;
   daTokenPromptPromise = new Promise((resolve) => {
     document.querySelectorAll('.forge-edit-token-backdrop').forEach((n) => n.remove());
 
+    const fresh = adobeOAuthBridgeUrls();
+    const signInUrl = fresh.directAuth || fresh.primary;
+
     const backdrop = document.createElement('div');
     backdrop.className = 'forge-edit-dialog-backdrop forge-edit-token-backdrop';
+    backdrop.setAttribute(
+      'style',
+      'position:fixed;inset:0;z-index:2147483645;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;',
+    );
     const dialog = document.createElement('div');
-    dialog.className = 'forge-edit-dialog forge-edit-token-dialog forge-edit-token-dialog--wait';
+    dialog.className = 'forge-edit-dialog forge-edit-token-dialog';
+    dialog.setAttribute(
+      'style',
+      'width:min(420px,100%);background:#ffffff !important;color:#1d1d1d !important;-webkit-text-fill-color:#1d1d1d !important;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.2);font:14px/1.45 adobe-clean,"Source Sans Pro",system-ui,sans-serif;',
+    );
     dialog.innerHTML = `
-      <header>Sign in with Adobe</header>
-      <div class="dialog-body">
-        <p>Complete <strong>Adobe</strong> sign-in in the popup (same login as Experience Cloud). This closes automatically — nothing to copy. No da.live required.</p>
-        <p class="forge-edit-token-status" id="forgeDaTokenStatus" data-kind="wait">Opening Adobe sign-in…</p>
+      <header style="padding:14px 16px;border-bottom:1px solid #e8e8e8;font-weight:700;color:#1d1d1d !important;-webkit-text-fill-color:#1d1d1d !important;background:#fff !important;">Sign in with Adobe</header>
+      <div class="dialog-body" style="padding:12px 16px 16px;color:#1d1d1d !important;-webkit-text-fill-color:#1d1d1d !important;background:#fff !important;">
+        <p style="margin:0 0 12px;color:#1d1d1d !important;-webkit-text-fill-color:#1d1d1d !important;">Click <strong style="color:#1d1d1d !important;-webkit-text-fill-color:#1d1d1d !important;">Sign in with Adobe</strong> (opens a new tab). When Adobe finishes, this dialog closes automatically — nothing to copy.</p>
+        <p style="margin:0 0 14px;">
+          <a data-action="signin" href="${signInUrl.replace(/"/g, '&quot;')}" target="_blank" rel="noopener"
+             style="display:inline-block;padding:10px 16px;border-radius:6px;background:#1473e6 !important;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;text-decoration:none;font-weight:700;">Sign in with Adobe</a>
+        </p>
+        <p class="forge-edit-token-status" id="forgeDaTokenStatus" data-kind="wait"
+           style="margin:0;padding:10px 12px;border-radius:6px;background:#e8f1fc !important;color:#0b5cab !important;-webkit-text-fill-color:#0b5cab !important;">Waiting for Adobe sign-in in the other tab…</p>
       </div>
-      <footer>
-        <button type="button" data-action="cancel">Cancel</button>
-        <button type="button" class="primary" data-action="reopen">Reopen sign-in</button>
+      <footer style="display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid #e8e8e8;background:#fff !important;">
+        <button type="button" data-action="cancel" style="padding:6px 14px;border-radius:6px;border:1px solid #cacaca;background:#fff !important;color:#1d1d1d !important;-webkit-text-fill-color:#1d1d1d !important;cursor:pointer;">Cancel</button>
       </footer>
     `;
     backdrop.append(dialog);
     document.body.append(backdrop);
 
     const statusEl = dialog.querySelector('#forgeDaTokenStatus');
-    let popup = null;
     let pollTimer = 0;
     let settled = false;
     let bc = null;
@@ -263,6 +278,16 @@ function promptDaToken() {
       if (!statusEl) return;
       statusEl.textContent = text;
       statusEl.dataset.kind = kind;
+      if (kind === 'err') {
+        statusEl.style.background = '#fcebea';
+        statusEl.style.color = '#b10e1c';
+      } else if (kind === 'ok') {
+        statusEl.style.background = '#e6f5ea';
+        statusEl.style.color = '#0d6728';
+      } else {
+        statusEl.style.background = '#e8f1fc';
+        statusEl.style.color = '#0b5cab';
+      }
     };
 
     const cleanup = () => {
@@ -282,11 +307,6 @@ function promptDaToken() {
       settled = true;
       cleanup();
       daTokenPromptPromise = null;
-      try {
-        popup?.close();
-      } catch {
-        /* ignore */
-      }
       backdrop.remove();
       resolve(val || '');
     };
@@ -317,83 +337,20 @@ function promptDaToken() {
       /* BroadcastChannel unavailable */
     }
 
-    const openLogin = () => {
-      setStatus('Waiting for Adobe sign-in…', 'wait');
-      try {
-        popup?.close();
-      } catch {
-        /* ignore */
-      }
-      const fresh = adobeOAuthBridgeUrls();
-      popup = window.open(fresh.primary, 'forge-da-oauth', 'width=560,height=720');
-      if (!popup) {
-        setStatus('Popup blocked — allow popups for this site, then click Reopen sign-in.', 'err');
-        return;
-      }
-      try {
-        popup.focus();
-      } catch {
-        /* ignore */
-      }
-
-      // If adobe/start 404/503s, fall back to forge-api HTML bridge.
-      window.setTimeout(() => {
-        if (settled || !popup) return;
-        try {
-          if (popup.closed) return;
-          const title = popup.document?.title || '';
-          const bodyText = popup.document?.body?.innerText || '';
-          if (
-            /404|not found|not configured|503/i.test(title) ||
-            /404 Not Found|not configured|503/i.test(bodyText)
-          ) {
-            popup.location.href = fresh.fallback || fresh.staticBridge;
-          }
-        } catch {
-          /* cross-origin while on IMS / CDN — expected */
-        }
-      }, 2500);
-
-      if (pollTimer) window.clearInterval(pollTimer);
-      pollTimer = window.setInterval(() => {
-        if (settled) return;
-        const existing = resolveDaToken();
-        if (isDaJwt(existing)) {
-          acceptToken(existing);
-          return;
-        }
-        let closed = false;
-        try {
-          closed = Boolean(popup?.closed);
-        } catch {
-          /* ignore */
-        }
-        if (closed) {
-          window.setTimeout(() => {
-            if (settled) return;
-            const late = resolveDaToken();
-            if (isDaJwt(late)) {
-              acceptToken(late);
-              return;
-            }
-            if (!settled) {
-              setStatus('Sign-in window closed before a session arrived. Click Reopen sign-in.', 'err');
-            }
-          }, 1200);
-          window.clearInterval(pollTimer);
-          pollTimer = 0;
-        }
-      }, 400);
-    };
+    pollTimer = window.setInterval(() => {
+      if (settled) return;
+      const existing = resolveDaToken();
+      if (isDaJwt(existing)) acceptToken(existing);
+    }, 400);
 
     window.addEventListener('message', onMessage);
+    dialog.querySelector('[data-action="signin"]')?.addEventListener('click', () => {
+      setStatus('Complete Adobe sign-in in the new tab. This closes when you are done…', 'wait');
+    });
     dialog.querySelector('[data-action="cancel"]')?.addEventListener('click', () => finish(''));
-    dialog.querySelector('[data-action="reopen"]')?.addEventListener('click', openLogin);
     backdrop.addEventListener('click', (e) => {
       if (e.target === backdrop) finish('');
     });
-
-    openLogin();
   });
   return daTokenPromptPromise;
 }
