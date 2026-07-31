@@ -34,12 +34,19 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 29;
+export const FORGE_INLINE_EDIT_BUILD = 30;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
 const FORGE_REPO_PARAM = 'forge-repo';
 const FORGE_API_PARAM = 'forge-api';
+
+/** Default Wolverine CDN (App Builder) — used when head.html has no FORGE_CONFIG. */
+const DEFAULT_FORGE_API_URL =
+  'https://4191536-wolverine.adobeio-static.net/api/v1/web/dx-excshell-1/forge-api';
+const DEFAULT_FORGE_AUTH_URL =
+  'https://4191536-wolverine.adobeio-static.net/api/v1/web/dx-excshell-1/forge-auth';
+const DEFAULT_FORGE_CDN_ORIGIN = 'https://4191536-wolverine.adobeio-static.net';
 
 const BLOCK_REGISTRY = {
   hero: { label: 'Banner / Hero', category: 'content' },
@@ -133,7 +140,27 @@ function resolveForgeApiBase() {
   } catch {
     /* ignore */
   }
-  return '';
+  return DEFAULT_FORGE_API_URL;
+}
+
+function resolveForgeAuthBase() {
+  try {
+    const fromConfig = window.FORGE_CONFIG?.FORGE_AUTH_URL;
+    if (fromConfig) return String(fromConfig).replace(/\/$/, '');
+  } catch {
+    /* ignore */
+  }
+  return DEFAULT_FORGE_AUTH_URL;
+}
+
+function resolveForgeCdnOrigin() {
+  try {
+    const api = resolveForgeApiBase();
+    if (api.includes('adobeio-static.net')) return new URL(api).origin;
+  } catch {
+    /* ignore */
+  }
+  return DEFAULT_FORGE_CDN_ORIGIN;
 }
 
 function resolveDaToken() {
@@ -173,29 +200,22 @@ function storeDaToken(token) {
 /** Singleton — never stack two Document Authoring sign-in dialogs. */
 let daTokenPromptPromise = null;
 
-function daTokenBridgeUrls(org, repo) {
-  // DA app URL (html-less). Shell iframes tools/forge/da-token-bridge.html from the code bus
-  // and injects DA_SDK with the IMS token — no Console paste required.
-  // forgeReturn lets the bridge bounce the popup back onto this aem.page origin when
-  // Cross-Origin-Opener-Policy clears window.opener (storage is partitioned under da.live).
-  const o = org || 'AdobeDrago';
-  const r = repo || 'wolverine';
-  const base = `https://da.live/app/${encodeURIComponent(o)}/${encodeURIComponent(r)}/tools/forge`;
+function adobeOAuthBridgeUrls() {
+  // Standard Adobe IMS via forge-auth — NOT da.live DA_SDK (COOP / SDK bugs).
+  // CDN bridge page: after IMS login, reads forge-auth /token (cookie) and returns
+  // to this aem.page origin via da-token-bridge.html?forgeDaCaptured=1#<jwt>
   let returnOrigin = '';
   try {
     returnOrigin = window.location.origin || '';
   } catch {
     /* ignore */
   }
-  const returnQ = returnOrigin
-    ? `forgeReturn=${encodeURIComponent(returnOrigin)}`
-    : '';
-  return {
-    primary: returnQ ? `${base}/da-token-bridge?${returnQ}` : `${base}/da-token-bridge`,
-    fallback: returnQ
-      ? `${base}/forge?forgeTokenBridge=1&${returnQ}`
-      : `${base}/forge?forgeTokenBridge=1`,
-  };
+  const cdn = resolveForgeCdnOrigin();
+  const auth = resolveForgeAuthBase();
+  const bridge = `${cdn}/forge/da-oauth-bridge.html?forgeReturn=${encodeURIComponent(returnOrigin)}`;
+  const capturePage = `${returnOrigin}/tools/forge/da-token-bridge.html?forgeDaCaptured=1`;
+  const directAuth = `${auth}/adobe/start?returnTo=${encodeURIComponent(capturePage)}`;
+  return { primary: bridge, fallback: directAuth };
 }
 
 function isDaJwt(value) {
@@ -205,24 +225,22 @@ function isDaJwt(value) {
 }
 
 /**
- * Open the DA app bridge popup; capture IMS via DA_SDK postMessage; dismiss UI.
- * No copy/paste — user only completes Adobe sign-in if prompted.
+ * Open Adobe IMS sign-in (forge-auth / CDN bridge). No da.live SDK.
  */
 function promptDaToken() {
   if (daTokenPromptPromise) return daTokenPromptPromise;
   daTokenPromptPromise = new Promise((resolve) => {
     document.querySelectorAll('.forge-edit-token-backdrop').forEach((n) => n.remove());
-    const { org, repo } = resolveOrgRepo();
 
     const backdrop = document.createElement('div');
     backdrop.className = 'forge-edit-dialog-backdrop forge-edit-token-backdrop';
     const dialog = document.createElement('div');
     dialog.className = 'forge-edit-dialog forge-edit-token-dialog forge-edit-token-dialog--wait';
     dialog.innerHTML = `
-      <header>Sign in to Document Authoring</header>
+      <header>Sign in with Adobe</header>
       <div class="dialog-body">
-        <p>Complete Adobe sign-in in the <strong>da.live</strong> window if prompted. This closes automatically — nothing to copy.</p>
-        <p class="forge-edit-token-status" id="forgeDaTokenStatus" data-kind="wait">Opening Document Authoring…</p>
+        <p>Complete <strong>Adobe</strong> sign-in in the popup (same login as Experience Cloud). This closes automatically — nothing to copy. No da.live required.</p>
+        <p class="forge-edit-token-status" id="forgeDaTokenStatus" data-kind="wait">Opening Adobe sign-in…</p>
       </div>
       <footer>
         <button type="button" data-action="cancel">Cancel</button>
@@ -282,7 +300,6 @@ function promptDaToken() {
 
     const onMessage = (e) => {
       if (e.data?.type !== 'forge:set-da-token' || !e.data.token) return;
-      // Token may arrive from the da.live shell, iframed tool, or COOP-safe return page.
       acceptToken(e.data.token);
     };
 
@@ -304,9 +321,8 @@ function promptDaToken() {
       } catch {
         /* ignore */
       }
-      // Rebuild URLs each open so forgeReturn matches the current preview origin.
-      const fresh = daTokenBridgeUrls(org, repo);
-      popup = window.open(fresh.primary, 'forge-da-token', 'width=560,height=720');
+      const fresh = adobeOAuthBridgeUrls();
+      popup = window.open(fresh.primary, 'forge-da-oauth', 'width=560,height=720');
       if (!popup) {
         setStatus('Popup blocked — allow popups for this site, then click Reopen sign-in.', 'err');
         return;
@@ -325,9 +341,9 @@ function promptDaToken() {
             popup.location.href = fresh.fallback;
           }
         } catch {
-          /* cross-origin while on da.live */
+          /* cross-origin while on IMS / CDN */
         }
-      }, 2000);
+      }, 2500);
 
       if (pollTimer) window.clearInterval(pollTimer);
       pollTimer = window.setInterval(() => {
@@ -341,10 +357,9 @@ function promptDaToken() {
         try {
           closed = Boolean(popup?.closed);
         } catch {
-          /* COOP may block closed read while still on da.live */
+          /* ignore */
         }
         if (closed) {
-          // Brief grace — COOP-safe return writes localStorage then closes the popup.
           window.setTimeout(() => {
             if (settled) return;
             const late = resolveDaToken();
@@ -389,7 +404,7 @@ function updateDaAuthBanner() {
   const btn = document.querySelector('.forge-edit-banner__da-auth');
   if (!btn) return;
   const signedIn = Boolean(resolveDaToken());
-  btn.textContent = signedIn ? 'DA signed in' : 'Sign in to DA';
+  btn.textContent = signedIn ? 'Adobe signed in' : 'Sign in with Adobe';
   btn.dataset.signedIn = signedIn ? '1' : '0';
   btn.title = signedIn
     ? 'Document Authoring token stored for this tab (sessionStorage). Click to sign in again.'
@@ -495,7 +510,7 @@ function showBanner() {
   const pageLabel = currentPagePath() === 'index' ? 'Home' : currentPagePath();
   bar.innerHTML = `<strong>${productBrandName()} inline edit</strong>
     <span>${target} · ${pageLabel}</span>
-    <button type="button" class="forge-edit-banner__da-auth" data-signed-in="0">Sign in to DA</button>
+    <button type="button" class="forge-edit-banner__da-auth" data-signed-in="0">Sign in with Adobe</button>
     <button type="button" class="forge-edit-banner__ada-score" title="ADA compliance">ADA —</button>
     <button type="button" class="forge-edit-banner__save" disabled>Save page</button>`;
   document.body.prepend(bar);
@@ -655,7 +670,7 @@ async function insertBlockOnDaClientWithPrompt(blockId, afterIndex, products = n
   if (forcePrompt) clearStoredDaToken();
   if (!token) token = await promptDaToken();
   if (!token) {
-    throw new Error('DA token required — Sign in on da.live when prompted');
+    throw new Error('DA token required — Sign in with Adobe when prompted');
   }
 
   const payload = {
@@ -738,7 +753,7 @@ async function deleteBlockOnDaClientWithPrompt(sectionIndex, { forcePrompt = fal
   if (forcePrompt) clearStoredDaToken();
   if (!token) token = await promptDaToken();
   if (!token) {
-    throw new Error('DA token required — Sign in on da.live when prompted');
+    throw new Error('DA token required — Sign in with Adobe when prompted');
   }
 
   const payload = {
@@ -798,13 +813,6 @@ async function deleteComponent(blockEl, meta) {
   if (!ok) return;
 
   try {
-    if (!resolveDaToken()) {
-      const token = await promptDaToken();
-      if (!token) {
-        showToast('Sign in to Document Authoring is required to delete components', true);
-        return;
-      }
-    }
     showToast(`Deleting ${label}…`);
     const result = await deleteBlock(idx);
     if (!result?.ok && !result?.previewUrl) {
@@ -866,14 +874,6 @@ function openAddDialog({ afterIndex = -1, anchorEl = null } = {}) {
         const original = meta?.label || id;
         btn.textContent = blockNeedsProductPicker(id) ? 'Choose products…' : 'Saving…';
         try {
-          if (!resolveDaToken()) {
-            btn.textContent = 'Sign in…';
-            const token = await promptDaToken();
-            if (!token) {
-              throw new Error('Sign in to Document Authoring is required to add components');
-            }
-            btn.textContent = blockNeedsProductPicker(id) ? 'Choose products…' : 'Saving…';
-          }
           let products = null;
           if (blockNeedsProductPicker(id)) {
             products = await pickProductsForBlock(id);
@@ -922,6 +922,32 @@ function hideContextMenu() {
   contextMenuEl = null;
 }
 
+async function savePageViaForgeApi(apiBase, mainHtml) {
+  const { org, repo } = resolveOrgRepo();
+  const headers = { 'Content-Type': 'application/json' };
+  const daToken = resolveDaToken();
+  if (daToken) headers['X-Forge-Da-Token'] = daToken;
+
+  const res = await fetch(`${apiBase}/api/inline-edit/save-page`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      org,
+      repo,
+      pagePath: currentPagePath(),
+      mainHtml,
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.error || data.hint || `Save failed (${res.status})`);
+    err.needsToken = Boolean(data.needsToken) || res.status === 401 || res.status === 403;
+    err.hint = data.hint || '';
+    throw err;
+  }
+  return data;
+}
+
 async function savePage() {
   if (saveInFlight) return;
   const { org, repo } = resolveOrgRepo();
@@ -939,10 +965,6 @@ async function savePage() {
     );
     if (!proceed) return;
   }
-
-  let token = resolveDaToken();
-  if (!token) token = await promptDaToken();
-  if (!token) return;
 
   const btn = document.querySelector('.forge-edit-banner__save');
   saveInFlight = true;
@@ -965,15 +987,54 @@ async function savePage() {
     }
 
     const prepared = preparePersonalizedBlocksForSegmentSave(previewSegment);
-    const result = await savePageToDaClient({
-      org,
-      repo,
-      pagePath: currentPagePath(),
-      token,
-      mainEl: document.querySelector('main'),
+    const mainEl = document.querySelector('main');
+    if (!mainEl) throw new Error('No <main> on page');
+    const mainClone = mainEl.cloneNode(true);
+    // Strip editor chrome before shipping HTML to forge-api / DA.
+    mainClone.querySelectorAll(
+      '.forge-edit-banner,.forge-edit-drop-zone,.forge-edit-badge,.forge-edit-delete,.forge-edit-toast,.forge-edit-menu,.forge-edit-dialog-backdrop,.forge-edit-media-toolbar',
+    ).forEach((n) => n.remove());
+    mainClone.querySelectorAll('[contenteditable]').forEach((el) => {
+      el.removeAttribute('contenteditable');
+      el.classList.remove('forge-edit-field', 'forge-edit-field--dirty', 'forge-edit-media');
     });
-    if (!result.ok) {
-      if (result.needsToken) {
+    const mainHtml = mainClone.innerHTML;
+
+    const apiBase = resolveForgeApiBase();
+    let result = null;
+    if (apiBase) {
+      try {
+        result = await savePageViaForgeApi(apiBase, mainHtml);
+      } catch (e) {
+        const authFail =
+          e?.needsToken || /401|403|DA token required|DA write failed/i.test(String(e?.message || ''));
+        if (!authFail) throw e;
+        let token = resolveDaToken();
+        if (!token) token = await promptDaToken();
+        if (!token) throw e;
+        result = await savePageToDaClient({
+          org,
+          repo,
+          pagePath: currentPagePath(),
+          token,
+          mainEl,
+        });
+      }
+    } else {
+      let token = resolveDaToken();
+      if (!token) token = await promptDaToken();
+      if (!token) return;
+      result = await savePageToDaClient({
+        org,
+        repo,
+        pagePath: currentPagePath(),
+        token,
+        mainEl,
+      });
+    }
+
+    if (!result?.ok) {
+      if (result?.needsToken) {
         const retry = await promptDaToken();
         if (retry) {
           saveInFlight = false;
@@ -981,7 +1042,7 @@ async function savePage() {
           return savePage();
         }
       }
-      throw new Error(result.error || 'Save failed');
+      throw new Error(result?.error || 'Save failed');
     }
     pageDirty = false;
     btn?.classList.remove('forge-edit-banner__save--dirty');
