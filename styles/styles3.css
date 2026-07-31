@@ -1,4 +1,93 @@
-/* --- AEM EDS HEADER & NAV STYLING (FIXED) --- */
+/* Boost Mobile Brand Theme Variables */
+:root {
+  --boost-orange: #FF7A00;
+  --boost-orange-hover: #E56E00;
+  --boost-black: #0A0A0A;
+  --boost-dark-card: #141414;
+  --boost-text-muted: #666666;
+  --bg-light: #F8F9FA;
+  --surface-white: #FFFFFF;
+  --border-color: #E2E8F0;
+  --max-width: 1200px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: var(--boost-black);
+  background-color: var(--bg-light);
+  line-height: 1.5;
+}
+
+main {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 1rem 1rem 4rem 1rem;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+
+.section-title {
+  text-align: center;
+  margin: 3.5rem 0 1.75rem 0;
+}
+
+.section-title h2 {
+  font-size: 2.2rem;
+  color: var(--boost-black);
+}
+
+.section-title p {
+  color: var(--boost-text-muted);
+  font-size: 1.1rem;
+}
+
+/* --- Buttons --- */
+a { text-decoration: none; }
+p em { font-style: normal; }
+
+.btn-primary, .btn-secondary {
+  display: block;
+  padding: 0.6rem 1.25rem;
+  border-radius: 40px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary {
+  background-color: var(--boost-orange);
+  color: var(--boost-black);
+  border: 2px solid var(--boost-orange);
+}
+
+.btn-primary:hover {
+  background-color: var(--boost-orange-hover);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--boost-black);
+  border: 2px solid var(--boost-black);
+}
+
+.btn-secondary:hover {
+  background-color: var(--boost-black);
+  color: var(--surface-white);
+}
+
+/* --- HEADER & NAVIGATION --- */
 header, .header-wrapper {
   background-color: var(--surface-white) !important;
   border-bottom: 1px solid var(--border-color);
@@ -12,109 +101,345 @@ header nav {
   margin: 0 auto;
   padding: 0.75rem 1rem;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-/* Brand Logo Styling */
-header nav > div:nth-child(1),
-header nav .nav-brand {
-  flex: 0 0 auto;
-}
-
-header nav > div:nth-child(1) a,
-header nav .nav-brand a {
-  font-size: 1.3rem;
-  font-weight: 900;
-  color: var(--boost-black) !important;
-  white-space: nowrap;
-}
-
-header nav > div:nth-child(1) a span,
-header nav .nav-brand a span {
-  color: var(--boost-orange) !important;
-}
-
-/* Navigation Links (Center) */
-header nav > div:nth-child(2),
-header nav .nav-sections {
-  flex: 1 1 auto;
-  display: flex;
-  justify-content: center;
-}
-
-header nav > div:nth-child(2) ul,
-header nav .nav-sections ul {
-  display: flex;
-  flex-wrap: wrap;
-  list-style: none !important;
-  gap: 1.25rem;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-header nav ul a {
-  color: var(--boost-black) !important;
-  font-weight: 800 !important;
-  font-size: 0.85rem !important;
-  text-transform: uppercase !important;
-  white-space: nowrap;
-}
-
-header nav ul a:hover {
-  color: var(--boost-orange) !important;
-}
-
-/* Tool Buttons (Right) */
-header nav > div:nth-child(3),
-header nav .nav-tools {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* FIX: Override button full-width behavior inside header */
 header nav a.btn-primary,
-header nav a.btn-secondary,
-header nav .btn-primary,
-header nav .btn-secondary {
+header nav a.btn-secondary {
   display: inline-block !important;
   width: auto !important;
   padding: 0.4rem 1.1rem !important;
   font-size: 0.8rem !important;
   white-space: nowrap;
+}
+
+/* --- HERO BANNER --- */
+.hero {
+  position: relative;
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: #FFFFFF;
+  margin-top: 1rem;
+  margin-bottom: 3rem;
+  padding: 3rem 2rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.hero picture {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.hero picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 100%);
+  z-index: 2;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+  max-width: 580px;
+}
+
+.promo-badge {
+  display: inline-block;
+  background-color: var(--boost-orange);
+  color: var(--boost-black);
+  font-weight: 900;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 1.05;
+  margin-bottom: 1rem;
+  color: #FFFFFF;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.95;
+}
+
+.hero .btn-primary {
+  display: inline-block;
+  width: auto;
+  padding: 1rem 2.5rem;
+}
+
+/* --- COLUMNS BLOCK --- */
+.columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 3.5rem;
+}
+
+.columns > div {
+  background: var(--surface-white);
+  padding: 2rem;
+  border-left: 5px solid var(--boost-orange);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.icon-header {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.columns h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.columns p {
+  color: var(--boost-text-muted);
+}
+
+/* --- CARDS BLOCK --- */
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.cards > div {
+  background: var(--surface-white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  padding: 2rem 2rem 1rem 2rem;
+  background: #FAFAFA;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.plan-tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.25rem 0.6rem;
+  background: #E2E8F0;
+  color: var(--boost-black);
+  border-radius: 4px;
+}
+
+.tag-orange { background: var(--boost-orange); }
+.tag-dark { background: var(--boost-black); color: #FFF; }
+
+.card-header h3 {
+  font-size: 1.6rem;
+  margin-top: 0.75rem;
+}
+
+.price {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--boost-black);
+  line-height: 1;
+  margin: 0.5rem 0 0.25rem 0;
+}
+
+.price span {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--boost-text-muted);
+}
+
+.price-sub {
+  font-size: 0.85rem;
+  color: var(--boost-text-muted);
+}
+
+.card-body {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.card-body ul {
+  list-style: none;
+  margin-bottom: 2rem;
+}
+
+.card-body li {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #F1F5F9;
+  font-size: 0.95rem;
+}
+
+.card-body p:last-child {
+  margin-top: auto;
+}
+
+/* --- PHONE CARDS SECTION --- */
+.phone-cards > div > div:first-child picture img {
+  height: 260px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.phone-card-body {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.deal-badge {
+  background: var(--boost-black);
+  color: var(--boost-orange);
+  font-weight: 900;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  align-self: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.phone-price {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--boost-black);
+  margin: 0.25rem 0;
+}
+
+.phone-price del {
+  font-size: 1.1rem;
+  color: var(--boost-text-muted);
+  margin-left: 0.5rem;
+}
+
+.phone-sub {
+  color: var(--boost-text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+/* --- DISCLAIMERS --- */
+.disclaimers {
+  margin-top: 4rem;
+  padding: 2rem;
+  background-color: #EFEFEF;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #555555;
+  line-height: 1.6;
+}
+
+.disclaimers h4 {
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+  color: var(--boost-black);
+}
+
+.disclaimers p {
+  margin-bottom: 0.75rem;
+}
+
+/* --- FOOTER STYLING --- */
+footer, .footer-wrapper {
+  background-color: var(--boost-black) !important;
+  color: #FFFFFF !important;
+  padding: 3.5rem 1.5rem 2rem 1.5rem !important;
+  margin-top: 4rem !important;
+  width: 100%;
+}
+
+footer .footer-brand .footer-logo {
+  font-size: 2rem;
+  color: #FFFFFF !important;
+  margin-bottom: 0.5rem;
+  font-weight: 900;
+}
+
+footer .footer-brand .footer-logo span {
+  color: var(--boost-orange) !important;
+}
+
+footer .footer-brand p {
+  color: #999999 !important;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+}
+
+footer .footer-nav {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 2rem;
+}
+
+footer h4 {
+  color: var(--boost-orange) !important;
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  margin-bottom: 0.8rem !important;
+}
+
+footer ul {
+  list-style: none !important;
+  padding: 0 !important;
   margin: 0 !important;
 }
 
-/* Mobile Layout Fix (< 768px) */
-@media (max-width: 767px) {
-  header nav {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 0.75rem;
-    padding: 0.75rem 0.5rem;
-  }
+footer li {
+  list-style: none !important;
+  margin-bottom: 0.5rem !important;
+}
 
-  header nav > div:nth-child(2) ul,
-  header nav .nav-sections ul {
-    justify-content: center;
-    gap: 0.75rem;
-  }
+footer a {
+  color: #CCCCCC !important;
+  font-size: 0.95rem !important;
+  text-decoration: none !important;
+}
 
-  header nav > div:nth-child(3),
-  header nav .nav-tools {
-    justify-content: center;
-    width: 100%;
-  }
+footer a:hover {
+  color: #FFFFFF !important;
+}
 
-  /* Keep mobile buttons compact side-by-side */
-  header nav a.btn-primary,
-  header nav a.btn-secondary {
-    flex: 1;
-    max-width: 140px;
+footer .footer-copyright {
+  max-width: var(--max-width);
+  margin: 2.5rem auto 0 auto;
+  padding-top: 1.5rem;
+  border-top: 1px solid #222222;
+  color: #777777;
+  font-size: 0.85rem;
+}
+
+/* --- RESPONSIVE DESKTOP GRID --- */
+@media (min-width: 768px) {
+  .columns { grid-template-columns: repeat(3, 1fr); }
+  .cards { grid-template-columns: repeat(3, 1fr); }
+  .phone-cards { grid-template-columns: repeat(2, 1fr); }
+
+  footer .footer-nav {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2rem;
   }
 }
