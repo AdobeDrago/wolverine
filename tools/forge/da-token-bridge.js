@@ -262,6 +262,11 @@ function handleCapturedReturn() {
     if (!isJwt(token)) return false;
     persistTokenForPreview(token);
     sendTokenMessages(token);
+    try {
+      history.replaceState(null, '', `${window.location.pathname}?forgeDaCaptured=1`);
+    } catch {
+      /* ignore */
+    }
     document.body.innerHTML = `
     <div style="font-family:adobe-clean,system-ui,sans-serif;max-width:28rem;margin:3rem auto;padding:1.5rem;text-align:center;color:#1d1d1d;background:#fff">
       <h1 style="font-size:1.25rem;color:#1d1d1d">Signed in</h1>
@@ -277,6 +282,21 @@ function handleCapturedReturn() {
     return true;
   };
 
+  const unpackPack = (raw) => {
+    try {
+      const s = String(raw || '').trim();
+      if (!s) return '';
+      const b64 = s.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = '='.repeat((4 - (b64.length % 4)) % 4);
+      const json = JSON.parse(atob(b64 + pad));
+      if (!json?.t) return '';
+      if (json.e && Date.now() > Number(json.e)) return '';
+      return String(json.t).trim();
+    } catch {
+      return '';
+    }
+  };
+
   let token = '';
   try {
     token = decodeURIComponent((window.location.hash || '').replace(/^#/, '')).trim();
@@ -285,8 +305,22 @@ function handleCapturedReturn() {
   }
   if (isJwt(token)) return finishWithToken(token);
 
+  const fromPack = unpackPack(q.get('forgePack'));
+  if (isJwt(fromPack)) return finishWithToken(fromPack);
+
   const forgeCode = (q.get('forgeCode') || '').trim();
-  if (!forgeCode) return false;
+  if (!forgeCode) {
+    document.body.innerHTML = `
+      <div style="font-family:system-ui;max-width:28rem;margin:3rem auto;padding:1.5rem;color:#1d1d1d">
+        <h1>Sign-in incomplete</h1>
+        <p>No token was returned. Close this tab and click Sign in with Adobe again.</p>
+      </div>`;
+    return true;
+  }
+
+  // Legacy short code OR self-describing pack passed as forgeCode
+  const embedded = unpackPack(forgeCode);
+  if (isJwt(embedded)) return finishWithToken(embedded);
 
   document.body.innerHTML = `
     <div style="font-family:adobe-clean,system-ui,sans-serif;max-width:28rem;margin:3rem auto;padding:1.5rem;text-align:center;color:#1d1d1d;background:#fff">
