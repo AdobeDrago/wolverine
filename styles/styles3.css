@@ -30,16 +30,15 @@ main {
   padding: 0 1rem 4rem 1rem;
 }
 
-h1, h2, h3 {
+h1, h2, h3, h4 {
   font-weight: 900;
   letter-spacing: -0.5px;
   text-transform: uppercase;
 }
 
-/* Headings & Section Headers */
 .section-title {
   text-align: center;
-  margin: 3rem 0 1.5rem 0;
+  margin: 3.5rem 0 1.75rem 0;
 }
 
 .section-title h2 {
@@ -263,7 +262,7 @@ p em { font-style: normal; }
 
 .card-body li {
   padding: 0.6rem 0;
-  border-bottom: 1px id #F1F5F9;
+  border-bottom: 1px solid #F1F5F9;
   font-size: 0.95rem;
 }
 
@@ -271,8 +270,205 @@ p em { font-style: normal; }
   margin-top: auto;
 }
 
-/* --- Responsive Desktop Grid --- */
+/* --- Phone Cards Section --- */
+.phone-cards > div > div:first-child picture img {
+  height: 260px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.phone-card-body {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.deal-badge {
+  background: var(--boost-black);
+  color: var(--boost-orange);
+  font-weight: 900;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  align-self: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.phone-price {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--boost-black);
+  margin: 0.25rem 0;
+}
+
+.phone-price del {
+  font-size: 1.1rem;
+  color: var(--boost-text-muted);
+  margin-left: 0.5rem;
+}
+
+.phone-sub {
+  color: var(--boost-text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+/* --- Testimonials Section --- */
+.testimonials > div {
+  border-left: none;
+  border-top: 4px solid var(--boost-orange);
+  text-align: center;
+}
+
+.stars {
+  color: var(--boost-orange);
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.quote-text {
+  font-size: 1.05rem;
+  font-style: italic;
+  color: var(--boost-black);
+  margin-bottom: 1rem;
+}
+
+.author {
+  font-weight: 800;
+  color: var(--boost-text-muted);
+}
+
+/* --- Disclaimers & Legal Fine Print --- */
+.disclaimers {
+  margin-top: 4rem;
+  padding: 2rem;
+  background-color: #EFEFEF;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #555555;
+  line-height: 1.6;
+}
+
+.disclaimers h4 {
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+  color: var(--boost-black);
+}
+
+.disclaimers p {
+  margin-bottom: 0.75rem;
+}
+
+.disclaimers p:last-child {
+  margin-bottom: 0;
+}
+
+/* --- Boost Mobile Dark Footer --- */
+footer {
+  background-color: var(--boost-black);
+  color: #FFFFFF;
+  padding: 4rem 1.5rem 2rem 1.5rem;
+  margin-top: 4rem;
+}
+
+.footer-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.footer-logo {
+  font-size: 2rem;
+  color: #FFFFFF;
+  margin-bottom: 0.5rem;
+}
+
+.footer-logo span {
+  color: var(--boost-orange);
+}
+
+.footer-brand p {
+  color: #999999;
+  font-size: 0.95rem;
+}
+
+.footer-columns {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 2rem;
+}
+
+.footer-columns h4 {
+  color: var(--boost-orange);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.footer-columns ul {
+  list-style: none;
+}
+
+.footer-columns li {
+  margin-bottom: 0.6rem;
+}
+
+.footer-columns a {
+  color: #CCCCCC;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.footer-columns a:hover {
+  color: #FFFFFF;
+}
+
+.footer-bottom {
+  max-width: var(--max-width);
+  margin: 3rem auto 0 auto;
+  padding-top: 2rem;
+  border-top: 1px solid #222222;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  color: #777777;
+  font-size: 0.85rem;
+}
+
+.legal-links {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.legal-links a {
+  color: #777777;
+}
+
+.legal-links a:hover {
+  color: #FFFFFF;
+}
+
+/* --- Responsive Layout (768px and up) --- */
 @media (min-width: 768px) {
   .columns { grid-template-columns: repeat(3, 1fr); }
   .cards { grid-template-columns: repeat(3, 1fr); }
+  .phone-cards { grid-template-columns: repeat(2, 1fr); }
+  
+  .footer-container {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .footer-columns {
+    grid-template-columns: repeat(3, 160px);
+    gap: 3rem;
+  }
+
+  .footer-bottom {
+    flex-direction: row;
+    justify-content: space-between;
+  }
 }
