@@ -93,17 +93,32 @@ p em { font-style: normal; }
    ========================================================================== */
 
 /* Outer Sticky Header Bar */
+/* ==========================================================================
+   BOOST MOBILE HEADER & RESPONSIVE NAV (SOLID MOBILE BG & SPACING FIX)
+   ========================================================================== */
+
+/* 1. Enforce Solid White Background Everywhere in Header */
 header, 
-.header-wrapper {
-  background-color: var(--surface-white) !important;
-  border-bottom: 1px solid var(--border-color) !important;
+.header-wrapper, 
+header nav,
+header nav > div,
+header .nav-wrapper {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  opacity: 1 !important;
   position: sticky !important;
   top: 0 !important;
   z-index: 10000 !important;
   width: 100% !important;
+  box-sizing: border-box !important;
 }
 
-/* Nav Flex Container */
+header {
+  border-bottom: 1px solid var(--border-color) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important; /* Adds subtle separation above dark hero */
+}
+
+/* 2. Base Nav Layout */
 header nav,
 #nav {
   max-width: var(--max-width) !important;
@@ -114,10 +129,9 @@ header nav,
   justify-content: space-between !important;
   width: 100% !important;
   box-sizing: border-box !important;
-  position: relative !important;
 }
 
-/* Base List & Text Resets inside Header */
+/* Strip default list styling */
 header ul, header li, nav ul, nav li {
   list-style: none !important;
   list-style-type: none !important;
@@ -129,18 +143,17 @@ header p {
   margin: 0 !important;
 }
 
-/* Logo Alignment (Far Left) */
+/* Logo Alignment */
 header .nav-brand,
 header nav > div:first-child {
   display: flex !important;
   align-items: center !important;
   flex: 0 0 auto !important;
-  z-index: 10002 !important;
 }
 
 header .nav-brand a,
 header nav a[href="/"] {
-  font-size: 1.4rem !important;
+  font-size: 1.35rem !important;
   font-weight: 900 !important;
   color: var(--boost-black) !important;
   text-decoration: none !important;
@@ -157,25 +170,25 @@ header nav a[href="/"] span {
    DESKTOP NAVIGATION VIEW (900px and larger)
    ========================================================================== */
 @media (min-width: 900px) {
-  /* Hide Mobile Hamburger on Desktop */
   header .nav-hamburger {
     display: none !important;
   }
 
-  /* Navigation Links (Center / Left-aligned) */
+  /* Navigation Links */
   header .nav-sections,
   header nav > div:nth-child(2) {
     display: flex !important;
     align-items: center !important;
     flex: 1 1 auto !important;
-    margin-left: 2.5rem !important;
+    margin-left: 2rem !important;
+    margin-right: 2rem !important; /* Adds space after COVERAGE */
   }
 
   header .nav-sections ul {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    gap: 1.75rem !important;
+    gap: 1.5rem !important;
   }
 
   header .nav-sections a {
@@ -184,7 +197,7 @@ header nav a[href="/"] span {
     font-size: 0.85rem !important;
     text-transform: uppercase !important;
     text-decoration: none !important;
-    letter-spacing: 0.5px !important;
+    white-space: nowrap !important;
     transition: color 0.2s ease !important;
   }
 
@@ -192,7 +205,7 @@ header nav a[href="/"] span {
     color: var(--boost-orange) !important;
   }
 
-  /* Header Buttons (Far Right) */
+  /* Action Buttons (Separated from Coverage) */
   header .nav-tools,
   header nav > div:nth-child(3) {
     display: flex !important;
@@ -200,13 +213,14 @@ header nav a[href="/"] span {
     gap: 0.75rem !important;
     flex: 0 0 auto !important;
     margin-left: auto !important;
+    padding-left: 1.5rem !important; /* FIX: Guarantees spacing between COVERAGE and ACTIVATE button */
   }
 
   header .nav-tools a.btn-primary,
   header .nav-tools a.btn-secondary {
     display: inline-block !important;
     width: auto !important;
-    padding: 0.5rem 1.25rem !important;
+    padding: 0.45rem 1.1rem !important;
     font-size: 0.8rem !important;
     font-weight: 800 !important;
     border-radius: 30px !important;
@@ -219,13 +233,25 @@ header nav a[href="/"] span {
    MOBILE NAVIGATION VIEW (Under 900px)
    ========================================================================== */
 @media (max-width: 899px) {
-  /* Position Hamburger Toggle on the Far Right */
+  /* FIX: Explicit Solid White Bar on Mobile */
+  header, 
+  .header-wrapper,
+  header nav {
+    position: sticky !important;
+    top: 0 !important;
+    background-color: #FFFFFF !important;
+    background: #FFFFFF !important;
+    z-index: 10000 !important;
+  }
+
+  header nav {
+    padding: 0.85rem 1rem !important;
+  }
+
   header .nav-hamburger {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    order: 3 !important;
-    z-index: 10002 !important;
     background: transparent !important;
     border: none !important;
     cursor: pointer !important;
@@ -236,10 +262,9 @@ header nav a[href="/"] span {
     border: none !important;
     font-size: 1.5rem !important;
     cursor: pointer !important;
-    padding: 0.25rem !important;
   }
 
-  /* COLLAPSED STATE (Closed) */
+  /* Collapsed State */
   header nav[aria-expanded="false"] .nav-sections,
   header nav[aria-expanded="false"] .nav-tools,
   header nav:not([aria-expanded="true"]) .nav-sections,
@@ -247,41 +272,35 @@ header nav a[href="/"] span {
     display: none !important;
   }
 
-  /* EXPANDED FLYOUT MENU STATE (Open) */
+  /* Expanded Flyout Drawer */
   header nav[aria-expanded="true"] .nav-sections,
   header nav[aria-expanded="true"] .nav-tools {
     display: flex !important;
   }
 
-  /* Full Screen Mobile Drawer Overlay */
   header nav[aria-expanded="true"] {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background-color: var(--surface-white) !important;
+    background-color: #FFFFFF !important;
+    background: #FFFFFF !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-    justify-content: flex-start !important;
     padding: 1.25rem 1.5rem 3rem 1.5rem !important;
     overflow-y: auto !important;
-    box-sizing: border-box !important;
   }
 
-  /* Stack Mobile Navigation Links */
   header nav[aria-expanded="true"] .nav-sections {
     flex-direction: column !important;
     width: 100% !important;
     margin-top: 3rem !important;
-    margin-bottom: 2rem !important;
   }
 
   header nav[aria-expanded="true"] .nav-sections ul {
     flex-direction: column !important;
     width: 100% !important;
-    align-items: flex-start !important;
-    gap: 0 !important;
   }
 
   header nav[aria-expanded="true"] .nav-sections li {
@@ -292,13 +311,11 @@ header nav a[href="/"] span {
   header nav[aria-expanded="true"] .nav-sections a {
     display: block !important;
     padding: 1rem 0 !important;
-    font-size: 1.15rem !important;
+    font-size: 1.1rem !important;
     font-weight: 800 !important;
     color: var(--boost-black) !important;
-    text-transform: uppercase !important;
   }
 
-  /* Full-width Stacked Mobile Action Buttons */
   header nav[aria-expanded="true"] .nav-tools {
     flex-direction: column !important;
     width: 100% !important;
@@ -312,7 +329,6 @@ header nav a[href="/"] span {
     text-align: center !important;
     padding: 0.85rem 0 !important;
     font-size: 0.95rem !important;
-    font-weight: 800 !important;
     border-radius: 40px !important;
   }
 }
