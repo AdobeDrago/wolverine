@@ -88,53 +88,44 @@ p em { font-style: normal; }
 }
 
 /* --- HEADER & NAVIGATION --- */
-/* ==========================================================================
-   BOOST MOBILE HEADER & RESPONSIVE NAV (DESKTOP & MOBILE FIX)
-   ========================================================================== */
-
-/* Outer Sticky Header Bar */
-/* ==========================================================================
-   BOOST MOBILE HEADER & RESPONSIVE NAV (SOLID MOBILE BG & SPACING FIX)
-   ========================================================================== */
-
-/* 1. Enforce Solid White Background Everywhere in Header */
 header, 
-.header-wrapper, 
-header nav,
-header nav > div,
-header .nav-wrapper {
+.header-wrapper {
   background-color: #FFFFFF !important;
-  background: #FFFFFF !important;
-  opacity: 1 !important;
+  border-bottom: 1px solid var(--border-color) !important;
   position: sticky !important;
   top: 0 !important;
   z-index: 10000 !important;
   width: 100% !important;
-  box-sizing: border-box !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
 }
 
-header {
-  border-bottom: 1px solid var(--border-color) !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important; /* Adds subtle separation above dark hero */
-}
-
-/* 2. Base Nav Layout */
-header nav,
-#nav {
+/* Base Nav & Reset */
+header nav, #nav {
   max-width: var(--max-width) !important;
   margin: 0 auto !important;
-  padding: 0.85rem 1.5rem !important;
+  padding: 0.75rem 1.25rem !important;
   display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  min-height: 60px !important;
+}
+
+/* FIX: Target inner wrapper div from nav3.html so flex spreads end-to-end */
+header nav > div,
+#nav > div {
+  display: flex !important;
+  flex-direction: row !important;
   align-items: center !important;
   justify-content: space-between !important;
   width: 100% !important;
   box-sizing: border-box !important;
 }
 
-/* Strip default list styling */
+/* List & Text Resets */
 header ul, header li, nav ul, nav li {
   list-style: none !important;
-  list-style-type: none !important;
   margin: 0 !important;
   padding: 0 !important;
 }
@@ -143,12 +134,13 @@ header p {
   margin: 0 !important;
 }
 
-/* Logo Alignment */
+/* Brand Logo Styling */
 header .nav-brand,
-header nav > div:first-child {
+header nav .nav-brand {
+  flex: 0 0 auto !important;
   display: flex !important;
   align-items: center !important;
-  flex: 0 0 auto !important;
+  z-index: 10002 !important;
 }
 
 header .nav-brand a,
@@ -174,21 +166,19 @@ header nav a[href="/"] span {
     display: none !important;
   }
 
-  /* Navigation Links */
-  header .nav-sections,
-  header nav > div:nth-child(2) {
+  /* Center Navigation Links */
+  header .nav-sections {
     display: flex !important;
     align-items: center !important;
     flex: 1 1 auto !important;
-    margin-left: 2rem !important;
-    margin-right: 2rem !important; /* Adds space after COVERAGE */
+    margin-left: 2.5rem !important;
   }
 
   header .nav-sections ul {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    gap: 1.5rem !important;
+    gap: 1.75rem !important;
   }
 
   header .nav-sections a {
@@ -205,22 +195,21 @@ header nav a[href="/"] span {
     color: var(--boost-orange) !important;
   }
 
-  /* Action Buttons (Separated from Coverage) */
-  header .nav-tools,
-  header nav > div:nth-child(3) {
+  /* Right-Aligned Buttons */
+  header .nav-tools {
     display: flex !important;
     align-items: center !important;
     gap: 0.75rem !important;
     flex: 0 0 auto !important;
     margin-left: auto !important;
-    padding-left: 1.5rem !important; /* FIX: Guarantees spacing between COVERAGE and ACTIVATE button */
   }
 
   header .nav-tools a.btn-primary,
-  header .nav-tools a.btn-secondary {
+  header .nav-tools a.btn-secondary,
+  header .nav-tools a {
     display: inline-block !important;
     width: auto !important;
-    padding: 0.45rem 1.1rem !important;
+    padding: 0.45rem 1.15rem !important;
     font-size: 0.8rem !important;
     font-weight: 800 !important;
     border-radius: 30px !important;
@@ -233,38 +222,25 @@ header nav a[href="/"] span {
    MOBILE NAVIGATION VIEW (Under 900px)
    ========================================================================== */
 @media (max-width: 899px) {
-  /* FIX: Explicit Solid White Bar on Mobile */
-  header, 
-  .header-wrapper,
-  header nav {
-    position: sticky !important;
-    top: 0 !important;
-    background-color: #FFFFFF !important;
-    background: #FFFFFF !important;
-    z-index: 10000 !important;
-  }
-
-  header nav {
-    padding: 0.85rem 1rem !important;
-  }
-
+  /* Hamburger Button */
   header .nav-hamburger {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background: transparent !important;
-    border: none !important;
-    cursor: pointer !important;
+    flex: 0 0 auto !important;
+    z-index: 10002 !important;
   }
 
   header .nav-hamburger button {
     background: transparent !important;
     border: none !important;
     font-size: 1.5rem !important;
+    color: var(--boost-black) !important;
     cursor: pointer !important;
+    padding: 0.25rem !important;
   }
 
-  /* Collapsed State */
+  /* CLOSED STATE */
   header nav[aria-expanded="false"] .nav-sections,
   header nav[aria-expanded="false"] .nav-tools,
   header nav:not([aria-expanded="true"]) .nav-sections,
@@ -272,33 +248,24 @@ header nav a[href="/"] span {
     display: none !important;
   }
 
-  /* Expanded Flyout Drawer */
-  header nav[aria-expanded="true"] .nav-sections,
-  header nav[aria-expanded="true"] .nav-tools {
+  /* EXPANDED MOBILE DRAWER (Opens cleanly under top bar) */
+  header nav[aria-expanded="true"] .nav-sections {
     display: flex !important;
-  }
-
-  header nav[aria-expanded="true"] {
     position: fixed !important;
-    top: 0 !important;
+    top: 60px !important;
     left: 0 !important;
     width: 100vw !important;
-    height: 100vh !important;
+    height: calc(100vh - 60px) !important;
     background-color: #FFFFFF !important;
-    background: #FFFFFF !important;
     flex-direction: column !important;
-    align-items: flex-start !important;
-    padding: 1.25rem 1.5rem 3rem 1.5rem !important;
+    padding: 1.5rem 1.5rem 6rem 1.5rem !important;
+    box-sizing: border-box !important;
+    z-index: 10001 !important;
     overflow-y: auto !important;
   }
 
-  header nav[aria-expanded="true"] .nav-sections {
-    flex-direction: column !important;
-    width: 100% !important;
-    margin-top: 3rem !important;
-  }
-
   header nav[aria-expanded="true"] .nav-sections ul {
+    display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
   }
@@ -314,13 +281,20 @@ header nav a[href="/"] span {
     font-size: 1.1rem !important;
     font-weight: 800 !important;
     color: var(--boost-black) !important;
+    text-transform: uppercase !important;
   }
 
+  /* Fixed Bottom Action Buttons inside Drawer */
   header nav[aria-expanded="true"] .nav-tools {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 1.5rem !important;
+    left: 1.5rem !important;
+    width: calc(100vw - 3rem) !important;
     flex-direction: column !important;
-    width: 100% !important;
-    gap: 0.85rem !important;
-    margin-top: auto !important;
+    gap: 0.75rem !important;
+    z-index: 10002 !important;
+    background-color: #FFFFFF !important;
   }
 
   header nav[aria-expanded="true"] .nav-tools a {
@@ -329,36 +303,9 @@ header nav a[href="/"] span {
     text-align: center !important;
     padding: 0.85rem 0 !important;
     font-size: 0.95rem !important;
+    font-weight: 800 !important;
     border-radius: 40px !important;
-  }
-}
-
-/* 7. Mobile Responsive Layout (< 768px) */
-@media (max-width: 767px) {
-  header nav {
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 0.75rem !important;
-    padding: 0.85rem 0.5rem !important;
-  }
-
-  header nav > div,
-  header nav .nav-sections,
-  header nav .nav-tools {
-    width: 100% !important;
-    justify-content: center !important;
-  }
-
-  header nav ul {
-    flex-wrap: wrap !important;
-    justify-content: center !important;
-    gap: 0.75rem !important;
-  }
-
-  header nav a.btn-primary,
-  header nav a.btn-secondary {
-    padding: 0.4rem 0.8rem !important;
-    font-size: 0.75rem !important;
+    box-sizing: border-box !important;
   }
 }
 
