@@ -34,7 +34,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 30;
+export const FORGE_INLINE_EDIT_BUILD = 31;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -201,21 +201,24 @@ function storeDaToken(token) {
 let daTokenPromptPromise = null;
 
 function adobeOAuthBridgeUrls() {
-  // Standard Adobe IMS via forge-auth — NOT da.live DA_SDK (COOP / SDK bugs).
-  // CDN bridge page: after IMS login, reads forge-auth /token (cookie) and returns
-  // to this aem.page origin via da-token-bridge.html?forgeDaCaptured=1#<jwt>
+  // Standard Adobe IMS via forge-auth — NOT da.live DA_SDK.
+  // Prefer forge-api HTML (always deployable with actions) over /forge/*.html static
+  // which 404s until app:deploy:cdn:static lands.
   let returnOrigin = '';
   try {
     returnOrigin = window.location.origin || '';
   } catch {
     /* ignore */
   }
-  const cdn = resolveForgeCdnOrigin();
+  const api = resolveForgeApiBase();
   const auth = resolveForgeAuthBase();
-  const bridge = `${cdn}/forge/da-oauth-bridge.html?forgeReturn=${encodeURIComponent(returnOrigin)}`;
+  const cdn = resolveForgeCdnOrigin();
+  const q = `forgeReturn=${encodeURIComponent(returnOrigin)}`;
+  const apiBridge = `${api}/inline-edit/oauth-bridge?${q}`;
+  const staticBridge = `${cdn}/forge/da-oauth-bridge.html?${q}`;
   const capturePage = `${returnOrigin}/tools/forge/da-token-bridge.html?forgeDaCaptured=1`;
   const directAuth = `${auth}/adobe/start?returnTo=${encodeURIComponent(capturePage)}`;
-  return { primary: bridge, fallback: directAuth };
+  return { primary: apiBridge, fallback: staticBridge, directAuth };
 }
 
 function isDaJwt(value) {
@@ -333,17 +336,34 @@ function promptDaToken() {
         /* ignore */
       }
 
+      // If forge-api / static bridge 404s, fall back to forge-auth start → capture page.
       window.setTimeout(() => {
         if (settled || !popup) return;
         try {
           if (popup.closed) return;
-          if (/404|not found/i.test(popup.document?.title || '')) {
-            popup.location.href = fresh.fallback;
+          const title = popup.document?.title || '';
+          const bodyText = popup.document?.body?.innerText || '';
+          if (/404|not found/i.test(title) || /404 Not Found/i.test(bodyText)) {
+            popup.location.href = fresh.fallback || fresh.directAuth;
           }
         } catch {
           /* cross-origin while on IMS / CDN */
         }
       }, 2500);
+
+      window.setTimeout(() => {
+        if (settled || !popup) return;
+        try {
+          if (popup.closed) return;
+          const title = popup.document?.title || '';
+          const bodyText = popup.document?.body?.innerText || '';
+          if (/404|not found/i.test(title) || /404 Not Found/i.test(bodyText)) {
+            popup.location.href = fresh.directAuth;
+          }
+        } catch {
+          /* ignore */
+        }
+      }, 5000);
 
       if (pollTimer) window.clearInterval(pollTimer);
       pollTimer = window.setInterval(() => {
