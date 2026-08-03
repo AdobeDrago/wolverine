@@ -169,6 +169,12 @@ export async function savePageToDaClient({ org, repo, pagePath, token, mainEl = 
     };
   }
 
-  await triggerHlxPreviewPath(org, repo, pagePathToHlxPath(pagePath));
-  return { ok: true };
+  const hlx = await triggerHlxPreviewPath(org, repo, pagePathToHlxPath(pagePath), token);
+  return {
+    ok: true,
+    hlxPreview: hlx,
+    previewWarning: hlx?.ok
+      ? undefined
+      : `Saved to Document Authoring but preview refresh failed (${hlx?.status || hlx?.error || 'no auth'}). Hard-refresh in a few seconds or open da.live.`,
+  };
 }
