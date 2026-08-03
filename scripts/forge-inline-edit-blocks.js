@@ -297,10 +297,12 @@ export function buildBlockSectionHtml(blockId, options = {}) {
   switch (id) {
     case 'hero':
       return `<div>
-  <div>
-    <h2>${escapeHtml(brand)}</h2>
-    <p>Hero banner — edit in Document Authoring.</p>
-    <p><strong><a href="/products/">Shop now</a></strong></p>
+  <div class="hero">
+    <div>
+      <h2>${escapeHtml(brand)}</h2>
+      <p>Hero banner — edit in Document Authoring.</p>
+      <p><strong><a href="/products/">Shop now</a></strong></p>
+    </div>
   </div>
 </div>
 `;
