@@ -34,7 +34,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 36;
+export const FORGE_INLINE_EDIT_BUILD = 37;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
