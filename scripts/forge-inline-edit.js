@@ -3,7 +3,12 @@
  * Edit text, links, and images on the page; save to Document Authoring. No Universal Editor.
  */
 
-import { deleteBlockOnDaPageClient, insertBlockOnDaPageClient } from './forge-inline-edit-da.js';
+import {
+  deleteBlockOnDaPageClient,
+  insertBlockOnDaPageClient,
+  pagePathToHlxPath,
+  triggerHlxPreviewPath,
+} from './forge-inline-edit-da.js';
 import {
   closeAdaToolbar,
   computeAdaComplianceScore,
@@ -34,7 +39,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 37;
+export const FORGE_INLINE_EDIT_BUILD = 43;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -545,22 +550,47 @@ function sectionIndexForBlock(blockEl) {
   return mainSections(main).indexOf(section);
 }
 
+async function ensurePreviewRefreshed(result) {
+  if (result?.hlxPreview?.ok) return result;
+  const { org, repo } = resolveOrgRepo();
+  const token = resolveDaToken();
+  if (!org || !repo || !token) return result;
+  try {
+    const hlxPath = pagePathToHlxPath(currentPagePath());
+    const hlx = await triggerHlxPreviewPath(org, repo, hlxPath, token);
+    return {
+      ...result,
+      hlxPreview: hlx,
+      previewWarning: hlx?.ok
+        ? undefined
+        : result?.previewWarning ||
+          `Saved to Document Authoring but preview refresh failed (${hlx?.status || hlx?.error || 'no auth'}).`,
+    };
+  } catch {
+    return result;
+  }
+}
+
 function reloadAfterMutation(result) {
   const seg = getPreviewSegmentId();
-  if (result?.previewUrl) {
-    try {
-      const u = new URL(result.previewUrl, window.location.origin);
-      if (seg) u.searchParams.set('forge-preview-segment', seg);
-      window.location.href = u.toString();
-      return;
-    } catch {
-      /* fall through */
+  const go = () => {
+    if (result?.previewUrl) {
+      try {
+        const u = new URL(result.previewUrl, window.location.origin);
+        if (seg) u.searchParams.set('forge-preview-segment', seg);
+        window.location.href = u.toString();
+        return;
+      } catch {
+        /* fall through */
+      }
     }
-  }
-  const u = new URL(window.location.href);
-  u.searchParams.set('_t', String(Date.now()));
-  if (seg) u.searchParams.set('forge-preview-segment', seg);
-  window.location.href = u.toString();
+    const u = new URL(window.location.href);
+    u.searchParams.set('_t', String(Date.now()));
+    if (seg) u.searchParams.set('forge-preview-segment', seg);
+    window.location.href = u.toString();
+  };
+  // Give admin.hlx.page a moment to publish the DA snapshot to *.aem.page
+  window.setTimeout(go, result?.hlxPreview?.ok ? 800 : 1600);
 }
 
 function findBlocks(root) {
@@ -675,7 +705,19 @@ async function insertBlock(blockId, afterIndex, products = null) {
   const apiBase = resolveForgeApiBase();
   if (apiBase) {
     try {
-      return await insertBlockViaForgeApi(blockId, afterIndex, apiBase, products);
+      const apiResult = await insertBlockViaForgeApi(blockId, afterIndex, apiBase, products);
+      if (apiResult?.ok) return apiResult;
+      // Stale forge-api required class===blockId and false-failed hero/carousel/commerce
+      // inserts with HTTP 200 + ok:false — fall back to browser DA write (snippet verify).
+      const structureFail = /unexpected Document Authoring structure/i.test(
+        String(apiResult?.error || ''),
+      );
+      if (structureFail || apiResult?.needsToken) {
+        return insertBlockOnDaClientWithPrompt(blockId, afterIndex, products, {
+          forcePrompt: Boolean(apiResult?.needsToken),
+        });
+      }
+      throw new Error(apiResult?.error || apiResult?.hint || 'Insert failed');
     } catch (e) {
       // Stale forge-api DA_ADMIN_TOKEN → one token dialog, then browser write.
       const authFail =
@@ -782,11 +824,13 @@ async function deleteComponent(blockEl, meta) {
 
   try {
     showToast(`Deleting ${label}…`);
-    const result = await deleteBlock(idx);
+    let result = await deleteBlock(idx);
     if (!result?.ok && !result?.previewUrl) {
       throw new Error(result?.error || result?.hint || 'Delete failed — section was not removed');
     }
-    showToast(`Deleted ${label} — reloading preview…`);
+    result = await ensurePreviewRefreshed(result);
+    if (result?.previewWarning) showToast(result.previewWarning, true);
+    else showToast(`Deleted ${label} — reloading preview…`);
     reloadAfterMutation(result);
   } catch (e) {
     showToast(e.message || 'Delete failed', true);
@@ -852,16 +896,21 @@ function openAddDialog({ afterIndex = -1, anchorEl = null } = {}) {
             }
             btn.textContent = 'Saving…';
           }
-          const result = await insertBlock(id, afterIndex, products);
+          let result = await insertBlock(id, afterIndex, products);
           if (!result?.ok && !result?.previewUrl) {
             throw new Error(result?.error || result?.hint || 'Insert failed — block was not saved');
           }
+          result = await ensurePreviewRefreshed(result);
           backdrop.remove();
-          showToast(
-            products?.length
-              ? `Added ${meta?.label || id} with ${products.length} product${products.length === 1 ? '' : 's'} — reloading…`
-              : `Added ${meta?.label || id} — reloading preview…`,
-          );
+          if (result?.previewWarning) {
+            showToast(result.previewWarning, true);
+          } else {
+            showToast(
+              products?.length
+                ? `Added ${meta?.label || id} with ${products.length} product${products.length === 1 ? '' : 's'} — reloading…`
+                : `Added ${meta?.label || id} — reloading preview…`,
+            );
+          }
           reloadAfterMutation(result);
         } catch (e) {
           btn.disabled = false;
@@ -1020,10 +1069,10 @@ async function savePage() {
         : prepared.segmentId
           ? ' · segment preview'
           : '';
-    showToast(`Saved to Document Authoring${segNote} — refreshing preview…`);
-    const u = new URL(window.location.href);
-    u.searchParams.set('_t', String(Date.now()));
-    window.location.href = u.toString();
+    result = await ensurePreviewRefreshed(result);
+    if (result?.previewWarning) showToast(result.previewWarning, true);
+    else showToast(`Saved to Document Authoring${segNote} — refreshing preview…`);
+    reloadAfterMutation(result);
   } catch (e) {
     showToast(e.message || 'Save failed', true);
   } finally {
