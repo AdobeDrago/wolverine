@@ -24,6 +24,7 @@ import {
   openProductPicker,
   readSelectedProductIds,
 } from './forge-inline-edit-commerce.js';
+import { buildBlockSectionHtml } from './forge-inline-edit-blocks.js';
 import { productBrandName } from './forge-product-brand.js';
 import {
   getPreviewSegmentId,
@@ -39,7 +40,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 43;
+export const FORGE_INLINE_EDIT_BUILD = 44;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -571,6 +572,31 @@ async function ensurePreviewRefreshed(result) {
   }
 }
 
+/** Show the new block immediately when HLX CDN is stale (expired HLX token / 401). */
+function injectBlockIntoDom(blockId, afterIndex, products = null) {
+  const main = document.querySelector('main');
+  if (!main) return false;
+  const snippet = buildBlockSectionHtml(blockId, {
+    brandName: productBrandName(),
+    products: Array.isArray(products) ? products : undefined,
+  });
+  const wrap = document.createElement('div');
+  wrap.innerHTML = String(snippet || '').trim();
+  const section = wrap.firstElementChild;
+  if (!section) return false;
+  const sections = mainSections(main);
+  if (afterIndex >= 0 && afterIndex < sections.length) {
+    sections[afterIndex].after(section);
+  } else if (sections.length) {
+    sections[sections.length - 1].after(section);
+  } else {
+    main.append(section);
+  }
+  main.querySelectorAll('.forge-edit-drop-zone').forEach((z) => z.remove());
+  scanAndDecorate();
+  return true;
+}
+
 function reloadAfterMutation(result) {
   const seg = getPreviewSegmentId();
   const go = () => {
@@ -902,16 +928,30 @@ function openAddDialog({ afterIndex = -1, anchorEl = null } = {}) {
           }
           result = await ensurePreviewRefreshed(result);
           backdrop.remove();
-          if (result?.previewWarning) {
-            showToast(result.previewWarning, true);
-          } else {
+          const previewOk = Boolean(result?.hlxPreview?.ok);
+          // Always paint the block into the live DOM so Add is visible even when
+          // admin.hlx.page preview 401s (common with expired HLX_AUTH_TOKEN).
+          const injected = injectBlockIntoDom(id, afterIndex, products);
+          if (previewOk) {
             showToast(
               products?.length
                 ? `Added ${meta?.label || id} with ${products.length} product${products.length === 1 ? '' : 's'} — reloading…`
                 : `Added ${meta?.label || id} — reloading preview…`,
             );
+            reloadAfterMutation(result);
+          } else if (injected) {
+            showToast(
+              `Added ${meta?.label || id} on this page (saved to Document Authoring). Preview CDN did not refresh — update HLX_AUTH_TOKEN or open da.live.`,
+              true,
+            );
+          } else {
+            showToast(
+              result?.previewWarning ||
+                `Saved ${meta?.label || id} to Document Authoring but could not update this page view.`,
+              true,
+            );
+            reloadAfterMutation(result);
           }
-          reloadAfterMutation(result);
         } catch (e) {
           btn.disabled = false;
           btn.textContent = original;
