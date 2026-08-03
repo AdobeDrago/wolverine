@@ -34,7 +34,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 35;
+export const FORGE_INLINE_EDIT_BUILD = 36;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -223,8 +223,10 @@ function adobeOAuthBridgeUrls() {
 
 function isDaJwt(value) {
   const t = String(value || '').trim();
-  // IMS JWTs are usually >1k chars; keep a low floor so capture is not rejected.
-  return t.startsWith('eyJ') && t.split('.').length === 3 && t.length > 80;
+  if (!t || t.length < 40) return false;
+  if (t.startsWith('eyJ') && t.split('.').length >= 3) return true;
+  if (t.length > 200 && /^[A-Za-z0-9\-._~+/=]+$/.test(t)) return true;
+  return false;
 }
 
 /**

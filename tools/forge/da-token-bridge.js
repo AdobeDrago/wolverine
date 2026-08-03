@@ -19,7 +19,12 @@ const TOKEN_TS_KEY = 'forge_da_auth_ts';
 
 function isJwt(value) {
   const t = String(value || '').trim();
-  return t.startsWith('eyJ') && t.split('.').length === 3 && t.length > 80;
+  if (!t || t.length < 40) return false;
+  // Standard IMS JWT
+  if (t.startsWith('eyJ') && t.split('.').length >= 3) return true;
+  // Some IMS responses return long opaque bearer tokens — still usable for DA probes.
+  if (t.length > 200 && /^[A-Za-z0-9\-._~+/=]+$/.test(t)) return true;
+  return false;
 }
 
 function params() {
@@ -303,7 +308,16 @@ function handleCapturedReturn() {
   } catch {
     token = (window.location.hash || '').replace(/^#/, '').trim();
   }
-  if (isJwt(token)) return finishWithToken(token);
+  if (token) {
+    if (finishWithToken(token)) return true;
+    document.body.innerHTML = `
+      <div style="font-family:system-ui;max-width:28rem;margin:3rem auto;padding:1.5rem;color:#1d1d1d;background:#fff">
+        <h1>Sign-in token rejected</h1>
+        <p>Got a token (${token.length} chars, starts with <code>${token.slice(0, 8)}</code>) but it was not accepted.</p>
+        <p>Close this tab and click Sign in with Adobe again.</p>
+      </div>`;
+    return true;
+  }
 
   const fromPack = unpackPack(q.get('forgePack'));
   if (isJwt(fromPack)) return finishWithToken(fromPack);
