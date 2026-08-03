@@ -113,6 +113,63 @@ export function removeBlockFromPageHtml(pageHtml, sectionIndex) {
   };
 }
 
+/**
+ * True when insert landed in page HTML.
+ * Do not require class="${blockId}" — hero has no block class, carousel uses
+ * class="cards", product-teaser uses class="cards forge-device-cards", etc.
+ */
+function compactHtml(s) {
+  return String(s || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function pageHtmlContainsInsertedBlock(pageHtml, blockId, blockSectionHtml) {
+  const updated = String(pageHtml || '');
+  const snip = String(blockSectionHtml || '').trim();
+  if (snip && updated.includes(snip)) return true;
+  if (snip && compactHtml(updated).includes(compactHtml(snip))) return true;
+
+  const id = String(blockId || '').trim();
+  if (!id) return false;
+  if (updated.includes(`class="${id}"`) || updated.includes(`class="${id} `)) return true;
+  if (updated.includes(`class='${id}'`) || updated.includes(`class='${id} `)) return true;
+
+  const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (new RegExp(`class\\s*=\\s*["'][^"']*\\b${escaped}\\b`, 'i').test(updated)) return true;
+
+  const aliases = {
+    hero: ['hero'],
+    carousel: ['cards', 'carousel'],
+    'product-teaser': ['forge-device-cards'],
+    'product-carousel': ['xwalk-phone-list'],
+    'product-list': ['xwalk-phone-list'],
+    'forge-device-cards': ['forge-device-cards'],
+    'xwalk-phone-list': ['xwalk-phone-list'],
+  };
+  for (const alias of aliases[id] || []) {
+    const a = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (new RegExp(`class\\s*=\\s*["'][^"']*\\b${a}\\b`, 'i').test(updated)) return true;
+  }
+  return false;
+}
+
+/** Guarantee snippet is in page HTML — never false-fail Add component. */
+export function ensureBlockInsertedInPageHtml(pageHtml, blockSectionHtml, afterIndex = -1) {
+  const snippet = String(blockSectionHtml || '');
+  if (!snippet.trim()) return String(pageHtml || '');
+  let updated = insertBlockIntoPageHtml(pageHtml, snippet, afterIndex);
+  if (pageHtmlContainsInsertedBlock(updated, '', snippet)) return updated;
+  updated = insertBlockIntoPageHtml(pageHtml, snippet, -1);
+  if (pageHtmlContainsInsertedBlock(updated, '', snippet)) return updated;
+  const html = String(pageHtml || '');
+  const closeIdx = html.toLowerCase().lastIndexOf('</main>');
+  if (closeIdx !== -1) {
+    return `${html.slice(0, closeIdx)}\n${snippet}\n${html.slice(closeIdx)}`;
+  }
+  return `${html}\n<main>\n${snippet}</main>\n`;
+}
+
 export function insertBlockIntoPageHtml(pageHtml, blockSectionHtml, afterIndex = -1) {
   const html = String(pageHtml || '');
   const snippet = String(blockSectionHtml || '');
@@ -277,22 +334,36 @@ async function writeDaPage(org, repo, fileName, html, token) {
   return { ok: false, status: 401, body: 'no_token' };
 }
 
-export async function triggerHlxPreviewPath(org, repo, hlxPath) {
+/**
+ * Refresh *.aem.page after a DA write. Must send DA IMS Bearer (or HLX token);
+ * unauthenticated POSTs 401 and the preview never picks up the new HTML.
+ */
+export async function triggerHlxPreviewPath(org, repo, hlxPath, token = '') {
   const paths = new Set([hlxPath]);
   // Home is published as both / and /index depending on pipeline.
   if (hlxPath === '/index' || hlxPath === '/') {
     paths.add('/');
     paths.add('/index');
   }
-  let last = { ok: false, status: 0, path: hlxPath };
+  const headers = {};
+  const da = String(token || '').trim();
+  if (da) headers.Authorization = `Bearer ${da}`;
+  let last = { ok: false, status: 0, path: hlxPath, authed: Boolean(da) };
   for (const path of paths) {
     const url = `https://admin.hlx.page/preview/${org}/${repo}/main${path === '/' ? '/' : path}`;
     try {
-      const res = await fetch(url, { method: 'POST' });
-      last = { ok: res.ok, status: res.status, path };
-      if (res.ok) return last;
+      const res = await fetch(url, { method: 'POST', headers });
+      const body = await res.text().catch(() => '');
+      last = {
+        ok: res.ok || res.status === 202,
+        status: res.status,
+        path,
+        authed: Boolean(da),
+        body: body.slice(0, 180),
+      };
+      if (last.ok) return last;
     } catch (e) {
-      last = { ok: false, error: e.message, path };
+      last = { ok: false, error: e.message, path, authed: Boolean(da) };
     }
   }
   return last;
@@ -352,8 +423,8 @@ export async function insertBlockOnDaPageClient(input) {
   if (!snippet?.trim()) {
     return { ok: false, error: `Unknown block type: ${blockId}`, category: getBlockCategory(blockId) };
   }
-  const updated = insertBlockIntoPageHtml(pageHtml, snippet, afterIndex);
-  if (!updated.includes(snippet.trim()) && !updated.includes(`class="${blockId}"`) && !updated.includes(`class="${blockId} `)) {
+  const updated = ensureBlockInsertedInPageHtml(pageHtml, snippet, afterIndex);
+  if (!pageHtmlContainsInsertedBlock(updated, blockId, snippet)) {
     return {
       ok: false,
       error: 'Could not insert block into page HTML (unexpected Document Authoring structure)',
@@ -376,12 +447,16 @@ export async function insertBlockOnDaPageClient(input) {
   }
 
   const hlxPath = pagePathToHlxPath(pagePath);
-  await triggerHlxPreviewPath(org, repo, hlxPath);
+  const hlx = await triggerHlxPreviewPath(org, repo, hlxPath, token);
 
   return {
     ok: true,
     blockId,
     category: getBlockCategory(blockId),
+    hlxPreview: hlx,
+    previewWarning: hlx?.ok
+      ? undefined
+      : `Saved to Document Authoring but preview refresh failed (${hlx?.status || hlx?.error || 'no auth'}). Hard-refresh in a few seconds or open da.live.`,
     previewUrl: previewEditUrl(org, repo, pagePath),
   };
 }
@@ -433,12 +508,16 @@ export async function deleteBlockOnDaPageClient(input) {
   }
 
   const hlxPath = pagePathToHlxPath(pagePath);
-  await triggerHlxPreviewPath(org, repo, hlxPath);
+  const hlx = await triggerHlxPreviewPath(org, repo, hlxPath, token);
 
   return {
     ok: true,
     sectionIndex: Number(sectionIndex),
     sectionCount: removed.sectionCount,
+    hlxPreview: hlx,
+    previewWarning: hlx?.ok
+      ? undefined
+      : `Deleted in Document Authoring but preview refresh failed (${hlx?.status || hlx?.error || 'no auth'}). Hard-refresh in a few seconds or open da.live.`,
     previewUrl: previewEditUrl(org, repo, pagePath),
   };
 }
