@@ -40,7 +40,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 48;
+export const FORGE_INLINE_EDIT_BUILD = 49;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -904,50 +904,31 @@ async function deleteComponent(blockEl, meta) {
     return;
   }
   const label = meta?.label || blockEl?.dataset?.forgeBlockId || 'component';
-  const dirtyNote = pageDirty
-    ? '\n\nYou have unsaved edits — Delete keeps them on this page. Click Save page afterward to persist everything.'
-    : '';
   const ok = window.confirm(
-    `Delete “${label}”?\n\nRemoves the section on this page. Save page persists to Document Authoring if the live delete API is unavailable.${dirtyNote}`,
+    `Delete “${label}”?\n\nRemoves the section on this page. Click Save page to persist to Document Authoring.`,
   );
   if (!ok) return;
 
-  const hadDirty = pageDirty;
-  // Paint removal immediately (CDN preview often 401s and would bring the block back on reload).
+  // Paint removal immediately — never reload here (CDN preview 401s bring the block back
+  // and would clear dirty / leave Save disabled).
   const removedLocally = removeSectionFromDom(idx);
   if (!removedLocally) {
     showToast('Could not remove this component from the page', true);
     return;
   }
 
+  // Always enable Save after Delete so save-page can persist the removal (and any other edits).
+  setPageDirty();
+  showToast(`Removed ${label} — click Save page to persist`);
+
+  // Best-effort delete-block API (does not disable Save; does not reload).
   try {
-    showToast(`Deleting ${label}…`);
-    let result = await deleteBlock(idx);
-    if (!result?.ok && !result?.previewUrl) {
-      throw new Error(result?.error || result?.hint || 'Delete failed — section was not removed');
+    const result = await deleteBlock(idx);
+    if (result?.ok || result?.previewUrl) {
+      ensurePreviewRefreshed(result).catch(() => {});
     }
-    result = await ensurePreviewRefreshed(result);
-    const previewOk = Boolean(result?.hlxPreview?.ok);
-    if (hadDirty) {
-      // Keep Save enabled so prior text/media edits still persist with save-page.
-      setPageDirty();
-      showDaSuccessToast(`Deleted ${label}. Save page still enabled for your other edits`, result);
-      return;
-    }
-    if (previewOk) {
-      showDaSuccessToast(`Deleted ${label} — reloading preview…`, result);
-      reloadAfterMutation(result);
-      return;
-    }
-    // DA delete ok, CDN lag — stay on page with section already gone (do not reload stale HTML).
-    showDaSuccessToast(`Deleted ${label}`, result);
-  } catch (e) {
-    // Local remove already applied — enable Save so save-page can persist the deletion.
-    setPageDirty();
-    showToast(
-      `${e.message || 'Delete API failed'}. Section removed on this page — click Save page to persist to Document Authoring.`,
-      true,
-    );
+  } catch {
+    /* Save page is the persistence path */
   }
 }
 
