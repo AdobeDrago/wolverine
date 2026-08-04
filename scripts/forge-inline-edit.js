@@ -40,7 +40,75 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 49;
+export const FORGE_INLINE_EDIT_BUILD = 51;
+
+/**
+ * Critical contrast rules injected at runtime.
+ * Wolverine `styles.css` sets `--text-color:#fff` and secondary buttons use that
+ * on transparent fills — without this, Shop/Learn CTAs go white-on-white on light
+ * sections even when `/styles/forge-inline-edit.css` is stale on HLX.
+ */
+const FORGE_EDIT_CONTRAST_CSS = `
+html.forge-edit-active a.button.secondary,
+html.forge-edit-active button.secondary,
+html.forge-edit-active a.xwalk-retail-cta-secondary {
+  color: #0a1a0f !important;
+  -webkit-text-fill-color: #0a1a0f !important;
+  background-color: #ffffff !important;
+  border: 2px solid #0a1a0f !important;
+}
+html.forge-edit-active .xwalk-hero-section a.button.secondary,
+html.forge-edit-active .hero a.button.secondary,
+html.forge-edit-active .xwalk-hero-section a.xwalk-retail-cta-secondary,
+html.forge-edit-active .xwalk-hero-cta-secondary a,
+html.forge-edit-active main > div.xwalk-hero-section a.button.secondary {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: transparent !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+}
+.forge-edit-banner button.forge-edit-banner__save,
+.forge-edit-banner__save {
+  background: #ffffff !important;
+  color: #0b5fff !important;
+  -webkit-text-fill-color: #0b5fff !important;
+}
+.forge-edit-dialog footer button,
+.forge-edit-product-picker footer button,
+.forge-edit-media-toolbar footer button,
+.forge-edit-dialog .block-pick {
+  background: #ffffff !important;
+  color: #1d1d1d !important;
+  -webkit-text-fill-color: #1d1d1d !important;
+  border: 1px solid #cacaca !important;
+}
+.forge-edit-dialog footer button.primary,
+.forge-edit-product-picker footer button.primary,
+.forge-edit-media-toolbar footer button.primary {
+  background: #1473e6 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border-color: #1473e6 !important;
+}
+`;
+
+/** Load contrast CSS from App Builder CDN + inject critical rules (beats stale HLX). */
+function ensureInlineEditContrastStyles() {
+  const cdnHref = `${resolveForgeCdnOrigin()}/forge/css/forge-inline-edit.css?v=${FORGE_INLINE_EDIT_BUILD}`;
+  if (!document.querySelector(`link[data-forge-edit-cdn-css="1"]`)) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = cdnHref;
+    link.dataset.forgeEditCdnCss = '1';
+    document.head.appendChild(link);
+  }
+  if (!document.querySelector('style[data-forge-edit-contrast="1"]')) {
+    const style = document.createElement('style');
+    style.dataset.forgeEditContrast = '1';
+    style.textContent = FORGE_EDIT_CONTRAST_CSS;
+    document.head.appendChild(style);
+  }
+}
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -100,13 +168,32 @@ const COMMERCE_CLASS_HINTS = [
   'forge-plan-offer',
 ];
 
+/** Fix …?forge-preview-segment=UUID?forge-edit=1 (second `?` should be `&`). */
+function repairMalformedForgeEditLocation() {
+  try {
+    const href = window.location.href;
+    if (!/\?[^#]*\?(forge-edit=|forge=edit)/i.test(href)) return false;
+    const fixed = href.replace(/(\?[^#]*?)\?(?=forge-edit=|forge=edit)/i, '$1&');
+    if (fixed === href) return false;
+    window.history.replaceState(null, '', fixed);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function isEditMode() {
+  repairMalformedForgeEditLocation();
   const params = new URLSearchParams(window.location.search);
   const fe = params.get(FORGE_EDIT_PARAM);
   if (fe === '1' || fe === 'true') return true;
-  // Common typo / alternate: ?forge=edit-1
+  // Common typo / alternate: ?forge=edit-1 (or &forge=edit-1)
   const forge = params.get('forge');
   if (forge === 'edit-1' || forge === 'edit' || forge === '1') return true;
+  // Malformed paste left forge-edit inside another param value
+  const raw = window.location.search || '';
+  if (/[?&]forge-edit=1\b/i.test(raw) || /[?&]forge=edit(?:-1)?\b/i.test(raw)) return true;
+  if (/\bforge-edit=1\b/i.test(raw) || /\bforge=edit(?:-1)?\b/i.test(raw)) return true;
   const vse = params.get('vse') || params.get('cse');
   return vse === 'forge';
 }
@@ -1342,6 +1429,7 @@ function init() {
   if (globalThis.__forgeInlineEditInit) return;
   globalThis.__forgeInlineEditInit = true;
 
+  ensureInlineEditContrastStyles();
   ensureDirtyTracking();
   showBanner();
   // Ask for DA sign-in as soon as edit mode opens (not only on Save / Add / Delete).
