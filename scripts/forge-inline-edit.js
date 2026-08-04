@@ -40,7 +40,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 46;
+export const FORGE_INLINE_EDIT_BUILD = 48;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -474,6 +474,22 @@ function showToast(message, isError = false) {
   setTimeout(() => el.remove(), 5000);
 }
 
+/** DA write succeeded — never flash a red 401 for admin.hlx.page CDN lag. */
+function showDaSuccessToast(baseMessage, result) {
+  if (result?.hlxPreview?.ok && !result?.previewWarning) {
+    showToast(baseMessage);
+    return;
+  }
+  const cleaned = String(baseMessage || '')
+    .replace(/\s*[—–-]\s*(refreshing|reloading).*$/i, '')
+    .trim();
+  const st = result?.hlxPreview?.status || result?.hlxPreview?.error;
+  const note = st
+    ? `CDN preview sync pending (${st}) — hard-refresh if the page looks stale.`
+    : 'CDN preview sync pending — hard-refresh if the page looks stale.';
+  showToast(`${cleaned}. ${note}`);
+}
+
 function updateAdaScoreBanner() {
   const chip = document.querySelector('.forge-edit-banner__ada-score');
   if (!chip) return;
@@ -583,7 +599,7 @@ async function ensurePreviewRefreshed(result) {
       previewWarning: hlx?.ok
         ? undefined
         : result?.previewWarning ||
-          `Saved to Document Authoring but preview refresh failed (${hlx?.status || hlx?.error || 'no auth'}).`,
+          `CDN preview sync pending (${hlx?.status || hlx?.error || 'no auth'}) — Document Authoring already has your changes.`,
     };
   } catch {
     return result;
@@ -610,6 +626,21 @@ function injectBlockIntoDom(blockId, afterIndex, products = null) {
   } else {
     main.append(section);
   }
+  main.querySelectorAll('.forge-edit-drop-zone').forEach((z) => z.remove());
+  scanAndDecorate();
+  return true;
+}
+
+/** Remove a top-level main section so Delete is visible even when CDN preview lags. */
+function removeSectionFromDom(sectionIndex) {
+  const main = document.querySelector('main');
+  if (!main) return false;
+  const sections = mainSections(main);
+  const section = sections[sectionIndex];
+  if (!section) return false;
+  const next = section.nextElementSibling;
+  if (next?.classList?.contains('forge-edit-drop-zone')) next.remove();
+  section.remove();
   main.querySelectorAll('.forge-edit-drop-zone').forEach((z) => z.remove());
   scanAndDecorate();
   return true;
@@ -873,10 +904,21 @@ async function deleteComponent(blockEl, meta) {
     return;
   }
   const label = meta?.label || blockEl?.dataset?.forgeBlockId || 'component';
+  const dirtyNote = pageDirty
+    ? '\n\nYou have unsaved edits — Delete keeps them on this page. Click Save page afterward to persist everything.'
+    : '';
   const ok = window.confirm(
-    `Delete “${label}” from Document Authoring?\n\nThis removes the whole section and reloads preview.`,
+    `Delete “${label}”?\n\nRemoves the section on this page. Save page persists to Document Authoring if the live delete API is unavailable.${dirtyNote}`,
   );
   if (!ok) return;
+
+  const hadDirty = pageDirty;
+  // Paint removal immediately (CDN preview often 401s and would bring the block back on reload).
+  const removedLocally = removeSectionFromDom(idx);
+  if (!removedLocally) {
+    showToast('Could not remove this component from the page', true);
+    return;
+  }
 
   try {
     showToast(`Deleting ${label}…`);
@@ -885,11 +927,27 @@ async function deleteComponent(blockEl, meta) {
       throw new Error(result?.error || result?.hint || 'Delete failed — section was not removed');
     }
     result = await ensurePreviewRefreshed(result);
-    if (result?.previewWarning) showToast(result.previewWarning, true);
-    else showToast(`Deleted ${label} — reloading preview…`);
-    reloadAfterMutation(result);
+    const previewOk = Boolean(result?.hlxPreview?.ok);
+    if (hadDirty) {
+      // Keep Save enabled so prior text/media edits still persist with save-page.
+      setPageDirty();
+      showDaSuccessToast(`Deleted ${label}. Save page still enabled for your other edits`, result);
+      return;
+    }
+    if (previewOk) {
+      showDaSuccessToast(`Deleted ${label} — reloading preview…`, result);
+      reloadAfterMutation(result);
+      return;
+    }
+    // DA delete ok, CDN lag — stay on page with section already gone (do not reload stale HTML).
+    showDaSuccessToast(`Deleted ${label}`, result);
   } catch (e) {
-    showToast(e.message || 'Delete failed', true);
+    // Local remove already applied — enable Save so save-page can persist the deletion.
+    setPageDirty();
+    showToast(
+      `${e.message || 'Delete API failed'}. Section removed on this page — click Save page to persist to Document Authoring.`,
+      true,
+    );
   }
 }
 
@@ -1133,8 +1191,7 @@ async function savePage() {
           ? ' · segment preview'
           : '';
     result = await ensurePreviewRefreshed(result);
-    if (result?.previewWarning) showToast(result.previewWarning, true);
-    else showToast(`Saved to Document Authoring${segNote} — refreshing preview…`);
+    showDaSuccessToast(`Saved to Document Authoring${segNote} — refreshing preview…`, result);
     reloadAfterMutation(result);
   } catch (e) {
     showToast(e.message || 'Save failed', true);
