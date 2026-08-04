@@ -175,6 +175,6 @@ export async function savePageToDaClient({ org, repo, pagePath, token, mainEl = 
     hlxPreview: hlx,
     previewWarning: hlx?.ok
       ? undefined
-      : `Saved to Document Authoring but preview refresh failed (${hlx?.status || hlx?.error || 'no auth'}). Hard-refresh in a few seconds or open da.live.`,
+      : `CDN preview sync pending (${hlx?.status || hlx?.error || 'no auth'}) — Document Authoring already has your changes. Hard-refresh if the page looks stale.`,
   };
 }
