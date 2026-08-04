@@ -32,10 +32,13 @@ function makeTextEditable(el, { onDirty } = {}) {
       ? 'Edit button label · double-click for URL / accessible name'
       : 'Edit button label · double-click for accessible name';
   }
-  el.addEventListener('input', () => {
+  const markDirty = () => {
     el.classList.add('forge-edit-field--dirty');
     onDirty?.();
-  });
+  };
+  el.addEventListener('input', markDirty);
+  el.addEventListener('keyup', markDirty);
+  el.addEventListener('paste', markDirty);
   el.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !el.matches('p,li')) e.preventDefault();
   });
