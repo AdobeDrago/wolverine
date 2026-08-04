@@ -40,7 +40,7 @@ import {
 import { savePageToDaClient } from './forge-inline-edit-save.js';
 
 /** Bump when deploying; cache-busts HLX/CDN for Chrome. */
-export const FORGE_INLINE_EDIT_BUILD = 44;
+export const FORGE_INLINE_EDIT_BUILD = 46;
 
 const FORGE_EDIT_PARAM = 'forge-edit';
 const FORGE_ORG_PARAM = 'forge-org';
@@ -441,8 +441,26 @@ function setPageDirty() {
   const btn = document.querySelector('.forge-edit-banner__save');
   if (btn) {
     btn.disabled = false;
+    btn.removeAttribute('disabled');
     btn.classList.add('forge-edit-banner__save--dirty');
   }
+}
+
+/** Capture-phase dirty tracking — covers newly injected blocks and paste/IME edits. */
+function ensureDirtyTracking() {
+  if (document.documentElement.dataset.forgeDirtyBound === '1') return;
+  document.documentElement.dataset.forgeDirtyBound = '1';
+  const mark = (e) => {
+    const t = e.target;
+    if (!t?.closest) return;
+    if (t.closest('.forge-edit-banner, .forge-edit-dialog-backdrop, .forge-edit-media-toolbar')) return;
+    if (t.closest('main [contenteditable="true"], main .forge-edit-field, main .forge-edit-media')) {
+      setPageDirty();
+    }
+  };
+  document.addEventListener('input', mark, true);
+  document.addEventListener('keyup', mark, true);
+  document.addEventListener('paste', mark, true);
 }
 
 function showToast(message, isError = false) {
@@ -659,16 +677,37 @@ function insertDropZones(main) {
   });
 }
 
+/**
+ * forge-api POST init. Put IMS JWT in JSON `daToken` — never `X-Forge-Da-Token`.
+ * Large Adobe tokens exceed App Builder/CloudFront header limits → HTTP 431.
+ */
+function forgeApiJsonInit(payload) {
+  const daToken = resolveDaToken();
+  const body = { ...payload };
+  if (daToken) body.daToken = daToken;
+  return {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  };
+}
+
+function forgeApiHttpError(data, res, label) {
+  const status = res?.status || 0;
+  const err = new Error(data?.error || data?.hint || `${label} (${status})`);
+  err.needsToken = Boolean(data?.needsToken) || status === 401 || status === 403;
+  err.headerTooLarge = status === 431;
+  err.status = status;
+  err.hint =
+    data?.hint || (status === 431 ? 'Request headers too large — retrying via browser DA write' : '');
+  return err;
+}
+
 async function insertBlockViaForgeApi(blockId, afterIndex, apiBase, products = null) {
   const { org, repo } = resolveOrgRepo();
-  const headers = { 'Content-Type': 'application/json' };
-  const daToken = resolveDaToken();
-  if (daToken) headers['X-Forge-Da-Token'] = daToken;
-
-  const res = await fetch(`${apiBase}/api/inline-edit/insert-block`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
+  const res = await fetch(
+    `${apiBase}/api/inline-edit/insert-block`,
+    forgeApiJsonInit({
       org,
       repo,
       pagePath: currentPagePath(),
@@ -677,14 +716,9 @@ async function insertBlockViaForgeApi(blockId, afterIndex, apiBase, products = n
       brandName: productBrandName(),
       products: Array.isArray(products) ? products : undefined,
     }),
-  });
+  );
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const err = new Error(data.error || data.hint || `Insert failed (${res.status})`);
-    err.needsToken = Boolean(data.needsToken) || res.status === 401 || res.status === 403;
-    err.hint = data.hint || '';
-    throw err;
-  }
+  if (!res.ok) throw forgeApiHttpError(data, res, 'Insert failed');
   return data;
 }
 
@@ -745,12 +779,16 @@ async function insertBlock(blockId, afterIndex, products = null) {
       }
       throw new Error(apiResult?.error || apiResult?.hint || 'Insert failed');
     } catch (e) {
-      // Stale forge-api DA_ADMIN_TOKEN → one token dialog, then browser write.
+      // Stale forge-api DA_ADMIN_TOKEN / header 431 → browser write.
+      const headerLimit =
+        e?.headerTooLarge || e?.status === 431 || /\b431\b/.test(String(e?.message || ''));
       const authFail =
         e?.needsToken ||
         /DA write failed:\s*40[13]|DA token required|401|403/i.test(String(e?.message || ''));
-      if (!authFail) throw e;
-      return insertBlockOnDaClientWithPrompt(blockId, afterIndex, products, { forcePrompt: true });
+      if (!authFail && !headerLimit) throw e;
+      return insertBlockOnDaClientWithPrompt(blockId, afterIndex, products, {
+        forcePrompt: Boolean(authFail),
+      });
     }
   }
 
@@ -759,27 +797,17 @@ async function insertBlock(blockId, afterIndex, products = null) {
 
 async function deleteBlockViaForgeApi(sectionIndex, apiBase) {
   const { org, repo } = resolveOrgRepo();
-  const headers = { 'Content-Type': 'application/json' };
-  const daToken = resolveDaToken();
-  if (daToken) headers['X-Forge-Da-Token'] = daToken;
-
-  const res = await fetch(`${apiBase}/api/inline-edit/delete-block`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
+  const res = await fetch(
+    `${apiBase}/api/inline-edit/delete-block`,
+    forgeApiJsonInit({
       org,
       repo,
       pagePath: currentPagePath(),
       sectionIndex,
     }),
-  });
+  );
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const err = new Error(data.error || data.hint || `Delete failed (${res.status})`);
-    err.needsToken = Boolean(data.needsToken) || res.status === 401 || res.status === 403;
-    err.hint = data.hint || '';
-    throw err;
-  }
+  if (!res.ok) throw forgeApiHttpError(data, res, 'Delete failed');
   return data;
 }
 
@@ -825,11 +853,13 @@ async function deleteBlock(sectionIndex) {
     try {
       return await deleteBlockViaForgeApi(sectionIndex, apiBase);
     } catch (e) {
+      const headerLimit =
+        e?.headerTooLarge || e?.status === 431 || /\b431\b/.test(String(e?.message || ''));
       const authFail =
         e?.needsToken ||
         /DA write failed:\s*40[13]|DA token required|401|403/i.test(String(e?.message || ''));
-      if (!authFail) throw e;
-      return deleteBlockOnDaClientWithPrompt(sectionIndex, { forcePrompt: true });
+      if (!authFail && !headerLimit) throw e;
+      return deleteBlockOnDaClientWithPrompt(sectionIndex, { forcePrompt: Boolean(authFail) });
     }
   }
 
@@ -940,9 +970,10 @@ function openAddDialog({ afterIndex = -1, anchorEl = null } = {}) {
             );
             reloadAfterMutation(result);
           } else if (injected) {
+            // Not a failed Add — DA write + on-page paint succeeded. CDN sync is separate.
+            const st = result?.hlxPreview?.status || result?.hlxPreview?.error || '401';
             showToast(
-              `Added ${meta?.label || id} on this page (saved to Document Authoring). Preview CDN did not refresh — update HLX_AUTH_TOKEN or open da.live.`,
-              true,
+              `Added ${meta?.label || id} (saved to Document Authoring). CDN sync pending (${st}) — hard-refresh may lag until HLX+DA tokens work on forge-api.`,
             );
           } else {
             showToast(
@@ -981,27 +1012,17 @@ function hideContextMenu() {
 
 async function savePageViaForgeApi(apiBase, mainHtml) {
   const { org, repo } = resolveOrgRepo();
-  const headers = { 'Content-Type': 'application/json' };
-  const daToken = resolveDaToken();
-  if (daToken) headers['X-Forge-Da-Token'] = daToken;
-
-  const res = await fetch(`${apiBase}/api/inline-edit/save-page`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
+  const res = await fetch(
+    `${apiBase}/api/inline-edit/save-page`,
+    forgeApiJsonInit({
       org,
       repo,
       pagePath: currentPagePath(),
       mainHtml,
     }),
-  });
+  );
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const err = new Error(data.error || data.hint || `Save failed (${res.status})`);
-    err.needsToken = Boolean(data.needsToken) || res.status === 401 || res.status === 403;
-    err.hint = data.hint || '';
-    throw err;
-  }
+  if (!res.ok) throw forgeApiHttpError(data, res, 'Save failed');
   return data;
 }
 
@@ -1063,9 +1084,11 @@ async function savePage() {
       try {
         result = await savePageViaForgeApi(apiBase, mainHtml);
       } catch (e) {
+        const headerLimit =
+          e?.headerTooLarge || e?.status === 431 || /\b431\b/.test(String(e?.message || ''));
         const authFail =
           e?.needsToken || /401|403|DA token required|DA write failed/i.test(String(e?.message || ''));
-        if (!authFail) throw e;
+        if (!authFail && !headerLimit) throw e;
         let token = resolveDaToken();
         if (!token) token = await promptDaToken();
         if (!token) throw e;
@@ -1281,6 +1304,7 @@ function init() {
   if (globalThis.__forgeInlineEditInit) return;
   globalThis.__forgeInlineEditInit = true;
 
+  ensureDirtyTracking();
   showBanner();
   // Ask for DA sign-in as soon as edit mode opens (not only on Save / Add / Delete).
   if (!resolveDaToken()) {
