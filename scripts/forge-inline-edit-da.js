@@ -456,7 +456,7 @@ export async function insertBlockOnDaPageClient(input) {
     hlxPreview: hlx,
     previewWarning: hlx?.ok
       ? undefined
-      : `Saved to Document Authoring but preview refresh failed (${hlx?.status || hlx?.error || 'no auth'}). Hard-refresh in a few seconds or open da.live.`,
+      : `CDN preview sync pending (${hlx?.status || hlx?.error || 'no auth'}) — Document Authoring already has your changes. Hard-refresh if the page looks stale.`,
     previewUrl: previewEditUrl(org, repo, pagePath),
   };
 }
@@ -517,7 +517,7 @@ export async function deleteBlockOnDaPageClient(input) {
     hlxPreview: hlx,
     previewWarning: hlx?.ok
       ? undefined
-      : `Deleted in Document Authoring but preview refresh failed (${hlx?.status || hlx?.error || 'no auth'}). Hard-refresh in a few seconds or open da.live.`,
+      : `CDN preview sync pending (${hlx?.status || hlx?.error || 'no auth'}) — delete is in Document Authoring. Hard-refresh if the page looks stale.`,
     previewUrl: previewEditUrl(org, repo, pagePath),
   };
 }
