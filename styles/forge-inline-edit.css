@@ -360,7 +360,12 @@ button.forge-edit-field:hover {
   margin: 0.25rem 0;
 }
 
-/* Banner Save — never inherit site button { color:#fff } on white fill */
+/*
+ * Banner Save + light-surface forge buttons.
+ * Wolverine styles.css sets --text-color:#fff and
+ * `a.button.secondary, button.secondary { color: var(--text-color) }` with
+ * transparent fill — never allow white ink on white/light fills.
+ */
 .forge-edit-banner button.forge-edit-banner__save,
 .forge-edit-banner__save {
   margin-left: 0;
@@ -371,7 +376,7 @@ button.forge-edit-field:hover {
   color: #0b5fff !important;
   font-weight: 700;
   cursor: pointer;
-  -webkit-text-fill-color: #0b5fff;
+  -webkit-text-fill-color: #0b5fff !important;
 }
 
 .forge-edit-banner button.forge-edit-banner__save:disabled,
@@ -380,7 +385,7 @@ button.forge-edit-field:hover {
   cursor: not-allowed;
   background: #f0f0f0 !important;
   color: #505050 !important;
-  -webkit-text-fill-color: #505050;
+  -webkit-text-fill-color: #505050 !important;
 }
 
 .forge-edit-banner__save--dirty {
@@ -544,15 +549,15 @@ button.forge-edit-field:hover {
 
 /* Wolverine / dark pages force white text — pin dark ink on every light surface */
 .forge-edit-dialog,
-.forge-edit-dialog *,
+.forge-edit-dialog *:not(.primary),
 .forge-edit-menu,
 .forge-edit-menu *,
 .forge-edit-media-toolbar,
-.forge-edit-media-toolbar *,
+.forge-edit-media-toolbar *:not(.primary),
 .forge-edit-product-picker,
-.forge-edit-product-picker * {
-  color: #1d1d1d;
-  -webkit-text-fill-color: #1d1d1d;
+.forge-edit-product-picker *:not(.primary) {
+  color: #1d1d1d !important;
+  -webkit-text-fill-color: #1d1d1d !important;
 }
 
 .forge-edit-dialog header,
@@ -677,16 +682,20 @@ button.forge-edit-field:hover {
   margin: 4px 0;
   padding: 8px 10px;
   text-align: left;
-  border: 1px solid #cacaca;
+  border: 1px solid #cacaca !important;
   border-radius: 6px;
-  background: #fafafa;
+  background: #fafafa !important;
+  color: #1d1d1d !important;
+  -webkit-text-fill-color: #1d1d1d !important;
   cursor: pointer;
   font-size: 13px;
 }
 
 .forge-edit-dialog .block-pick:hover {
-  border-color: #1473e6;
-  background: #f0f7ff;
+  border-color: #1473e6 !important;
+  background: #f0f7ff !important;
+  color: #1d1d1d !important;
+  -webkit-text-fill-color: #1d1d1d !important;
 }
 
 .forge-edit-dialog .block-pick--commerce {
@@ -705,22 +714,51 @@ button.forge-edit-field:hover {
   border-top: 1px solid #e8e8e8;
 }
 
-.forge-edit-dialog footer button {
+.forge-edit-dialog footer button,
+.forge-edit-product-picker footer button,
+.forge-edit-media-toolbar footer button {
   padding: 6px 14px;
   border-radius: 6px;
-  border: 1px solid #cacaca;
+  border: 1px solid #cacaca !important;
   background: #ffffff !important;
   color: #1d1d1d !important;
-  -webkit-text-fill-color: #1d1d1d;
+  -webkit-text-fill-color: #1d1d1d !important;
   cursor: pointer;
   font-size: 13px;
 }
 
-.forge-edit-dialog footer button.primary {
+.forge-edit-dialog footer button.primary,
+.forge-edit-product-picker footer button.primary,
+.forge-edit-media-toolbar footer button.primary {
   background: #1473e6 !important;
   color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff;
+  -webkit-text-fill-color: #ffffff !important;
   border-color: #1473e6 !important;
+}
+
+/*
+ * Site secondary CTAs: white text + transparent fill.
+ * In edit mode force dark ink on a light chip so labels stay readable on light
+ * page sections (hero/dark areas keep white via the exceptions below).
+ */
+html.forge-edit-active a.button.secondary,
+html.forge-edit-active button.secondary,
+html.forge-edit-active a.xwalk-retail-cta-secondary {
+  color: #0a1a0f !important;
+  -webkit-text-fill-color: #0a1a0f !important;
+  background-color: #ffffff !important;
+  border: 2px solid #0a1a0f !important;
+}
+
+html.forge-edit-active .xwalk-hero-section a.button.secondary,
+html.forge-edit-active .hero a.button.secondary,
+html.forge-edit-active .xwalk-hero-section a.xwalk-retail-cta-secondary,
+html.forge-edit-active .xwalk-hero-cta-secondary a,
+html.forge-edit-active main > div.xwalk-hero-section a.button.secondary {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: transparent !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
 }
 
 .forge-edit-toast {
